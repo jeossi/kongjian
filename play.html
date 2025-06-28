@@ -1618,23 +1618,23 @@
         .test-play-container {
             display: flex;
             flex-direction: column;
-            gap: 10px;
-            padding: 10px;
+            gap: 5px;
+            padding: 3px;
             background: rgba(0, 0, 0, 0.05);
             border-radius: 8px;
-            margin-top: 10px;
+            margin-top: 5px;
         }
         
         #test-video-url {
             width: 100%;
-            padding: 10px;
+            padding: 5px;
             border: 1px solid var(--border);
             border-radius: 4px;
-            font-size: 14px;
+            font-size: 12px;
         }
         
         #test-play-btn {
-            padding: 10px;
+            padding: 8px;
             background: var(--primary);
             color: white;
             border: none;
@@ -1649,13 +1649,13 @@
         }
         
         .test-video-label {
-            font-size: 14px;
+            font-size: 12px;
             margin-bottom: 5px;
             color: var(--dark-gray);
         }
         
         .test-video-example {
-            font-size: 12px;
+            font-size: 10px;
             color: var(--dark-gray);
             margin-top: 5px;
         }
@@ -1723,10 +1723,10 @@
                 <div class="cache-info" id="cache-info"></div>
             </div>
             <div class="proxy-panel" id="proxy-panel">
-                <div class="proxy-option" data-proxy="1">代理服务 1 (推荐)</div>
-                <div class="proxy-option" data-proxy="2">代理服务 2 (备用)</div>
-                <div class="proxy-option" data-proxy="3">代理服务 3 (备用)</div>
-                <div class="proxy-option" data-proxy="0">不使用代理</div>
+                <div class="proxy-option" data-proxy="1">代理服务 1# (推荐)</div>
+                <div class="proxy-option" data-proxy="2">代理服务 2# (简化)</div>
+                <div class="proxy-option" data-proxy="3">代理服务 3# (备用)</div>
+                <div class="proxy-option" data-proxy="0">关闭代理服务</div>
                 
                 <div class="custom-proxy-container">
                     <input type="text" class="custom-proxy-input" id="custom-proxy-input" placeholder="输入自定义代理URL模板" onclick="this.select()">
@@ -2150,8 +2150,8 @@
         let proxyIndex = 1; // 1: 使用代理服务1 (默认开启)
         const PROXY_SERVICES = {
             0: "", // 不使用代理
-            1: "https://cors-proxy2.ajeossiqq.workers.dev/",
-            2: "https://api.allorigins.win/raw?url=",
+            1: "https://cors-proxy.ajeossiqq.workers.dev/",
+            2: "https://cors-proxy2.ajeossiqq.workers.dev/",
             3: "https://api.codetabs.com/v1/proxy/?quest="
         };
         
