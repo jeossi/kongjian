@@ -1,0 +1,1825 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel 数据合并汇总工具</title>
+    <style>
+        :root {
+            --primary-color: #4CAF50;
+            --secondary-color: #2196F3;
+            --danger-color: #f44336;
+            --warning-color: #ffc107;
+            --info-color: #03a9f4;
+            --light-gray: #f5f5f5;
+            --medium-gray: #e0e0e0;
+            --dark-gray: #757575;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f9f9f9;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 25px;
+            position: relative;
+        }
+
+        .title-container {
+            text-align: center;
+            margin-bottom: 30px;
+            position: relative;
+            padding-top: 80px; /* 为logo留出空间 */
+        }
+
+        .logo-container {
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 128px;
+            height: 128px;
+            border-radius: 50%;
+            overflow: hidden;
+            background: transparent;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            z-index: 10;
+            animation: rotate 10s linear infinite;
+        }
+
+
+       
+
+        @keyframes rotate {
+            0% { transform: translateX(-50%) rotate(0deg); }
+            100% { transform: translateX(-50%) rotate(360deg); }
+        }
+
+        .title-container h1 {
+            font-size: 24px;
+            margin-top: 60px;
+        }
+
+        .tip-text {
+            color: var(--secondary-color);
+            font-size: 14px;
+            display: block;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .card {
+            margin-bottom: 20px;
+            border: 1px solid var(--medium-gray);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 15px;
+            background-color: var(--light-gray);
+            border-bottom: 1px solid var(--medium-gray);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .file-upload-area {
+            border: 2px dashed var(--medium-gray);
+            border-radius: 6px;
+            padding: 30px;
+            text-align: center;
+            margin: 15px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .file-upload-area:hover {
+            border-color: var(--primary-color);
+            background-color: rgba(76, 175, 80, 0.05);
+        }
+
+        .sortable-columns {
+            list-style: none;
+            padding: 0;
+        }
+
+        .sortable-item {
+            padding: 8px;
+            margin: 4px 0;
+            background: var(--light-gray);
+            border: 1px solid var(--medium-gray);
+            border-radius: 4px;
+            cursor: move;
+            transition: transform 0.2s;
+            display: flex;
+            align-items: center;
+        }
+
+        .sortable-item.dragging {
+            opacity: 0.5;
+            background: var(--medium-gray);
+        }
+
+        .preview-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .preview-table th,
+        .preview-table td {
+            padding: 8px;
+            border: 1px solid var(--medium-gray);
+            text-align: left;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .table-container {
+            max-height: 500px;
+            overflow-y: auto;
+            margin-bottom: 15px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #3d8b40;
+        }
+
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #d32f2f;
+        }
+
+        .card-actions {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .mapping-card {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: var(--light-gray);
+            border-radius: 6px;
+        }
+
+        .map-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            position: relative;
+        }
+
+        .map-item span {
+            flex: 1;
+            font-weight: bold;
+            padding-right: 15px;
+            position: relative;
+        }
+
+        .map-item span:after {
+            content: "";
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background-color: var(--medium-gray);
+            z-index: 1;
+        }
+
+        .map-item select {
+            flex: 2;
+            padding: 5px;
+            border-radius: 3px;
+            border: 1px solid var(--medium-gray);
+            position: relative;
+            z-index: 2;
+        }
+
+        .pivot-config {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: var(--light-gray);
+            border-radius: 6px;
+        }
+
+        .pivot-config h3 {
+            margin-bottom: 15px;
+        }
+
+        .pivot-fields {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .pivot-field {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .pivot-field label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .pivot-select-container select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 4px;
+            border: 2px solid var(--medium-gray);
+            height: 40px;
+            font-size: 14px;
+        }
+
+        .multiselect-container {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid var(--medium-gray);
+            border-radius: 4px;
+            margin-top: 5px;
+        }
+
+        .multiselect-item {
+            padding: 5px 10px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .multiselect-item:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        .multiselect-item input[type="checkbox"] {
+            margin-right: 8px;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.8);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+        }
+
+        .help-container {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            max-width: 500px;
+            max-height: 600px;
+            overflow-y: auto;
+            display: none;
+        }
+        
+        .help-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .help-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .help-content {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #444;
+        }
+        
+        .help-content h3 {
+            margin: 15px 0 10px;
+            font-size: 16px;
+        }
+        
+        .help-content p {
+            margin-bottom: 10px;
+        }
+        
+        .help-content ol,
+        .help-content ul {
+            margin-left: 20px;
+            margin-bottom: 10px;
+        }
+        
+        .help-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 18px;
+            color: #777;
+        }
+
+        .file-item {
+            margin-bottom: 8px;
+            padding: 8px;
+            background-color: var(--light-gray);
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .file-name {
+            flex-grow: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .file-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-small {
+            padding: 4px 8px;
+            font-size: 12px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top: 4px solid var(--primary-color);
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin-right: 15px;
+        }
+
+        .loading-text {
+            font-size: 18px;
+            color: var(--dark-gray);
+        }
+		
+.tool-logo {
+    width: 128px;
+    height: 128px;
+    margin-bottom: 15px;
+}
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="title-container">
+		
+            <div class="logo-container">
+			 <!-- 初始显示静态图，通过ID便于后续替换 -->
+            <img id="dynamicLogo" 
+                 src="data:image/png;base64,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" 
+
+                 class="tool-logo"
+                 alt="Logo">
+				 </div>
+            <h1>Excel 数据合并汇总工具_ 🌻花花专属版🐕</h1>
+            <span class="tip-text">温馨提示：该版本需联网才能正常使用！_@Ajeossi _V2506.10</span>
+            <button class="btn" id="helpBtn" 
+                    style="position: absolute; 
+                           left: 2px;  
+                           top: 100%; 
+                           transform: translateY(-50%);
+                           background-color: #2196F3; 
+                           color: white; 
+                           border: none; 
+                           border-radius: 4px; 
+                           cursor: pointer; 
+                           font-size: 16px; 
+                           transition: all 0.3s ease;">
+                🤖帮助说明💡
+            </button>
+        </div>
+        
+        <div class="card" id="uploadCard">
+            <div class="card-header">
+                <h2>步骤1：上传文件</h2>
+                <button class="btn btn-danger" id="resetBtn">重置</button>
+            </div>
+            <div class="card-body">
+                <div class="file-upload-area" id="dropZone">
+                    <p id="uploadPrompt">🚥⏱️ 必要的库文件联网加载中. 🐌 🐌 🐢.请耐心等待！如长时间没有加载成功，请按 F5 刷新或重启本工具</p>
+                    <input type="file" id="fileInput" accept=".xlsx, .xls, .xlsm" multiple hidden>
+                </div>
+                <div id="fileList"></div>
+            </div>
+        </div>
+
+        <div class="card hidden" id="sheetSelection">
+            <div class="card-header">
+                <h2>步骤2：选择工作表</h2>
+            </div>
+            <div class="card-body">
+                <div id="sheetOptions"></div>
+                <button class="btn btn-primary" id="confirmSheets" style="margin-left: auto; margin-right: auto; display: block;">确认选择</button>
+            </div>
+        </div>
+
+        <div class="card hidden" id="mappingCard">
+            <div class="card-header">
+                <h2>步骤3：选取需要的列数据</h2>
+            </div>
+            <div class="card-body">
+                <div class="column-config">
+                    <h3>列排序（拖动调整顺序）</h3>
+                    <ul class="sortable-columns" id="sortableColumns"></ul>
+                </div>
+                <div class="column-mapping" id="mappingInterface"></div>
+                <button class="btn btn-primary" id="mergeBtn" style="margin-left: auto; margin-right: auto; display: block;">开始合并工作表</button>
+            </div>
+        </div>
+
+        <div class="card hidden" id="previewCard">
+            <div class="card-header">
+                <h2>合并工作表预览</h2>
+            </div>
+            <div class="card-body">
+                <div class="table-container">
+                    <table class="preview-table" id="previewTable"></table>
+                </div>
+                <button class="btn btn-primary" id="downloadBtn" style="margin-left: auto; margin-right: auto; display: block;">下载合并工作表</button>
+            </div>
+        </div>
+
+        <div class="card hidden" id="pivotConfigCard">
+            <div class="card-header">
+                <h2>汇总表配置</h2>
+            </div>
+            <div class="card-body">
+                <div class="pivot-config">
+                    <h3>配置汇总表</h3>
+                    <div class="pivot-fields">
+                        <div class="pivot-field">
+                            <label>行字段（可拖拽排序）</label>
+                            <div class="pivot-select-container" id="pivotRowFieldsContainer">
+                                <select id="pivotRowFields" hidden></select>
+                                <div class="multiselect-container" id="pivotRowFieldsList"></div>
+                            </div>
+                        </div>
+                        <div class="pivot-field">
+                            <label>列字段</label>
+                            <div class="pivot-select-container" id="pivotColumnFieldsContainer">
+                                <select id="pivotColumnFields" hidden></select>
+                                <div class="multiselect-container" id="pivotColumnFieldsList"></div>
+                            </div>
+                        </div>
+                        <div class="pivot-field">
+                            <label>值字段</label>
+                            <div class="pivot-select-container">
+                                <select id="pivotValueFields">
+                                    <option value="">--请选择计算的项--</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="pivot-field">
+                            <label>汇总函数</label>
+                            <div class="pivot-select-container">
+                                <select id="pivotValueFunction">
+                                    <option value="">--请先选择函数--</option>
+                                    <option value="sum">求和</option>
+                                    <option value="count">计数</option>
+                                    <option value="avg">平均值</option>
+                                    <option value="min">最小值</option>
+                                    <option value="max">最大值</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" id="generatePivotBtn" style="margin-top: 15px; display: block; margin-left: auto; margin-right: auto;">生成汇总表</button>
+                </div>
+
+                <h3>汇总表预览</h3>
+                <div class="table-container">
+                    <table class="preview-table" id="pivotTable"></table>
+                </div>
+                <button class="btn btn-primary" id="downloadPivotBtn" style="margin-left: auto; margin-right: auto; display: block; margin-top: 15px;">下载汇总表</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 帮助说明窗口 -->
+    <div class="help-container" id="helpContainer">
+        <div class="help-header">
+            <div class="help-title">✨帮助说明✨</div>
+            <button class="help-close" id="helpClose">&times;</button>
+        </div>
+        <div class="help-content" id="helpContent">
+            <h3>一、主要功能</h3>
+            <p>本工具主要实现对一张或多张工作表的数据进行自定义组合、多维度的数据汇总。生成的汇总数据可预览可保存。</p>
+
+            <h3>二、工具特色</h3>
+            <ol>
+                <li>支持在联网的主流浏览器平台使用（如电脑、手机、平板）</li>
+                <li>对多个不同数据结构的工作表及不同列名的工作表数据处理是该工具独有的特色及优势</li>
+                <li>导入数据的方式灵活多样</li>
+                <li>提取工作表数据的自定义程度高</li>
+                <li>支持工时汇总</li>
+                <li>安全可靠，自动化程度高，对数据源不会造成任何损坏</li>
+                <li>对单次处理工作表的数量没有限制，为了不影响使用体验，建议单次不超过10张工作表</li>
+				<li>单次上传文件大小不超过10M，单次处理数据建议不超过10万条数据</li>
+                <li>暂不支持提取有密码的工作表</li>
+            </ol>
+
+            <h3>三、数据的导入</h3>
+            <ol>
+                <li>可以通过拖拽、点击一次性导入多个工作簿，也可以多次导入工作簿</li>
+                <li>可以导入工作簿内的多张工作表，也可以导入不同区域的工作簿及不同工作簿内的工作表</li>
+                <li>可根据需求随时添加删除工作簿，动态更新</li>
+            </ol>
+
+            <h3>四、合并数据</h3>
+            <ol>
+                <li>按需求对多张工作表的数据进行自动合并</li>
+                <li>支持多张工作表中列名不同之间的数据匹配</li>
+                <li>支持自定义选取工作表中数据进行处理</li>
+                <li>提供对合并的数据即时查看及下载保存</li>
+                <li>合并的数据保留原始的排序</li>
+            </ol>
+
+            <h3>五、数据汇总</h3>
+            <ol>
+                <li>通拖拽勾选轻松实现对工作表的数据进行多维度汇总</li>
+                <li>可随时切换汇总方式并即时查看汇总结果</li>
+                <li>可随时下载保存汇总结果</li>
+                <li>提供两种汇总方式以满足不同场景的需求：A.无需计算值的数据汇总 B.函数计算的数据汇总</li>
+                <li>采用升序排序数据</li>
+                <li>打开下载的汇总表时报错误，是Excel版本不兼容表格样式引起，不会影响数据的准确性，放心使用</li>
+                <li>当打开新的Excel工作簿时出现需要"启用编辑"的提示，在Excel顶部的黄色警告栏中，点击 "启用编辑" 按钮即可解锁</li>
+                <li>若需永久信任某个文件来源：进入 文件 > 选项 > 信任中心 > 信任中心设置。选择 "受保护的视图"，取消勾选 "为来自Internet的文件启用受保护的视图" 或其他相关选项（谨慎操作，仅适用于可信来源）</li>
+            </ol>
+            <h3>六、常见问题</h3>
+            <ol>
+                <li>初次使用时库文件加载时间可能较长，受当前网络及库文件CDN 的节点分布、缓存策略、网络拥堵等情况而用时不同</li>
+                <li>每一次库文件加载时间都很长，A.检查是否勾选 Disable cache：取消勾选后重新刷新。B.浏览器是否开启隐私模式/无痕窗口</li>
+                <li>库文件加载过程中，可能会影响帮助说明的正常使用，请稍等。当前主线程繁忙来不及响应</li>
+            </ol>
+        </div>
+    </div>
+         <!-- 引入xlsx库 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.5/xlsx.full.min.js"></script>
+	<!-- <script src="https://cdn.jsdelivr.net/npm/xlsx-style@0.8.13/dist/xlsx-style.min.js"></script> -->
+	<!-- <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script> -->
+	<script>
+// 异步加载网络图片并替换
+window.addEventListener('load', function() {
+    const logoElement = document.getElementById('dynamicLogo');
+    const networkImageUrl = 'https://cdn04132025.gitlink.org.cn/api/v1/repos/ajeo/wd/raw/hua.jpg'; 
+    
+    const tempImage = new Image();
+    tempImage.src = networkImageUrl;
+    
+    tempImage.onload = function() {
+        logoElement.src = networkImageUrl;
+    };
+    
+    tempImage.onerror = function() {
+        console.log('网络图片加载失败，已降级显示静态图');
+    };
+});
+</script>
+    <script>
+        (function(window, document, XLSX) {
+            'use strict';
+
+            // 工具配置
+            const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+            const VALID_EXTENSIONS = ['.xlsx', '.xls', '.xlsm'];
+            
+            // 主要状态
+            const state = {
+                files: new Map(),
+                fileNames: new Set(),
+                selectedSheets: [],
+                baseColumns: [],
+                mergedData: [],
+                pivotData: [],
+                columnOrder: [],
+                rowFieldCount: 0,
+                isLibraryLoaded: false,
+				pivotMerges: [],
+                lastPreviewData: null,
+                timeColumns: new Set(),
+                pivotTimeColumns: new Set()
+            };
+
+            // DOM元素
+            const elements = {
+                dropZone: document.getElementById('dropZone'),
+                fileInput: document.getElementById('fileInput'),
+                fileList: document.getElementById('fileList'),
+                uploadPrompt: document.getElementById('uploadPrompt'),
+                sheetSelection: document.getElementById('sheetSelection'),
+                sheetOptions: document.getElementById('sheetOptions'),
+                confirmSheets: document.getElementById('confirmSheets'),
+                mappingCard: document.getElementById('mappingCard'),
+                sortableColumns: document.getElementById('sortableColumns'),
+                mappingInterface: document.getElementById('mappingInterface'),
+                mergeBtn: document.getElementById('mergeBtn'),
+                previewCard: document.getElementById('previewCard'),
+                previewTable: document.getElementById('previewTable'),
+                pivotConfigCard: document.getElementById('pivotConfigCard'),
+                pivotRowFieldsList: document.getElementById('pivotRowFieldsList'),
+                pivotColumnFieldsList: document.getElementById('pivotColumnFieldsList'),
+                pivotValueFields: document.getElementById('pivotValueFields'),
+                pivotValueFunction: document.getElementById('pivotValueFunction'),
+                generatePivotBtn: document.getElementById('generatePivotBtn'),
+                pivotTable: document.getElementById('pivotTable'),
+                downloadPivotBtn: document.getElementById('downloadPivotBtn'),
+                downloadBtn: document.getElementById('downloadBtn'),
+                resetBtn: document.getElementById('resetBtn'),
+                helpBtn: document.getElementById('helpBtn'),
+                helpContainer: document.getElementById('helpContainer'),
+                helpClose: document.getElementById('helpClose')
+            };
+
+            // 初始化函数
+            function init() {
+                if (typeof XLSX !== 'undefined' && XLSX.version) {
+                    state.isLibraryLoaded = true;
+                    elements.uploadPrompt.textContent = '👉 拖放文件到此处或点击选择（支持多选，目前只支持.xlsx, .xls, .xlsm格式文件）';
+                }
+            }
+
+            // 绑定事件
+            function bindEvents() {
+                elements.helpBtn.addEventListener('click', () => {
+                    elements.helpContainer.style.display = 'block';
+                });
+                elements.helpClose.addEventListener('click', () => {
+                    elements.helpContainer.style.display = 'none';
+                });
+
+                elements.dropZone.addEventListener('click', () => elements.fileInput.click());
+                elements.dropZone.addEventListener('dragover', e => e.preventDefault());
+                elements.dropZone.addEventListener('drop', handleDrop);
+                elements.fileInput.addEventListener('change', () => {
+                    handleFiles(elements.fileInput.files);
+                    elements.fileInput.value = '';
+                });
+
+                elements.generatePivotBtn.addEventListener('click', generatePivotTableWrapper);
+                elements.resetBtn.addEventListener('click', resetAll);
+                
+                // 处理logo加载失败的情况
+               
+            }
+
+            // 检测XLSX库加载状态
+            const checkLibraryInterval = setInterval(() => {
+                if (typeof XLSX !== 'undefined' && XLSX.version) {
+                    init();
+                    clearInterval(checkLibraryInterval);
+                }
+            }, 500);
+
+            // 文件处理
+            async function handleDrop(e) {
+                e.preventDefault();
+                handleFiles(e.dataTransfer.files);
+            }
+
+            async function handleFiles(fileList) {
+                const loading = showLoading('文件加载中...');
+                try {
+                    const filesArray = Array.from(fileList);
+                    for (const file of filesArray) {
+                        try {
+                            if (!VALID_EXTENSIONS.some(ext => file.name.toLowerCase().endsWith(ext))) {
+                                alert(`不支持的文件类型: ${file.name}`);
+                                continue;
+                            }
+                            if (file.size > MAX_FILE_SIZE) {
+                                alert(`文件过大: ${file.name} (最大支持10MB)`);
+                                continue;
+                            }
+                            
+                            const uniqueFileName = generateUniqueFileName(file.name);
+                            const workbook = await readWorkbook(file);
+                            state.files.set(uniqueFileName, {
+                                name: uniqueFileName,
+                                originalName: file.name,
+                                workbook,
+                                sheets: workbook.SheetNames
+                            });
+                            renderFileItem(uniqueFileName);
+                        } catch (e) {
+                            console.error(`文件处理失败: ${file.name}`, e);
+                            alert(`文件 ${file.name} 处理失败，请检查文件格式`);
+                        }
+                    }
+                    if (state.files.size > 0) showSheetSelection();
+                } finally {
+                    loading.remove();
+                }
+            }
+
+            function readWorkbook(file) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        try {
+                            const data = new Uint8Array(e.target.result);
+                            resolve(XLSX.read(data, { type: 'array' }));
+                        } catch (e) {
+                            reject(e);
+                        }
+                    };
+                    reader.onerror = (e) => reject(e);
+                    reader.readAsArrayBuffer(file);
+                });
+            }
+
+            function generateUniqueFileName(baseName) {
+                let uniqueName = baseName;
+                let counter = 1;
+                const extIndex = baseName.lastIndexOf('.');
+                const nameWithoutExt = extIndex > 0 ? baseName.slice(0, extIndex) : baseName;
+                const extension = extIndex > 0 ? baseName.slice(extIndex) : '';
+                
+                while (state.fileNames.has(uniqueName)) {
+                    uniqueName = `${nameWithoutExt} (${counter})${extension}`;
+                    counter++;
+                }
+                state.fileNames.add(uniqueName);
+                return uniqueName;
+            }
+
+            function renderFileItem(uniqueFileName) {
+                const fileObj = state.files.get(uniqueFileName);
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                fileItem.innerHTML = `
+                    <div class="file-name">${fileObj.name}</div>
+                    <div class="file-actions">
+                        <button class="btn btn-small btn-danger" data-file="${uniqueFileName}" title="移除文件">✕</button>
+                    </div>
+                `;
+                elements.fileList.appendChild(fileItem);
+
+                const removeButton = fileItem.querySelector('.btn-danger');
+                removeButton.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const fileName = removeButton.dataset.file;
+                    state.files.delete(fileName);
+                    state.fileNames.delete(fileName);
+                    elements.fileList.removeChild(fileItem);
+                    
+                    // 清理 selectedSheets 中已移除的文件条目
+                    state.selectedSheets = state.selectedSheets.filter(sheet => sheet.file !== fileName);
+                    
+                    if (state.files.size === 0) {
+                        elements.sheetSelection.classList.add('hidden');
+                        elements.mappingCard.classList.add('hidden');
+                        elements.previewCard.classList.add('hidden');
+                        elements.pivotConfigCard.classList.add('hidden');
+                    } else {
+                        showSheetSelection();
+                    }
+                });
+            }
+
+            // 工作表选择
+            function showSheetSelection() {
+                elements.sheetSelection.classList.remove('hidden');
+                elements.sheetOptions.innerHTML = '';
+                
+                state.files.forEach((fileObj, uniqueFileName) => {
+                    const card = document.createElement('div');
+                    card.className = 'file-card';
+                    card.innerHTML = `
+                        <h3>${fileObj.name}</h3>
+                        <div class="sheet-list">
+                            ${fileObj.sheets.map(sheet => `
+                                <label>
+                                    <input type="checkbox" 
+                                        data-file="${uniqueFileName}"
+                                        value="${sheet}">
+                                    ${sheet}
+                                </label>
+                            `).join('')}
+                        </div>
+                    `;
+                    elements.sheetOptions.appendChild(card);
+                });
+            }
+
+            // 列映射和排序
+            function setupColumnMapping() {
+                elements.sortableColumns.innerHTML = '';
+                elements.mappingInterface.innerHTML = '';
+                
+                if (state.selectedSheets.length === 0) return;
+
+                const firstSheet = state.selectedSheets[0];
+                const firstFile = state.files.get(firstSheet.file);
+                const firstWorkbook = firstFile.workbook;
+                const firstWorkbookSheet = firstWorkbook.Sheets[firstSheet.sheet];
+                
+                const jsonData = XLSX.utils.sheet_to_json(firstWorkbookSheet);
+                state.baseColumns = jsonData.length > 0 ? Object.keys(jsonData[0]) : [];
+                state.columnOrder = [...state.baseColumns];
+                
+                askUserForTimeColumns(state.baseColumns).then(userSelectedTimeColumns => {
+                    state.timeColumns = new Set([...state.timeColumns, ...userSelectedTimeColumns]);
+                    initColumnSorting();
+                    showMappingInterface();
+                    elements.mappingCard.classList.remove('hidden');
+                    elements.previewCard.classList.add('hidden');
+                    elements.pivotConfigCard.classList.add('hidden');
+                });
+            }
+
+            // 弹出对话框让用户选择时间列
+            function askUserForTimeColumns(columns) {
+                return new Promise((resolve) => {
+                    const dialog = document.createElement('div');
+                    dialog.className = 'help-container';
+                    dialog.style.display = 'block';
+                    dialog.style.maxWidth = '800px';
+                    dialog.style.width = '90%';
+                    
+                    dialog.innerHTML = `
+                        <div class="help-header">
+                            <div class="help-title">请选择时间列（如表中含有时间或工时请勾选，否则请点关闭）</div>
+                            <button class="help-close">× 关闭</button>
+                        </div>
+                        <div class="help-content">
+                            <p>以下列名是从第一张工作表中提取的，请勾选哪些列是时间列：</p>
+                            <div class="multiselect-container" id="userTimeColumnSelect">
+                                ${columns.map(col => `
+                                    <div class="multiselect-item">
+                                        <input type="checkbox" id="userTimeCol_${col}">
+                                        <label for="userTimeCol_${col}">${col}</label>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            <button class="btn btn-primary" style="margin-top: 15px; display: block; margin-left: auto;">确认</button>
+                        </div>
+                    `;
+                    
+                    document.body.appendChild(dialog);
+                    
+                    const closeButton = dialog.querySelector('.help-close');
+                    const confirmButton = dialog.querySelector('.btn-primary');
+                    const checkboxes = dialog.querySelectorAll('input[type="checkbox"]');
+                    
+                    let selectedTimeColumns = new Set();
+                    
+                    checkboxes.forEach(checkbox => {
+                        checkbox.addEventListener('change', () => {
+                            if (checkbox.checked) {
+                                selectedTimeColumns.add(checkbox.id.replace('userTimeCol_', ''));
+                            } else {
+                                selectedTimeColumns.delete(checkbox.id.replace('userTimeCol_', ''));
+                            }
+                        });
+                    });
+                    
+                    confirmButton.addEventListener('click', () => {
+                        resolve(Array.from(selectedTimeColumns));
+                        dialog.remove();
+                    });
+                    
+                    closeButton.addEventListener('click', () => {
+                        dialog.remove();
+                        resolve([]);
+                    });
+                });
+            }
+
+            function initColumnSorting() {
+                elements.sortableColumns.innerHTML = state.baseColumns.map(col => `
+                    <li class="sortable-item" data-column="${col}">
+                        <input type="checkbox" id="col_${col}" checked>
+                        <label for="col_${col}">${col}</label>
+                    </li>
+                `).join('');
+
+                let draggedItem = null;
+
+                elements.sortableColumns.querySelectorAll('.sortable-item').forEach(item => {
+                    item.draggable = true;
+                    
+                    item.addEventListener('dragstart', () => {
+                        draggedItem = item;
+                        item.classList.add('dragging');
+                    });
+
+                    item.addEventListener('dragend', () => {
+                        draggedItem.classList.remove('dragging');
+                        draggedItem = null;
+                        updateColumnOrder();
+                    });
+                });
+
+                function updateColumnOrder() {
+                    state.columnOrder = Array.from(elements.sortableColumns.children)
+                        .map(item => item.dataset.column);
+                }
+            }
+
+            function showMappingInterface() {
+                elements.mappingInterface.innerHTML = '';
+                
+                state.selectedSheets.slice(1).forEach(({file, sheet}) => {
+                    const fileObj = state.files.get(file);
+                    const workbook = fileObj.workbook;
+                    const worksheet = workbook.Sheets[sheet];
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet);
+                    const columns = jsonData.length > 0 ? Object.keys(jsonData[0]) : [];
+                    
+                    const card = document.createElement('div');
+                    card.className = 'mapping-card';
+                    card.innerHTML = `
+                        <h3>${fileObj.originalName} - ${sheet}</h3>
+                        <div class="mapping-list">
+                            ${columns.map(col => `
+                                <div class="map-item">
+                                    <span>${col}</span>
+                                    <select class="map-select">
+                                        <option value="">不映射</option>
+                                        ${state.columnOrder.map(bcol => `
+                                            <option value="${bcol}">${bcol}</option>
+                                        `).join('')}
+                                    </select>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                    elements.mappingInterface.appendChild(card);
+                });
+            }
+
+            // 合并数据
+            function performMerge() {
+                const selectedColumns = Array.from(
+                    elements.sortableColumns.querySelectorAll('input:checked')
+                ).map(el => el.id.replace('col_', ''));
+                
+                const mappingRules = {};
+                document.querySelectorAll('.map-select').forEach(select => {
+                    const source = select.previousElementSibling.textContent;
+                    const target = select.value;
+                    if (target) mappingRules[source] = target;
+                });
+
+                state.mergedData = performDataMerge(selectedColumns, mappingRules);
+                showPreview();
+                showPivotConfig();
+            }
+
+            function performDataMerge(selectedColumns, mappingRules) {
+                let result = [];
+                
+                const allData = {};
+                const allColumns = {};
+                
+                state.selectedSheets.forEach(({file, sheet}, index) => {
+                    const fileObj = state.files.get(file);
+                    const workbook = fileObj.workbook;
+                    const worksheet = workbook.Sheets[sheet];
+                    const rows = XLSX.utils.sheet_to_json(worksheet);
+                    
+                    allData[`${file}_${sheet}`] = rows;
+                    allColumns[`${file}_${sheet}`] = rows.length > 0 ? Object.keys(rows[0]) : [];
+                });
+
+                const columnMapping = {};
+                state.selectedSheets.forEach(({file, sheet}, index) => {
+                    if (index === 0) {
+                        allColumns[`${file}_${sheet}`].forEach((col, i) => {
+                            columnMapping[col] = col;
+                        });
+                    } else {
+                        const columns = allColumns[`${file}_${sheet}`];
+                        columns.forEach(col => {
+                            const mappedCol = mappingRules[col] || col;
+                            columnMapping[col] = mappedCol;
+                        });
+                    }
+                });
+
+                const header = selectedColumns.length > 0 ? selectedColumns : state.columnOrder;
+                result.push(header);
+                
+                state.selectedSheets.forEach(({file, sheet}) => {
+                    const rows = allData[`${file}_${sheet}`];
+                    const columns = allColumns[`${file}_${sheet}`];
+                    
+                    rows.forEach(row => {
+                        const newRow = {};
+                        columns.forEach(col => {
+                            newRow[columnMapping[col]] = row[col];
+                        });
+
+                        const orderedRow = header.map(col => newRow[col] || '');
+                        result.push(orderedRow);
+                    });
+                });
+
+                return result;
+            }
+			function generatePivotTable(data, rowFields, columnFields, valueField, aggregateFunction) {
+                const result = [];
+                const headers = [];
+                const allTimeColumns = Array.from(state.timeColumns);
+
+                const columnCombinations = new Set();
+                data.slice(1).forEach(row => {
+                    const colKeys = columnFields.map(field => {
+                        const index = data[0].indexOf(field);
+                        const rawValue = index !== -1 ? row[index] : "";
+                        
+                        if (state.timeColumns.has(field)) {
+                            return typeof rawValue === 'number' ? formatExcelTime(rawValue) : rawValue;
+                        }
+                        return rawValue;
+                    });
+                    columnCombinations.add(colKeys.join("|"));
+                });
+
+                const actualRowFields = Array.from(
+                    elements.pivotRowFieldsList.querySelectorAll('input:checked')
+                ).map(item => item.nextElementSibling.textContent);
+
+                const functionNames = { 
+                    sum: '求和',
+                    count: '计数',
+                    avg: '平均值',
+                    min: '最小值',
+                    max: '最大值'
+                };
+                const functionSuffix = valueField ? `（${functionNames[aggregateFunction]}）` : "";
+
+                headers.push(...actualRowFields);
+                if (valueField) {
+                    const valueColumnName = `${valueField}${functionSuffix}`;
+                    
+                    if (columnCombinations.size > 0) {
+                        headers.push(
+                            Array.from(columnCombinations).sort().map(c => `${c}${valueColumnName}`)
+                        );
+                    } else {
+                        headers.push(valueColumnName);
+                    }
+                }
+                result.push(headers);
+
+                const pivotMap = new Map();
+                data.slice(1).forEach(originalRow => {
+                    const row = [...originalRow];
+                    
+                    actualRowFields.forEach((field, idx) => {
+                        if (state.timeColumns.has(field) && typeof row[idx] === 'number') {
+                            row[idx] = formatExcelTime(row[idx]);
+                        }
+                    });
+
+                    const rowKey = actualRowFields.map(f => {
+                        const index = data[0].indexOf(f);
+                        return index !== -1 ? row[index] : "";
+                    }).join("|");
+
+                    if (!pivotMap.has(rowKey)) {
+                        pivotMap.set(rowKey, {
+                            rowValues: actualRowFields.map(f => {
+                                const index = data[0].indexOf(f);
+                                return index !== -1 ? row[index] : "";
+                            }),
+                            columns: new Map(),
+                            total: 0
+                        });
+                    }
+
+                    if (valueField) {
+                        const colKey = columnFields.map(f => {
+                            const index = data[0].indexOf(f);
+                            const rawValue = index !== -1 ? row[index] : "";
+                            return state.timeColumns.has(f) ? formatExcelTime(rawValue) : rawValue;
+                        }).join("|");
+
+                        const valueIndex = data[0].indexOf(valueField);
+                        const rawValue = valueIndex !== -1 ? originalRow[valueIndex] : 0;
+                        const value = parseFloat(rawValue) || 0;
+
+                        pivotMap.get(rowKey).columns.set(colKey, [
+                            ...(pivotMap.get(rowKey).columns.get(colKey) || []),
+                            value
+                        ]);
+                    }
+                });
+
+                const aggregatedData = [];
+                pivotMap.forEach((rowData, rowKey) => {
+                    const aggregatedRow = [...rowData.rowValues];
+                    
+                    if (valueField) {
+                        Array.from(columnCombinations).sort().forEach(colCombo => {
+                            const values = rowData.columns.get(colCombo) || [];
+                            let aggValue = 0;
+                            
+                            switch(aggregateFunction) {
+                                case 'sum': aggValue = values.reduce((a, b) => a + b, 0); break;
+                                case 'count': aggValue = values.length; break;
+                                case 'avg': aggValue = values.length ? values.reduce((a, b) => a + b, 0) / values.length : 0; break;
+                                case 'min': aggValue = values.length ? Math.min(...values) : 0; break;
+                                case 'max': aggValue = values.length ? Math.max(...values) : 0; break;
+                            }
+
+                            let displayValue;
+                            if (state.timeColumns.has(valueField) && aggregateFunction !== 'count') {
+                                displayValue = formatExcelTime(aggValue);
+                                if (displayValue === '0:00:00') displayValue = '';
+                            } else {
+                                displayValue = aggregateFunction === 'avg' ? aggValue.toFixed(2) : aggValue;
+                            }
+
+                            aggregatedRow.push(displayValue);
+                        });
+                    }
+                    
+                    aggregatedData.push(aggregatedRow);
+                });
+
+                if (valueField && state.timeColumns.has(valueField) && aggregateFunction !== 'count') {
+                    const newTimeCol = `${valueField}（${functionNames[aggregateFunction]}）`;
+                    state.timeColumns.add(newTimeCol);
+                }
+
+                if (actualRowFields.length > 0) {
+                    aggregatedData.sort((a, b) => {
+                        for (let i = 0; i < actualRowFields.length; i++) {
+                            const aVal = a[i];
+                            const bVal = b[i];
+                            if (aVal === bVal) continue;
+                            return String(aVal).localeCompare(String(bVal));
+                        }
+                        return 0;
+                    });
+                }
+
+                return [headers, ...aggregatedData];
+            }
+
+
+            // 显示预览
+            function showPreview() {
+                if (!state.mergedData.length) return;
+                
+                elements.previewCard.classList.remove('hidden');
+                const headers = state.mergedData[0];
+                const rows = state.mergedData.slice(1);
+                
+                let html = `<thead><tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody>`;
+                
+                rows.forEach(row => {
+                    html += '<tr>';
+                    row.forEach((cell, colIndex) => {
+                        const columnName = headers[colIndex];
+                        let displayValue = cell !== undefined ? cell : '';
+                        
+                        if (state.timeColumns.has(columnName)) {
+                            if (typeof cell === 'number') {
+                                displayValue = formatExcelTime(cell);
+                            }
+                        }
+                        
+                        html += `<td>${displayValue}</td>`;
+                    });
+                    html += '</tr>';
+                });
+                
+                html += '</tbody>';
+                elements.previewTable.innerHTML = html;
+            }
+
+            // 显示汇总表配置
+            function showPivotConfig() {
+                if (state.mergedData.length === 0) return;
+
+                elements.pivotRowFieldsList.innerHTML = '';
+                elements.pivotColumnFieldsList.innerHTML = '';
+                elements.pivotValueFields.innerHTML = '<option value="">--请选择计算的项--</option>';
+                elements.pivotValueFunction.value = '';
+                elements.pivotValueFunction.disabled = true;
+                elements.pivotValueFunction.style.opacity = '0.5';
+                
+                const headers = state.mergedData[0];
+                headers.forEach(column => {
+                    const rowItem = document.createElement('div');
+                    rowItem.className = 'multiselect-item';
+                    rowItem.innerHTML = `
+                        <input type="checkbox" id="row_${column}" checked>
+                        <label for="row_${column}">${column}</label>
+                    `;
+                    elements.pivotRowFieldsList.appendChild(rowItem);
+
+                    const columnItem = document.createElement('div');
+                    columnItem.className = 'multiselect-item';
+                    columnItem.innerHTML = `
+                        <input type="checkbox" id="col_${column}">
+                        <label for="col_${column}">${column}</label>
+                    `;
+                    elements.pivotColumnFieldsList.appendChild(columnItem);
+
+                    const valueOption = document.createElement('option');
+                    valueOption.value = column;
+                    valueOption.textContent = column;
+                    elements.pivotValueFields.appendChild(valueOption);
+                });
+                elements.pivotColumnFieldsList.style.display = 'none';
+                elements.pivotConfigCard.classList.remove('hidden');
+                initRowFieldsSorting();
+                initValueFieldChange();
+                initMultiselectClick();
+            }
+
+            // 汇总表功能
+            function initRowFieldsSorting() {
+                let draggedItem = null;
+
+                elements.pivotRowFieldsList.querySelectorAll('.multiselect-item').forEach(item => {
+                    item.draggable = true;
+                    
+                    item.addEventListener('dragstart', () => {
+                        draggedItem = item;
+                        item.classList.add('dragging');
+                    });
+
+                    item.addEventListener('dragend', () => {
+                        draggedItem.classList.remove('dragging');
+                        draggedItem = null;
+                    });
+                });
+
+                function getDragAfterElement(container, y) {
+                    return [...container.querySelectorAll('.multiselect-item:not(.dragging)')]
+                        .reduce((closest, child) => {
+                            const box = child.getBoundingClientRect();
+                            const offset = y - box.top - box.height / 2;
+                            if (offset < 0 && offset > closest.offset) {
+                                return { offset, element: child };
+                            } else {
+                                return closest;
+                            }
+                        }, { offset: Number.NEGATIVE_INFINITY }).element;
+                }
+
+                elements.pivotRowFieldsList.addEventListener('dragover', e => {
+                    e.preventDefault();
+                    const afterElement = getDragAfterElement(elements.pivotRowFieldsList, e.clientY);
+                    const currentItem = draggedItem;
+                    if (afterElement == null) {
+                        elements.pivotRowFieldsList.appendChild(currentItem);
+                    } else {
+                        elements.pivotRowFieldsList.insertBefore(currentItem, afterElement);
+                    }
+                });
+            }
+
+            function initValueFieldChange() {
+                const valueFieldSelect = elements.pivotValueFields;
+                valueFieldSelect.addEventListener('change', () => {
+                    if (valueFieldSelect.value === '') {
+                        elements.pivotValueFunction.value = '';
+                        elements.pivotValueFunction.disabled = true;
+                        elements.pivotValueFunction.style.opacity = '0.5';
+                    } else {
+                        elements.pivotValueFunction.disabled = false;
+                        elements.pivotValueFunction.style.opacity = '1';
+                    }
+                });
+            }
+
+            function generatePivotTableWrapper() {
+                if (state.mergedData.length === 0) {
+                    alert('请先完成数据合并');
+                    return;
+                }
+                
+                const rowFields = Array.from(
+                    elements.pivotRowFieldsList.querySelectorAll('input:checked')
+                ).map(item => item.id.replace('row_', ''));
+                
+                if (rowFields.length === 0) {
+                    alert('请至少选择一个行字段');
+                    return;
+                }
+                
+                const columnFields = Array.from(
+                    elements.pivotColumnFieldsList.querySelectorAll('input:checked')
+                ).map(el => el.id.replace('col_', ''));
+                
+                const valueField = elements.pivotValueFields.value;
+                const aggFunc = elements.pivotValueFunction.value;
+                
+                if (valueField && aggFunc === '') {
+                    alert('请选择汇总函数');
+                    return;
+                }
+                
+                if (!valueField && aggFunc !== '') {
+                    alert('请选择值字段');
+                    return;
+                }
+                
+                if (valueField && state.timeColumns.has(valueField)) {
+                    const aggText = { sum: "求和", count: "计数", avg: "平均值", min: "最小值", max: "最大值" };
+                    const aggFuncText = aggText[aggFunc] || aggFunc;
+                    const newTimeCol = `${valueField}（${aggFuncText}）`;
+                    state.timeColumns.add(newTimeCol);
+                }
+                
+                state.pivotData = generatePivotTable(
+                    state.mergedData, 
+                    rowFields, 
+                    columnFields, 
+                    valueField, 
+                    aggFunc
+                );
+                
+                state.rowFieldCount = rowFields.length;
+                showPivotTable();
+            }
+
+           function showPivotTable() {
+    if (!state.pivotData || state.pivotData.length < 2) {
+        elements.pivotTable.innerHTML = '<tr><td colspan="100%">无数据或配置错误</td></tr>';
+        return;
+    }
+
+    const [headers, ...rows] = state.pivotData;
+    const spans = calculateRowSpans(rows);
+    state.rowFieldCount = Array.from(
+        elements.pivotRowFieldsList.querySelectorAll('input:checked')
+    ).length;
+
+    // 存储当前预览数据（用于后续下载）
+    state.lastPreviewData = {
+        headers: [...headers],
+        rows: rows.map(r => [...r]),
+        timeColumns: new Set(state.timeColumns)
+    };
+
+    // 生成合并信息（Excel行列号格式）
+    state.pivotMerges = [];
+    spans.forEach((columnSpans, colIndex) => {
+        if (colIndex >= state.rowFieldCount) return; // 仅合并行字段列
+        
+        let startExcelRow = 1; // Excel行号从1开始
+        let currentSpan = 0;
+        
+        columnSpans.forEach((span, rowIndex) => {
+            if (span === 0) return;
+            
+            // 验证父子层级一致性
+            if (colIndex > 0) {
+                const currentKey = rows[rowIndex].slice(0, colIndex).join('|');
+                const prevKey = rows[rowIndex - 1]?.slice(0, colIndex).join('|');
+                if (currentKey !== prevKey) currentSpan = 0;
+            }
+            
+            // 生成合并区域
+            if (span > 1) {
+                state.pivotMerges.push({
+                    s: { r: startExcelRow, c: colIndex },
+                    e: { r: startExcelRow + span - 1, c: colIndex }
+                });
+            }
+            startExcelRow += span;
+        });
+    });
+
+    // 渲染HTML表格
+    let html = '<thead><tr>';
+    
+    // 表头渲染
+    headers.forEach((header, colIndex) => {
+        html += `<th>${header}</th>`;
+    });
+    html += '</tr></thead><tbody>';
+
+    // 数据行渲染（带合并标记）
+    rows.forEach((row, rowIdx) => {
+        html += '<tr>';
+        row.forEach((cell, colIndex) => {
+            const columnName = headers[colIndex];
+            let displayValue = cell;
+            
+            // 时间列格式化
+            if (state.timeColumns.has(columnName) && typeof cell === 'number') {
+                displayValue = formatExcelTime(cell);
+            }
+
+            // 合并单元格标记
+            if (colIndex < state.rowFieldCount) {
+                const spanInfo = spans[colIndex][rowIdx];
+                if (spanInfo === 0) return; // 跳过被合并的单元格
+                if (spanInfo > 1) {
+                    html += `<td rowspan="${spanInfo}">${displayValue}</td>`;
+                    return;
+                }
+            }
+            
+            html += `<td>${displayValue}</td>`;
+        });
+        html += '</tr>';
+    });
+
+    html += '</tbody>';
+    elements.pivotTable.innerHTML = html;
+}
+
+            // 辅助函数：Excel时间格式化
+            function formatExcelTime(excelTime) {
+                if (excelTime === null || excelTime === undefined || excelTime === '') return '';
+                if (typeof excelTime === 'string' && excelTime.includes(':')) return excelTime;
+                
+                const totalSeconds = Math.round(excelTime * 24 * 60 * 60);
+                const hours = Math.floor(totalSeconds / 3600);
+                const remainingSeconds = totalSeconds % 3600;
+                const minutes = Math.floor(remainingSeconds / 60);
+                const seconds = Math.floor(remainingSeconds % 60);
+                
+                return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }
+
+           // 辅助函数：计算行合并跨度
+function calculateRowSpans(rows) {
+    const spans = Array.from({length: state.rowFieldCount}, () => []);
+
+    for (let level = 0; level < state.rowFieldCount; level++) {
+        let currentSpan = 1;
+        let currentValue = null;
+
+        rows.forEach((row, index) => {
+            // 使用不可见字符拼接多级字段作为联合键
+            const compareValue = row.slice(0, level + 1).join('\x01');
+            
+            if (index === 0) {
+                currentValue = compareValue;
+                spans[level][index] = 1;
+                return;
+            }
+
+            const prevValue = rows[index-1].slice(0, level + 1).join('\x01');
+            
+            // 严格层级关系判断
+            if (compareValue === prevValue && checkParentConsistency(rows, index, level)) {
+                currentSpan++;
+                spans[level][index] = 0;
+                if (index === rows.length - 1) {
+                    spans[level][index - currentSpan + 1] = currentSpan;
+                }
+            } else {
+                if (currentSpan > 1) {
+                    spans[level][index - currentSpan] = currentSpan;
+                }
+                currentSpan = 1;
+                spans[level][index] = 1;
+                currentValue = compareValue;
+            }
+        });
+    }
+
+    return spans;
+}
+// 辅助函数：检查父级一致性
+function checkParentConsistency(rows, index, level) {
+    for (let l = 0; l < level; l++) {
+        if (rows[index][l] !== rows[index-1][l]) return false;
+    }
+    return true;
+}
+
+            // 下载合并表
+            function downloadMergedData() {
+    const loader = showLoading('生成文件中...');
+    try {
+        if (!state.mergedData || state.mergedData.length < 2) {
+            throw new Error('请先完成数据合并');
+        }
+        
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.aoa_to_sheet(state.mergedData);
+        
+        // 格式化时间列
+        const headers = state.mergedData[0];
+        for (let colIndex = 0; colIndex < headers.length; colIndex++) {
+            const columnName = headers[colIndex];
+            if (state.timeColumns.has(columnName)) {
+                for (let rowIndex = 1; rowIndex < state.mergedData.length; rowIndex++) {
+                    const timeValue = state.mergedData[rowIndex][colIndex];
+                    if (timeValue !== undefined && timeValue !== null && timeValue !== '') {
+                        const cellRef = XLSX.utils.encode_cell({c: colIndex, r: rowIndex});
+                        ws[cellRef] = {
+                            t: 'n',
+                            v: timeValue,
+                            z: '[h]:mm:ss'
+                        };
+                    }
+                }
+            }
+        }
+        
+        // 自动列宽
+        ws['!cols'] = headers.map((header, colIndex) => {
+            const headerWidth = String(header).split('').reduce((sum, char) => 
+                sum + (/[\u4e00-\u9fa5]/.test(char) ? 2 : 1), 0);
+            
+            const contentWidth = state.mergedData.reduce((max, row) => {
+                const val = row[colIndex];
+                if (val == null) return max;
+                
+                return Math.max(max, 
+                    String(val).split('').reduce((sum, char) => 
+                        sum + (/[\u4e00-\u9fa5]/.test(char) ? 2 : 
+                              /[0-9]/.test(char) ? 0.8 : 1), 1) + 2
+                );
+            }, headerWidth);
+            
+            return { wch: Math.min(Math.max(contentWidth, 8), 80) };
+        });
+
+        XLSX.utils.book_append_sheet(wb, ws, "合并表");
+        const timestamp = new Date().toISOString()
+            .replace(/T/, '_').replace(/\..+/, '')
+            .replace(/:/g, '-').replace(/-/g, '');
+        XLSX.writeFile(wb, `合并数据_${timestamp}.xlsx`);
+    } catch (error) {
+        console.error('下载失败:', error);
+        alert(error.message || '文件生成失败');
+    } finally {
+        loader.remove();
+    }
+}
+      // 下载汇总表
+     function downloadPivotData() {
+    const loader = showLoading('生成文件中...');
+    try {
+        // 0. 数据有效性检查
+        if (!state.lastPreviewData || !state.pivotMerges) {
+            throw new Error('请先生成有效的预览数据');
+        }
+
+        // 1. 准备基础数据
+        const { headers, rows, timeColumns } = state.lastPreviewData;
+        const maxRow = rows.length;
+        const rowFieldCount = Array.from(
+            elements.pivotRowFieldsList.querySelectorAll('input:checked')
+        ).length;
+
+        // 2. 创建工作表
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+
+        // 3. 合并区域
+        const spans = calculateRowSpans(rows);
+        const merges = [];
+        
+        spans.forEach((columnSpans, colIndex) => {
+            if (colIndex >= rowFieldCount) return; // 仅合并行字段列
+            
+            let startExcelRow = 1; // Excel行号从1开始
+            let currentSpan = 0;
+            
+            columnSpans.forEach((span, rowIndex) => {
+                if (span === 0) return;
+                
+                // 验证父子层级一致性
+                if (colIndex > 0) {
+                    const currentKey = rows[rowIndex].slice(0, colIndex).join('|');
+                    const prevKey = rows[rowIndex - 1]?.slice(0, colIndex).join('|');
+                    if (currentKey !== prevKey) currentSpan = 0;
+                }
+                
+                // 生成合并区域
+                if (span > 1) {
+                    merges.push({
+                        s: { r: startExcelRow, c: colIndex },
+                        e: { r: startExcelRow + span - 1, c: colIndex }
+                    });
+                }
+                startExcelRow += span;
+            });
+        });
+
+        // 4. 设置合并区域
+        ws['!merges'] = merges.filter(merge => 
+            merge.e.r <= maxRow &&  // 行号不超过数据范围
+            merge.s.c < rowFieldCount // 仅合并行字段列
+        );
+
+         // 5. 识别时间列
+        const timeColumnIndices = [];
+        headers.forEach((header, index) => {
+            const headerStr = String(header);
+            if (state.timeColumns.has(headerStr)) {
+                timeColumnIndices.push(index);
+            } 
+            else if (/（(求和|平均值|最小值|最大值)）$/.test(headerStr)) {
+                const rawField = headerStr.replace(/（.+）$/, '');
+                if (state.timeColumns.has(rawField)) {
+                    timeColumnIndices.push(index);
+                }
+            }
+        });
+
+        // 6. 应用时间格式
+        timeColumnIndices.forEach(colIndex => {
+            const colLetter = XLSX.utils.encode_col(colIndex);
+            for (let rowIndex = 1; rowIndex <= rows.length; rowIndex++) {
+                const cellRef = `${colLetter}${rowIndex + 1}`; // Excel行从1开始
+                if (ws[cellRef]) {
+                    ws[cellRef].t = 'n';
+                    ws[cellRef].z = '[h]:mm:ss';
+
+                    if (typeof ws[cellRef].v === 'string' && ws[cellRef].v.includes(':')) {
+                        const timeParts = ws[cellRef].v.split(':');
+                        if (timeParts.length === 3) {
+                            const hours = parseInt(timeParts[0]) || 0;
+                            const minutes = parseInt(timeParts[1]) || 0;
+                            const seconds = parseInt(timeParts[2]) || 0;
+                            ws[cellRef].v = (hours * 3600 + minutes * 60 + seconds) / 86400;
+                        }
+                    }
+
+                    if (ws[cellRef].v === 0) {
+                        ws[cellRef].v = null;
+                    }
+                }
+            }
+        });
+
+        // 7. 列宽自适应（恢复原有逻辑）
+        ws['!cols'] = headers.map((header, colIndex) => {
+            const headerWidth = String(header).split('').reduce((sum, char) => 
+                sum + (/[\u4e00-\u9fa5]/.test(char) ? 2 : 1), 0);
+            
+            const contentWidth = rows.reduce((max, row) => {
+                const val = row[colIndex];
+                if (val == null) return max;
+                
+                return Math.max(max, 
+                    String(val).split('').reduce((sum, char) => 
+                        sum + (/[\u4e00-\u9fa5]/.test(char) ? 2 : 
+                              /[0-9]/.test(char) ? 0.8 : 1), 1) + 2
+                );
+            }, headerWidth);
+            
+            return { wch: Math.min(Math.max(contentWidth, 8), 80) };
+        });
+
+        // 8. 生成文件
+        XLSX.utils.book_append_sheet(wb, ws, "汇总表");
+        XLSX.writeFile(wb, `数据汇总_${new Date().getTime()}.xlsx`);
+
+    } catch (error) {
+        console.error('下载失败:', error);
+        alert(error.message || '文件生成失败');
+    } finally {
+        loader.remove();
+    }
+}
+
+            // 辅助函数
+            function showLoading(text) {
+                const loader = document.createElement('div');
+                loader.className = 'loading-overlay';
+                loader.innerHTML = `
+                    <div class="loading-spinner"></div>
+                    <div class="loading-text">${text}</div>
+                `;
+                document.body.appendChild(loader);
+                return loader;
+            }
+
+            function initMultiselectClick() {
+                document.querySelectorAll('.multiselect-item').forEach(item => {
+                    item.removeEventListener('click', handleCheckboxClick);
+                    item.addEventListener('click', handleCheckboxClick);
+                });
+            }
+
+            function handleCheckboxClick(e) {
+                if (!e.target.matches('input[type="checkbox"]')) {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    const checkbox = this.querySelector('input[type="checkbox"]');
+                    if (checkbox) {
+                        checkbox.checked = !checkbox.checked;
+                        checkbox.dispatchEvent(new Event('change'));
+                    }
+                }
+            }
+
+            function resetAll() {
+                state.files.clear();
+                state.fileNames.clear();
+                state.selectedSheets = [];
+                state.baseColumns = [];
+                state.mergedData = [];
+                state.pivotData = [];
+                state.columnOrder = [];
+                state.rowFieldCount = 0;
+                state.timeColumns = new Set();
+                state.pivotTimeColumns = new Set();
+                
+                elements.fileList.innerHTML = '';
+                elements.sheetSelection.classList.add('hidden');
+                elements.mappingCard.classList.add('hidden');
+                elements.previewCard.classList.add('hidden');
+                elements.pivotConfigCard.classList.add('hidden');
+            }
+
+            // 初始化入口
+            document.addEventListener('DOMContentLoaded', () => {
+                bindEvents();
+                
+                elements.confirmSheets.addEventListener('click', () => {
+                    const checkboxes = document.querySelectorAll('#sheetOptions input:checked');
+                    if (checkboxes.length < 1) return alert('请至少选择一个工作表');
+                    
+                    state.selectedSheets = Array.from(checkboxes).map(checkbox => ({
+                        file: checkbox.dataset.file,
+                        sheet: checkbox.value
+                    }));
+                    
+                    setupColumnMapping();
+                });
+                
+                elements.mergeBtn.addEventListener('click', performMerge);
+                elements.downloadBtn.addEventListener('click', downloadMergedData);
+                elements.downloadPivotBtn.addEventListener('click', downloadPivotData);
+            });
+
+        })(window, document, window.XLSX);
+    </script>
+</body>
+</html>

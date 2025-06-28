@@ -1,0 +1,1463 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>三角形计算工具</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #e3f2fd 0%, #f5f7fa 100%);
+            color: #333;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            padding: 20px 0 15px;
+            margin-bottom: 15px;
+        }
+        
+        h1 {
+            font-size: 2.4rem;
+            margin-bottom: 8px;
+            color: #1a237e;
+            position: relative;
+            display: inline-block;
+        }
+        
+        h1::after {
+            content: "";
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 70px;
+            height: 4px;
+            background: linear-gradient(90deg, #3949ab, #00bcd4);
+            border-radius: 2px;
+        }
+        
+        .subtitle {
+            font-size: 1.1rem;
+            color: #546e7a;
+            max-width: 600px;
+            margin: 15px auto 0;
+            line-height: 1.5;
+        }
+        
+        .main-content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .panel {
+            flex: 1;
+            min-width: 300px;
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+            border: 1px solid rgba(0, 0, 0, 0.04);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .panel:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .section-title {
+            font-size: 1.4rem;
+            margin-bottom: 18px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f4f8;
+            color: #1a237e;
+            display: flex;
+            align-items: center;
+        }
+        
+        .section-title i {
+            margin-right: 10px;
+            color: #3949ab;
+        }
+        
+        .mode-selector {
+            margin-bottom: 20px;
+        }
+        
+        .mode-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        
+        .mode-btn {
+            flex: 1;
+            min-width: 70px;
+            padding: 10px;
+            background: #e8eaf6;
+            border: none;
+            border-radius: 8px;
+            color: #3949ab;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 0.9rem;
+        }
+        
+        .mode-btn:hover {
+            background: #c5cae9;
+        }
+        
+        .mode-btn.active {
+            background: #3949ab;
+            color: white;
+            box-shadow: 0 3px 10px rgba(57, 73, 171, 0.25);
+        }
+        
+        .input-group {
+            margin-bottom: 18px;
+        }
+        
+        .input-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .input-field {
+            flex: 1;
+            min-width: 110px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: #1a237e;
+            font-size: 0.9rem;
+        }
+        
+        .input-container {
+            position: relative;
+        }
+        
+        input {
+            width: 100%;
+            padding: 12px 12px 12px 36px;
+            border-radius: 8px;
+            border: 1px solid #e0e6ed;
+            background: #f9fbfd;
+            color: #1a237e;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+        
+        input:disabled {
+            background: #f5f5f5;
+            color: #bdbdbd;
+            cursor: not-allowed;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #3949ab;
+            box-shadow: 0 0 0 3px rgba(57, 73, 171, 0.15);
+        }
+        
+        .input-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #5c6bc0;
+            font-size: 0.9rem;
+        }
+        
+        .calculate-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(45deg, #3949ab, #00bcd4);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 1.05rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .calculate-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(57, 73, 171, 0.25);
+        }
+        
+        .canvas-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 350px;
+            background: #f9fbfd;
+            border-radius: 12px;
+            margin-top: 12px;
+            border: 1px solid #e0e6ed;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        canvas {
+            max-width: 100%;
+            max-height: 100%;
+        }
+        
+        .results {
+            width: 100%;
+            background: white;
+            border-radius: 16px;
+            padding: 22px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+            border: 1px solid rgba(0, 0, 0, 0.04);
+        }
+        
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-top: 18px;
+        }
+        
+        .result-card {
+            background: #f9fbfd;
+            border-radius: 10px;
+            padding: 18px;
+            text-align: center;
+            border: 1px solid #e0e6ed;
+            transition: transform 0.3s ease;
+        }
+        
+        .result-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+        }
+        
+        .result-title {
+            font-size: 1.05rem;
+            margin-bottom: 8px;
+            color: #3949ab;
+            font-weight: 600;
+        }
+        
+        .result-value {
+            font-size: 1.7rem;
+            font-weight: 700;
+            color: #1a237e;
+        }
+        
+        .result-unit {
+            font-size: 0.85rem;
+            color: #546e7a;
+            margin-left: 3px;
+            font-weight: 500;
+        }
+        
+        .instructions {
+            margin-top: 25px;
+            background: white;
+            border-radius: 14px;
+            padding: 18px;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: #37474f;
+            border: 1px solid #e0e6ed;
+        }
+        
+        .instructions h3 {
+            margin-bottom: 12px;
+            color: #3949ab;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1.2rem;
+        }
+        
+        .instructions ul {
+            padding-left: 22px;
+        }
+        
+        .instructions li {
+            margin-bottom: 8px;
+            position: relative;
+        }
+        
+        .instructions li::before {
+            content: "•";
+            color: #00bcd4;
+            font-weight: bold;
+            display: inline-block; 
+            width: 1em;
+            margin-left: -1em;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 35px;
+            padding: 18px;
+            font-size: 0.85rem;
+            color: #546e7a;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .subtitle {
+                font-size: 1rem;
+            }
+            
+            .panel {
+                padding: 18px;
+            }
+            
+            .section-title {
+                font-size: 1.3rem;
+            }
+            
+            .input-row {
+                gap: 10px;
+            }
+            
+            .input-field {
+                min-width: 100px;
+            }
+            
+            .result-card {
+                padding: 15px;
+            }
+            
+            .result-value {
+                font-size: 1.6rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .results-grid {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                gap: 12px;
+            }
+            
+            .result-value {
+                font-size: 1.5rem;
+            }
+            
+            .input-row {
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            .input-field {
+                min-width: 100%;
+            }
+        }
+        
+        .mode-info {
+            background: #f9fbfd;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 12px;
+            border: 1px solid #e0e6ed;
+            display: none;
+            font-size: 0.9rem;
+        }
+        
+        .mode-info.active {
+            display: block;
+        }
+        
+        .mode-info p {
+            color: #37474f;
+            line-height: 1.5;
+        }
+        
+        .error-message {
+            color: #d32f2f;
+            font-weight: 500;
+            margin-top: 12px;
+            padding: 10px;
+            background: #ffebee;
+            border-radius: 6px;
+            display: none;
+            font-size: 0.95rem;
+        }
+        
+        .visual-toggle {
+            margin-top: 15px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+        
+        .visual-btn {
+            background: #e8eaf6;
+            border: none;
+            border-radius: 20px;
+            padding: 8px 15px;
+            color: #3949ab;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.9rem;
+        }
+        
+        .visual-btn.active {
+            background: #3949ab;
+            color: white;
+        }
+        
+        .visual-btn:hover:not(.active) {
+            background: #c5cae9;
+        }
+        
+        .highlight {
+            animation: highlight 1.5s ease;
+        }
+        
+        @keyframes highlight {
+            0% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.05); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        
+        .result-section {
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        
+        .result-section-title {
+            font-size: 1.3rem;
+            color: #3949ab;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .result-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+        }
+        
+        .result-item {
+            background: #f8f9ff;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #e0e6ed;
+        }
+        
+        .result-item-title {
+            font-weight: 600;
+            color: #1a237e;
+            margin-bottom: 8px;
+            font-size: 1rem;
+        }
+        
+        .result-item-value {
+            font-size: 1.2rem;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-triangle"></i> 三角形计算工具</h1>
+            <p class="subtitle">输入三角形的已知元素，计算所有未知的边长、角度、周长、面积等属性，并实时可视化</p>
+        </header>
+        
+        <div class="main-content">
+            <div class="panel">
+                <h2 class="section-title"><i class="fas fa-sliders-h"></i> 计算参数</h2>
+                
+                <div class="mode-selector">
+                    <p>选择计算模式：</p>
+                    <div class="mode-buttons">
+                        <button class="mode-btn active" data-mode="sss">
+                            <i class="fas fa-grip-lines"></i>
+                            <span>SSS</span>
+                        </button>
+                        <button class="mode-btn" data-mode="sas">
+                            <i class="fas fa-angle-right"></i>
+                            <span>SAS</span>
+                        </button>
+                        <button class="mode-btn" data-mode="asa">
+                            <i class="fas fa-adjust"></i>
+                            <span>ASA</span>
+                        </button>
+                        <button class="mode-btn" data-mode="saa">
+                            <i class="fas fa-dot-circle"></i>
+                            <span>SAA</span>
+                        </button>
+                        <button class="mode-btn" data-mode="ssa">
+                            <i class="fas fa-exchange-alt"></i>
+                            <span>SSA</span>
+                        </button>
+                    </div>
+                    
+                    <div class="mode-info active" id="sss-info">
+                        <p><strong>SSS模式</strong>：已知三条边的长度（Side-Side-Side）。输入三个边长，计算所有角度和面积。</p>
+                    </div>
+                    <div class="mode-info" id="sas-info">
+                        <p><strong>SAS模式</strong>：已知两边及夹角（Side-Angle-Side）。输入两个边长和它们之间的夹角。</p>
+                    </div>
+                    <div class="mode-info" id="asa-info">
+                        <p><strong>ASA模式</strong>：已知两角及夹边（Angle-Side-Angle）。输入两个角度和它们之间的边长。</p>
+                    </div>
+                    <div class="mode-info" id="saa-info">
+                        <p><strong>SAA模式</strong>：已知两角及一边（Side-Angle-Angle）。输入两个角度和一个边长（非夹边）。</p>
+                    </div>
+                    <div class="mode-info" id="ssa-info">
+                        <p><strong>SSA模式</strong>：已知两边及一个非夹角（Side-Side-Angle）。此模式可能有0、1或2个解。</p>
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <div class="input-row">
+                        <div class="input-field">
+                            <label for="sideA">边 a</label>
+                            <div class="input-container">
+                                <i class="fas fa-ruler input-icon"></i>
+                                <input type="number" id="sideA" placeholder="输入长度" min="0" step="0.01">
+                            </div>
+                        </div>
+                        <div class="input-field">
+                            <label for="sideB">边 b</label>
+                            <div class="input-container">
+                                <i class="fas fa-ruler input-icon"></i>
+                                <input type="number" id="sideB" placeholder="输入长度" min="0" step="0.01">
+                            </div>
+                        </div>
+                        <div class="input-field">
+                            <label for="sideC">边 c</label>
+                            <div class="input-container">
+                                <i class="fas fa-ruler input-icon"></i>
+                                <input type="number" id="sideC" placeholder="输入长度" min="0" step="0.01">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="input-row">
+                        <div class="input-field">
+                            <label for="angleA">角 A (°)</label>
+                            <div class="input-container">
+                                <i class="fas fa-angle-right input-icon"></i>
+                                <input type="number" id="angleA" placeholder="输入角度" min="0" max="180" step="0.01">
+                            </div>
+                        </div>
+                        <div class="input-field">
+                            <label for="angleB">角 B (°)</label>
+                            <div class="input-container">
+                                <i class="fas fa-angle-right input-icon"></i>
+                                <input type="number" id="angleB" placeholder="输入角度" min="0" max="180" step="0.01">
+                            </div>
+                        </div>
+                        <div class="input-field">
+                            <label for="angleC">角 C (°)</label>
+                            <div class="input-container">
+                                <i class="fas fa-angle-right input-icon"></i>
+                                <input type="number" id="angleC" placeholder="输入角度" min="0" max="180" step="0.01">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="error-message" id="error-message">
+                    请输入有效的三角形参数！
+                </div>
+                
+                <button class="calculate-btn" id="calculate-btn">
+                    <i class="fas fa-calculator"></i> 计算三角形属性
+                </button>
+            </div>
+            
+            <div class="panel">
+                <h2 class="section-title"><i class="fas fa-drafting-compass"></i> 三角形可视化</h2>
+                <div class="visual-toggle">
+                    <button class="visual-btn" id="incircle-btn">
+                        <i class="fas fa-circle"></i> 内切圆
+                    </button>
+                    <button class="visual-btn" id="circumcircle-btn">
+                        <i class="fas fa-circle-notch"></i> 外接圆
+                    </button>
+                    <button class="visual-btn" id="altitude-btn">
+                        <i class="fas fa-arrow-up"></i> 垂高
+                    </button>
+                    <button class="visual-btn" id="centers-btn">
+                        <i class="fas fa-crosshairs"></i> 四心
+                    </button>
+                    <button class="visual-btn" id="square-btn">
+                        <i class="fas fa-square"></i> 内最大正方形
+                    </button>
+                </div>
+                <div class="canvas-container">
+                    <canvas id="triangleCanvas" width="500" height="400"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="results">
+            <h2 class="section-title"><i class="fas fa-chart-bar"></i> 计算结果</h2>
+            <div class="results-grid">
+                <div class="result-card">
+                    <div class="result-title">边 a</div>
+                    <div class="result-value"><span id="sideA-value">5.00</span> <span class="result-unit">cm</span></div>
+                </div>
+                <div class="result-card">
+                    <div class="result-title">边 b</div>
+                    <div class="result-value"><span id="sideB-value">5.00</span> <span class="result-unit">cm</span></div>
+                </div>
+                <div class="result-card">
+                    <div class="result-title">边 c</div>
+                    <div class="result-value"><span id="sideC-value">5.00</span> <span class="result-unit">cm</span></div>
+                </div>
+                <div class="result-card">
+                    <div class="result-title">角 A</div>
+                    <div class="result-value"><span id="angleA-value">60.00</span> <span class="result-unit">°</span></div>
+                </div>
+                <div class="result-card">
+                    <div class="result-title">角 B</div>
+                    <div class="result-value"><span id="angleB-value">60.00</span> <span class="result-unit">°</span></div>
+                </div>
+                <div class="result-card">
+                    <div class="result-title">角 C</div>
+                    <div class="result-value"><span id="angleC-value">60.00</span> <span class="result-unit">°</span></div>
+                </div>
+                <div class="result-card">
+                    <div class="result-title">周长</div>
+                    <div class="result-value"><span id="perimeter-value">15.00</span> <span class="result-unit">cm</span></div>
+                </div>
+                <div class="result-card">
+                    <div class="result-title">面积</div>
+                    <div class="result-value"><span id="area-value">10.83</span> <span class="result-unit">cm²</span></div>
+                </div>
+                <div class="result-card">
+                    <div class="result-title">内切圆半径</div>
+                    <div class="result-value"><span id="inradius-value">1.44</span> <span class="result-unit">cm</span></div>
+                </div>
+                <div class="result-card">
+                    <div class="result-title">外接圆半径</div>
+                    <div class="result-value"><span id="circumradius-value">2.89</span> <span class="result-unit">cm</span></div>
+                </div>
+                <div class="result-card">
+                    <div class="result-title">垂高 (h<sub>a</sub>)</div>
+                    <div class="result-value"><span id="altitudeA-value">4.33</span> <span class="result-unit">cm</span></div>
+                </div>
+                <div class="result-card">
+                    <div class="result-title">内最大正方形边长</div>
+                    <div class="result-value"><span id="square-side-value">2.50</span> <span class="result-unit">cm</span></div>
+                </div>
+            </div>
+            
+            <div class="result-section">
+                <h3 class="result-section-title"><i class="fas fa-crosshairs"></i> 三角形四心</h3>
+                <div class="result-grid">
+                    <div class="result-item">
+                        <div class="result-item-title">重心 (G)</div>
+                        <div class="result-item-value">(200, 175)</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-item-title">垂心 (H)</div>
+                        <div class="result-item-value">(200, 175)</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-item-title">外心 (O)</div>
+                        <div class="result-item-value">(200, 175)</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-item-title">内心 (I)</div>
+                        <div class="result-item-value">(200, 175)</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-item-title">欧拉线</div>
+                        <div class="result-item-value">重心、垂心、外心共线</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="result-section">
+                <h3 class="result-section-title"><i class="fas fa-ruler-combined"></i> 垂足三角形属性</h3>
+                <div class="result-grid">
+                    <div class="result-item">
+                        <div class="result-item-title">垂足三角形周长</div>
+                        <div class="result-item-value">6.50 cm</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-item-title">垂足三角形面积</div>
+                        <div class="result-item-value">1.56 cm²</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-item-title">垂足位置 (BC边)</div>
+                        <div class="result-item-value">(150, 250)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="instructions">
+            <h3><i class="fas fa-info-circle"></i> 使用说明</h3>
+            <ul>
+                <li><strong>SSS模式</strong>：输入三条边的长度来计算三角形</li>
+                <li><strong>SAS模式</strong>：输入两条边及其夹角来计算三角形（如边a、边b和角C）</li>
+                <li><strong>ASA模式</strong>：输入两个角及其夹边来计算三角形（如角A、角B和边c）</li>
+                <li><strong>SAA模式</strong>：输入两个角及一条边（非夹边）来计算三角形（如角A、角B和边a）</li>
+                <li><strong>SSA模式</strong>：输入两条边及一个非夹角（如边a、边b和角A）</li>
+                <li>所有角度单位为度（°），边长单位可自定义</li>
+                <li>点击"计算三角形属性"按钮后，结果将显示在下方并更新可视化</li>
+                <li>点击上方按钮可显示/隐藏内切圆、外接圆、垂高、四心和内最大正方形</li>
+                <li><strong>新增功能</strong>：计算结果中显示内切圆和外接圆的半径和面积</li>
+                <li><strong>新增功能</strong>：显示三角形四心（重心、垂心、外心、内心）</li>
+                <li><strong>新增功能</strong>：计算并显示内最大正方形</li>
+            </ul>
+        </div>
+        
+        <div class="footer">
+            <p>© 2025 Ajeossi开发 | 高级三角形计算工具 </p>
+        </div>
+    </div>
+
+    <script>
+        // 获取Canvas元素和上下文
+        const canvas = document.getElementById('triangleCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // 获取DOM元素
+        const modeButtons = document.querySelectorAll('.mode-btn');
+        const modeInfos = document.querySelectorAll('.mode-info');
+        const errorMessage = document.getElementById('error-message');
+        const calculateBtn = document.getElementById('calculate-btn');
+        const incircleBtn = document.getElementById('incircle-btn');
+        const circumcircleBtn = document.getElementById('circumcircle-btn');
+        const altitudeBtn = document.getElementById('altitude-btn');
+        const centersBtn = document.getElementById('centers-btn');
+        const squareBtn = document.getElementById('square-btn');
+        
+        // 输入元素
+        const sideAInput = document.getElementById('sideA');
+        const sideBInput = document.getElementById('sideB');
+        const sideCInput = document.getElementById('sideC');
+        const angleAInput = document.getElementById('angleA');
+        const angleBInput = document.getElementById('angleB');
+        const angleCInput = document.getElementById('angleC');
+        
+        // 结果元素
+        const sideAValue = document.getElementById('sideA-value');
+        const sideBValue = document.getElementById('sideB-value');
+        const sideCValue = document.getElementById('sideC-value');
+        const angleAValue = document.getElementById('angleA-value');
+        const angleBValue = document.getElementById('angleB-value');
+        const angleCValue = document.getElementById('angleC-value');
+        const perimeterValue = document.getElementById('perimeter-value');
+        const areaValue = document.getElementById('area-value');
+        const inradiusValue = document.getElementById('inradius-value');
+        const circumradiusValue = document.getElementById('circumradius-value');
+        const altitudeAValue = document.getElementById('altitudeA-value');
+        const squareSideValue = document.getElementById('square-side-value');
+        
+        // 当前模式
+        let currentMode = 'sss';
+        let showIncircle = false;
+        let showCircumcircle = false;
+        let showAltitude = false;
+        let showCenters = false;
+        let showSquare = false;
+        
+        // 设置Canvas尺寸为容器尺寸
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+            drawTriangle(5, 5, 5); // 绘制等边三角形
+        }
+        
+        // 绘制三角形函数
+        function drawTriangle(a, b, c) {
+            // 清除Canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 计算三角形内角（使用余弦定理）
+            const angleA = Math.acos((b * b + c * c - a * a) / (2 * b * c)) * (180 / Math.PI);
+            const angleB = Math.acos((a * a + c * c - b * b) / (2 * a * c)) * (180 / Math.PI);
+            const angleC = 180 - angleA - angleB;
+            
+            // 计算缩放比例以适应Canvas
+            const maxSide = Math.max(a, b, c);
+            const scale = Math.min(canvas.width, canvas.height) * 0.7 / maxSide;
+            
+            // 计算三角形的点（从中心开始）
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2 - 40; // 下部空间增加
+            
+            // 点A在顶部，点B在左下方，点C在右下方
+            const pointA = {
+                x: centerX,
+                y: centerY - (c * 0.4) * scale
+            };
+            
+            const pointB = {
+                x: centerX - (a / 2) * scale,
+                y: centerY + (b * 0.6) * scale
+            };
+            
+            const pointC = {
+                x: centerX + (a / 2) * scale,
+                y: centerY + (b * 0.6) * scale
+            };
+            
+            // 绘制三角形
+            ctx.beginPath();
+            ctx.moveTo(pointA.x, pointA.y);
+            ctx.lineTo(pointB.x, pointB.y);
+            ctx.lineTo(pointC.x, pointC.y);
+            ctx.closePath();
+            
+            // 设置样式
+            ctx.strokeStyle = '#3949ab';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            
+            // 计算周长和面积
+            const s = (a + b + c) / 2;
+            const area = Math.sqrt(s * (s - a) * (s - b) * (s - c));
+            
+            // 计算内切圆和外接圆
+            // 内切圆（内心）
+            const incenter = {
+                x: (a * pointA.x + b * pointB.x + c * pointC.x) / (a + b + c),
+                y: (a * pointA.y + b * pointB.y + c * pointC.y) / (a + b + c)
+            };
+            const inradius = area / s;
+            
+            // 外接圆（外心）
+            const D = 2 * (pointA.x * (pointB.y - pointC.y) + 
+                          pointB.x * (pointC.y - pointA.y) + 
+                          pointC.x * (pointA.y - pointB.y));
+            
+            const circumcenter = {
+                x: ((pointA.x * pointA.x + pointA.y * pointA.y) * (pointB.y - pointC.y) +
+                    (pointB.x * pointB.x + pointB.y * pointB.y) * (pointC.y - pointA.y) +
+                    (pointC.x * pointC.x + pointC.y * pointC.y) * (pointA.y - pointB.y)) / D,
+                y: ((pointA.x * pointA.x + pointA.y * pointA.y) * (pointC.x - pointB.x) +
+                    (pointB.x * pointB.x + pointB.y * pointB.y) * (pointA.x - pointC.x) +
+                    (pointC.x * pointC.x + pointC.y * pointC.y) * (pointB.x - pointA.x)) / D
+            };
+            const circumradius = (a * b * c) / (4 * area);
+            
+            // 计算重心（三个顶点的平均值）
+            const centroid = {
+                x: (pointA.x + pointB.x + pointC.x) / 3,
+                y: (pointA.y + pointB.y + pointC.y) / 3
+            };
+            
+            // 计算垂心（利用欧拉线关系）
+            const orthocenter = {
+                x: 3 * centroid.x - 2 * circumcenter.x,
+                y: 3 * centroid.y - 2 * circumcenter.y
+            };
+            
+            // 计算垂足（从A到BC边的垂足）
+            const footA = calculateFoot(pointA, pointB, pointC);
+            
+            // 计算内最大正方形（假设在BC边上）
+            const squareSide = calculateMaxSquare(a, b, c, area);
+            
+            // 更新结果面板
+            altitudeAValue.textContent = (2 * area / a).toFixed(2);
+            squareSideValue.textContent = squareSide.toFixed(2);
+            
+            // 绘制顶点标签
+            ctx.fillStyle = '#1a237e';
+            ctx.font = 'bold 18px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+            ctx.fillText('A', pointA.x, pointA.y -30);
+            ctx.fillText('B', pointB.x - 20, pointB.y +1);
+            ctx.fillText('C', pointC.x + 22, pointC.y + 1);
+            
+            // 绘制边长
+            ctx.font = 'bold 20px Arial';
+            ctx.fillStyle = '#3949ab';
+            
+            // 边AB
+            const midAB = {
+                x: (pointA.x + pointB.x) / 2,
+                y: (pointA.y + pointB.y) / 2
+            };
+            
+            // 计算AB边的法线方向
+            const abAngle = Math.atan2(pointB.y - pointA.y, pointB.x - pointA.x);
+            const abNormalX = Math.sin(abAngle);
+            const abNormalY = -Math.cos(abAngle);
+            
+            ctx.fillText(`${c.toFixed(2)}`, midAB.x + abNormalX * -50, midAB.y + abNormalY * 15);
+            
+            // 边AC
+            const midAC = {
+                x: (pointA.x + pointC.x) / 2,
+                y: (pointA.y + pointC.y) / 2
+            };
+            
+            // 计算AC边的法线方向
+            const acAngle = Math.atan2(pointC.y - pointA.y, pointC.x - pointA.x);
+            const acNormalX = Math.sin(acAngle);
+            const acNormalY = -Math.cos(acAngle);
+            
+            ctx.fillText(`${b.toFixed(2)}`, midAC.x + acNormalX * 40, midAC.y + acNormalY * 15);
+            
+            // 边BC
+            const midBC = {
+                x: (pointB.x + pointC.x) / 2,
+                y: (pointB.y + pointC.y) / 2
+            };
+            
+            // 计算BC边的法线方向
+            const bcAngle = Math.atan2(pointC.y - pointB.y, pointC.x - pointB.x);
+            const bcNormalX = Math.sin(bcAngle);
+            const bcNormalY = -Math.cos(bcAngle);
+            
+            ctx.fillText(`${a.toFixed(2)}`, midBC.x + bcNormalX * 15, midBC.y + bcNormalY * 15);
+            
+            // 绘制角度
+            drawAngle(ctx, pointA, pointB, pointC, angleA);
+            drawAngle(ctx, pointB, pointA, pointC, angleB);
+            drawAngle(ctx, pointC, pointA, pointB, angleC);
+            
+            // 绘制内切圆
+            if (showIncircle) {
+                ctx.beginPath();
+                ctx.arc(incenter.x, incenter.y, inradius * scale, 0, 2 * Math.PI);
+                ctx.strokeStyle = '#e91e63';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 3]);
+                ctx.stroke();
+                ctx.setLineDash([]);
+                
+                // 标注
+                ctx.fillStyle = '#e91e63';
+                ctx.font = 'bold 14px Arial';
+                ctx.fillText(`内切圆 r=${inradius.toFixed(2)}`, incenter.x+100, incenter.y - inradius * scale - 15);
+            }
+            
+            // 绘制外接圆
+            if (showCircumcircle) {
+                ctx.beginPath();
+                ctx.arc(circumcenter.x, circumcenter.y, circumradius * scale, 0, 2 * Math.PI);
+                ctx.strokeStyle = '#4caf50';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 3]);
+                ctx.stroke();
+                ctx.setLineDash([]);
+                
+                // 标注
+                ctx.fillStyle = '#4caf50';
+                ctx.font = 'bold 14px Arial';
+                ctx.fillText(`外接圆 R=${circumradius.toFixed(2)}`, circumcenter.x+100, circumcenter.y - circumradius * scale - 20);
+            }
+            
+            // 绘制垂高
+            if (showAltitude) {
+                // 从A到BC的垂线
+                ctx.beginPath();
+                ctx.moveTo(pointA.x, pointA.y);
+                ctx.lineTo(footA.x, footA.y);
+                ctx.strokeStyle = '#ff9800';
+                ctx.lineWidth = 1.5;
+                ctx.setLineDash([5, 3]);
+                ctx.stroke();
+                ctx.setLineDash([]);
+                
+                // 垂足标记
+                ctx.beginPath();
+                ctx.arc(footA.x, footA.y, 4, 0, 2 * Math.PI);
+                ctx.fillStyle = '#ff9800';
+                ctx.fill();
+                
+                // 绘制垂足直角符号
+                const symbolSize = 8;
+                ctx.beginPath();
+                ctx.moveTo(footA.x, footA.y);
+                ctx.lineTo(footA.x - symbolSize, footA.y);
+                ctx.lineTo(footA.x - symbolSize, footA.y + symbolSize);
+                ctx.strokeStyle = '#ff9800';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+                
+                // 标注垂高尺寸
+                const altitude = (2 * area / a).toFixed(2);
+                const midAltitudeX = (pointA.x + footA.x) / 2;
+                const midAltitudeY = (pointA.y + footA.y) / 2;
+                
+                ctx.fillStyle = '#ff9800';
+                ctx.font = 'bold 14px Arial';
+                ctx.fillText(`垂高 h=${altitude}`, midAltitudeX + 10, midAltitudeY - 10);
+            }
+            
+            // 绘制四心
+            if (showCenters) {
+                // 重心
+                drawPoint(centroid, '重心', '#9c27b0');
+                
+                // 垂心
+                drawPoint(orthocenter, '垂心', '#f44336');
+                
+                // 外心
+                drawPoint(circumcenter, '外心', '#4caf50');
+                
+                // 内心
+                drawPoint(incenter, '内心', '#e91e63');
+                
+                // 绘制欧拉线（重心-垂心-外心）
+                ctx.beginPath();
+                ctx.moveTo(orthocenter.x, orthocenter.y);
+                ctx.lineTo(centroid.x, centroid.y);
+                ctx.lineTo(circumcenter.x, circumcenter.y);
+                ctx.strokeStyle = '#607d8b';
+                ctx.lineWidth = 1;
+                ctx.setLineDash([5, 3]);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+            
+            // 绘制内最大正方形
+            if (showSquare && squareSide > 0) {
+                // 计算正方形位置（在BC边上）
+                const h = 2 * area / a; // BC边上的高
+                const ratio = squareSide / a;
+                
+                // 计算正方形位置（使用相似三角形）
+                const startOffset = (a - squareSide) / 2;
+                const startX = pointB.x + (pointC.x - pointB.x) * (startOffset / a);
+                const startY = pointB.y + (pointC.y - pointB.y) * (startOffset / a);
+                
+                // 计算正方形顶点
+                const squarePoints = [
+                    { 
+                        x: startX, 
+                        y: startY 
+                    },
+                    { 
+                        x: startX + (pointC.x - pointB.x) * ratio, 
+                        y: startY 
+                    },
+                    { 
+                        x: startX + (pointC.x - pointB.x) * ratio, 
+                        y: startY - squareSide * scale 
+                    },
+                    { 
+                        x: startX, 
+                        y: startY - squareSide * scale 
+                    }
+                ];
+                
+                // 绘制正方形
+                ctx.beginPath();
+                ctx.moveTo(squarePoints[0].x, squarePoints[0].y);
+                for (let i = 1; i < squarePoints.length; i++) {
+                    ctx.lineTo(squarePoints[i].x, squarePoints[i].y);
+                }
+                ctx.closePath();
+                
+                ctx.strokeStyle = '#2196f3';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                ctx.fillStyle = 'rgba(33, 150, 243, 0.1)';
+                ctx.fill();
+                
+                // 标注
+                ctx.fillStyle = '#2196f3';
+                ctx.font = 'bold 14px Arial';
+                ctx.fillText(`边长: ${squareSide.toFixed(2)}`, 
+                    (squarePoints[0].x + squarePoints[2].x) / 2,
+                    (squarePoints[0].y + squarePoints[2].y) / 2
+                );
+            }
+            
+            // 绘制点的辅助函数
+            function drawPoint(point, label, color) {
+                ctx.beginPath();
+                ctx.arc(point.x, point.y, 6, 0, 2 * Math.PI);
+                ctx.fillStyle = color;
+                ctx.fill();
+                
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                ctx.fillStyle = color;
+                ctx.font = 'bold 14px Arial';
+                ctx.fillText(label, point.x + 10, point.y - 10);
+            }
+            
+            // 计算垂足
+            function calculateFoot(P, A, B) {
+                const AP = { x: P.x - A.x, y: P.y - A.y };
+                const AB = { x: B.x - A.x, y: B.y - A.y };
+                const ab2 = AB.x * AB.x + AB.y * AB.y;
+                const ap_ab = AP.x * AB.x + AP.y * AB.y;
+                const t = ap_ab / ab2;
+                
+                return {
+                    x: A.x + AB.x * t,
+                    y: A.y + AB.y * t
+                };
+            }
+            
+            // 计算内最大正方形（简化版）
+            function calculateMaxSquare(a, b, c, area) {
+                // 计算高度
+                const h = 2 * area / a;
+                // 利用相似三角形计算正方形边长
+                return (h * a) / (a + h);
+            }
+        }
+        
+        // 绘制角度标记
+        function drawAngle(ctx, vertex, point1, point2, angle) {
+            const radius = 12;
+            const startAngle = Math.atan2(point1.y - vertex.y, point1.x - vertex.x);
+            const endAngle = Math.atan2(point2.y - vertex.y, point2.x - vertex.x);
+            
+            ctx.beginPath();
+            ctx.arc(vertex.x, vertex.y, radius, startAngle, endAngle, angle > 180);
+            ctx.strokeStyle = '#00bcd4';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // 绘制角度文本
+            const textAngle = (startAngle + endAngle) / 2;
+            const textRadius = radius + 12;
+            const textX = vertex.x + Math.cos(textAngle) * textRadius;
+            const textY = vertex.y + Math.sin(textAngle) * textRadius;
+            
+            ctx.fillStyle = '#0097a7';
+            ctx.font = 'bold 20px Arial';
+            ctx.fillText(`${angle.toFixed(2)}°`, textX + 50, textY-15);
+        }
+        
+        // 模式切换
+        modeButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                modeButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                
+                modeInfos.forEach(info => info.classList.remove('active'));
+                document.getElementById(`${button.dataset.mode}-info`).classList.add('active');
+                
+                currentMode = button.dataset.mode;
+                updateInputsByMode();
+                errorMessage.style.display = 'none';
+            });
+        });
+        
+        // 根据模式更新输入框状态
+        function updateInputsByMode() {
+            // 重置所有输入框状态
+            sideAInput.disabled = false;
+            sideBInput.disabled = false;
+            sideCInput.disabled = false;
+            angleAInput.disabled = false;
+            angleBInput.disabled = false;
+            angleCInput.disabled = false;
+            
+            // 清除非活动输入框的值
+            sideAInput.value = '';
+            sideBInput.value = '';
+            sideCInput.value = '';
+            angleAInput.value = '';
+            angleBInput.value = '';
+            angleCInput.value = '';
+            
+            // 根据模式禁用输入框
+            switch (currentMode) {
+                case 'sss':
+                    angleAInput.disabled = true;
+                    angleBInput.disabled = true;
+                    angleCInput.disabled = true;
+                    break;
+                case 'sas':
+                    sideCInput.disabled = true;
+                    angleAInput.disabled = true;
+                    angleBInput.disabled = true;
+                    break;
+                case 'asa':
+                    sideAInput.disabled = true;
+                    sideBInput.disabled = true;
+                    angleCInput.disabled = true;
+                    break;
+                case 'saa':
+                    sideBInput.disabled = true;
+                    sideCInput.disabled = true;
+                    angleCInput.disabled = true;
+                    break;
+                case 'ssa':
+                    sideCInput.disabled = true;
+                    angleBInput.disabled = true;
+                    angleCInput.disabled = true;
+                    break;
+            }
+        }
+        
+        // 计算三角形
+        function calculateTriangle() {
+            // 获取输入值
+            const sideA = parseFloat(sideAInput.value) || 0;
+            const sideB = parseFloat(sideBInput.value) || 0;
+            const sideC = parseFloat(sideCInput.value) || 0;
+            const angleA = parseFloat(angleAInput.value) || 0;
+            const angleB = parseFloat(angleBInput.value) || 0;
+            const angleC = parseFloat(angleCInput.value) || 0;
+            
+            let calculatedSideA = sideA;
+            let calculatedSideB = sideB;
+            let calculatedSideC = sideC;
+            let calculatedAngleA = angleA;
+            let calculatedAngleB = angleB;
+            let calculatedAngleC = angleC;
+            
+            // 验证输入
+            let isValid = true;
+            let errorMsg = '';
+            
+            switch (currentMode) {
+                case 'sss':
+                    if (sideA <= 0 || sideB <= 0 || sideC <= 0) {
+                        isValid = false;
+                        errorMsg = "所有边长必须大于0";
+                    } else if (sideA + sideB <= sideC || 
+                               sideA + sideC <= sideB || 
+                               sideB + sideC <= sideA) {
+                        isValid = false;
+                        errorMsg = "输入的三边无法构成三角形";
+                    } else {
+                        // 使用余弦定理计算角度
+                        calculatedAngleA = Math.acos((sideB*sideB + sideC*sideC - sideA*sideA) / (2*sideB*sideC)) * (180/Math.PI);
+                        calculatedAngleB = Math.acos((sideA*sideA + sideC*sideC - sideB*sideB) / (2*sideA*sideC)) * (180/Math.PI);
+                        calculatedAngleC = 180 - calculatedAngleA - calculatedAngleB;
+                    }
+                    break;
+                    
+                case 'sas':
+                    if (sideA <= 0 || sideB <= 0 || angleC <= 0 || angleC >= 180) {
+                        isValid = false;
+                        errorMsg = "两边必须大于0，夹角在0-180度之间";
+                    } else {
+                        // 使用余弦定理计算第三边
+                        calculatedSideC = Math.sqrt(sideA*sideA + sideB*sideB - 2*sideA*sideB*Math.cos(angleC * Math.PI/180));
+                        // 然后计算角度
+                        calculatedAngleA = Math.acos((sideB*sideB + calculatedSideC*calculatedSideC - sideA*sideA) / (2*sideB*calculatedSideC)) * (180/Math.PI);
+                        calculatedAngleB = Math.acos((sideA*sideA + calculatedSideC*calculatedSideC - sideB*sideB) / (2*sideA*calculatedSideC)) * (180/Math.PI);
+                        calculatedAngleC = angleC;
+                    }
+                    break;
+                    
+                case 'asa':
+                    if (angleA <= 0 || angleB <= 0 || sideC <= 0 || (angleA + angleB) >= 180) {
+                        isValid = false;
+                        errorMsg = "角度必须大于0且小于180度，边长大于0，两角和小于180度";
+                    } else {
+                        calculatedAngleC = 180 - angleA - angleB;
+                        // 使用正弦定理计算其他边
+                        calculatedSideA = (sideC * Math.sin(angleA * Math.PI/180)) / Math.sin(calculatedAngleC * Math.PI/180);
+                        calculatedSideB = (sideC * Math.sin(angleB * Math.PI/180)) / Math.sin(calculatedAngleC * Math.PI/180);
+                    }
+                    break;
+                    
+                case 'saa':
+                    if (angleA <= 0 || angleB <= 0 || sideA <= 0 || (angleA + angleB) >= 180) {
+                        isValid = false;
+                        errorMsg = "角度必须大于0且小于180度，边长大于0，两角和小于180度";
+                    } else {
+                        calculatedAngleC = 180 - angleA - angleB;
+                        // 使用正弦定理计算其他边
+                        calculatedSideB = (sideA * Math.sin(angleB * Math.PI/180)) / Math.sin(angleA * Math.PI/180);
+                        calculatedSideC = (sideA * Math.sin(calculatedAngleC * Math.PI/180)) / Math.sin(angleA * Math.PI/180);
+                    }
+                    break;
+                    
+                case 'ssa':
+                    if (sideA <= 0 || sideB <= 0 || angleA <= 0 || angleA >= 180) {
+                        isValid = false;
+                        errorMsg = "两边必须大于0，角度在0-180度之间";
+                    } else {
+                        // 使用正弦定理计算角B
+                        const sinB = (sideB * Math.sin(angleA * Math.PI/180)) / sideA;
+                        if (sinB > 1 || sinB < -1) {
+                            isValid = false;
+                            errorMsg = "无法构成三角形（正弦值超出范围）";
+                        } else {
+                            calculatedAngleB = Math.asin(sinB) * (180/Math.PI);
+                            calculatedAngleC = 180 - angleA - calculatedAngleB;
+                            calculatedSideC = (sideA * Math.sin(calculatedAngleC * Math.PI/180)) / Math.sin(angleA * Math.PI/180);
+                        }
+                    }
+                    break;
+            }
+            
+            if (!isValid) {
+                showError(errorMsg);
+                return;
+            }
+            
+            // 计算周长和面积
+            const perimeter = calculatedSideA + calculatedSideB + calculatedSideC;
+            const s = perimeter / 2;
+            const area = Math.sqrt(s * (s - calculatedSideA) * (s - calculatedSideB) * (s - calculatedSideC));
+            
+            // 计算内切圆和外接圆属性
+            const inradius = area / s;
+            const circumradius = (calculatedSideA * calculatedSideB * calculatedSideC) / (4 * area);
+            
+            // 更新结果
+            sideAValue.textContent = calculatedSideA.toFixed(2);
+            sideBValue.textContent = calculatedSideB.toFixed(2);
+            sideCValue.textContent = calculatedSideC.toFixed(2);
+            angleAValue.textContent = calculatedAngleA.toFixed(2);
+            angleBValue.textContent = calculatedAngleB.toFixed(2);
+            angleCValue.textContent = calculatedAngleC.toFixed(2);
+            perimeterValue.textContent = perimeter.toFixed(2);
+            areaValue.textContent = area.toFixed(2);
+            inradiusValue.textContent = inradius.toFixed(2);
+            circumradiusValue.textContent = circumradius.toFixed(2);
+            
+            // 高亮显示结果卡片
+            document.querySelectorAll('.result-card').forEach(card => {
+                card.classList.remove('highlight');
+                setTimeout(() => card.classList.add('highlight'), 100);
+            });
+            
+            // 更新可视化
+            drawTriangle(calculatedSideA, calculatedSideB, calculatedSideC);
+            
+            // 隐藏错误信息
+            errorMessage.style.display = 'none';
+        }
+        
+        // 显示错误
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+        }
+        
+        // 初始化和调整大小
+        window.addEventListener('load', () => {
+            resizeCanvas();
+            updateInputsByMode();
+        });
+        
+        window.addEventListener('resize', resizeCanvas);
+        
+        // 计算按钮事件
+        calculateBtn.addEventListener('click', calculateTriangle);
+        
+        // 可视化按钮事件
+        incircleBtn.addEventListener('click', () => {
+            showIncircle = !showIncircle;
+            incircleBtn.classList.toggle('active', showIncircle);
+            drawTriangle(
+                parseFloat(sideAValue.textContent) || 5,
+                parseFloat(sideBValue.textContent) || 5,
+                parseFloat(sideCValue.textContent) || 5
+            );
+        });
+        
+        circumcircleBtn.addEventListener('click', () => {
+            showCircumcircle = !showCircumcircle;
+            circumcircleBtn.classList.toggle('active', showCircumcircle);
+            drawTriangle(
+                parseFloat(sideAValue.textContent) || 5,
+                parseFloat(sideBValue.textContent) || 5,
+                parseFloat(sideCValue.textContent) || 5
+            );
+        });
+        
+        altitudeBtn.addEventListener('click', () => {
+            showAltitude = !showAltitude;
+            altitudeBtn.classList.toggle('active', showAltitude);
+            drawTriangle(
+                parseFloat(sideAValue.textContent) || 5,
+                parseFloat(sideBValue.textContent) || 5,
+                parseFloat(sideCValue.textContent) || 5
+            );
+        });
+        
+        centersBtn.addEventListener('click', () => {
+            showCenters = !showCenters;
+            centersBtn.classList.toggle('active', showCenters);
+            drawTriangle(
+                parseFloat(sideAValue.textContent) || 5,
+                parseFloat(sideBValue.textContent) || 5,
+                parseFloat(sideCValue.textContent) || 5
+            );
+        });
+        
+        squareBtn.addEventListener('click', () => {
+            showSquare = !showSquare;
+            squareBtn.classList.toggle('active', showSquare);
+            drawTriangle(
+                parseFloat(sideAValue.textContent) || 5,
+                parseFloat(sideBValue.textContent) || 5,
+                parseFloat(sideCValue.textContent) || 5
+            );
+        });
+        
+        // 初始绘制
+        resizeCanvas();
+    </script>
+</body>
+</html>

@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>铅酸蓄电池及配方</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        
+        .header {
+            background-color: #fff;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header h1 {
+            margin: 0;
+            color: #333;
+        }
+        
+        .header p {
+            margin-top: 5px;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 20px auto 0;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .tab-label {
+            padding: 15px 25px;
+            background-color: #f5f5f5;
+            color: #333;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            flex: 1;
+            text-align: center;
+            border-top: 3px solid transparent;
+        }
+        
+        .tab-label:hover {
+            background-color: #e0e0e0;
+        }
+        
+        .tab-label.active {
+            background-color: #fff;
+            border-top: 3px solid #4a90e2;
+            color: #4a90e2;
+        }
+        
+        .tab-content {
+            padding: 20px;
+        }
+        
+        .tab-content h2 {
+            margin-top: 0;
+            color: #333;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+            vertical-align: top;
+        }
+        
+        th {
+            background-color: #f2f2f2;
+        }
+        
+        .section-header {
+            font-weight: bold;
+            background-color: #e6e6e6;
+        }
+        
+        .image-links {
+            margin-top: 8px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .image-link {
+            color: #0066cc;
+            text-decoration: none;
+        }
+        
+        .image-link:hover {
+            text-decoration: underline;
+        }
+        
+        .component-name {
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        .numbered-images {
+            display: inline-flex;
+            gap: 10px;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>铅酸蓄电池及配方</h1>
+        <p>Ajeossi整理于2025.5.24</p>
+    </div>
+    
+    <div class="container">
+        <div class="tabs">
+            <div class="tab-label active" data-tab="tab1">铅酸蓄电池工艺</div>
+            <div class="tab-label" data-tab="tab2">常用配方表</div>
+			<div class="tab-label" data-tab="tab3">测试页面</div>
+        </div>
+        
+        <div class="tab-content" id="tab1">
+            <h2>铅酸蓄电池常见的两种设计对比</h2>
+            
+            <table>
+                <tr>
+                    <th>项目</th>
+                    <th>阀控式（VRLA）铅酸蓄电池</th>
+                    <th>富液式（Flooded）铅酸蓄电池</th>
+                </tr>
+                <tr>
+                    <td>装配特点</td>
+                    <td>
+                        ◼️紧装配<br>
+                        • 抑制活性物质脱落<br>
+                        • 降低内阻，提升效率<br>
+                        • 防止电解液分层<br>
+                        • 极板间距：0.5-1mm<br>
+                        • 隔板类型：AGM/胶体<br>
+                        • 压缩率：15-20%
+                    </td>
+                    <td>
+                        ◼️松装配<br>
+                        • 降低制造成本<br>
+                        • 支持高倍率放电<br>
+                        • 便于电解液扩散<br>
+                        • 极板间距：1.5-3mm<br>
+                        • 隔板类型：PE/橡胶<br>
+                        • 电解液：自由流动
+                    </td>
+                </tr>
+                <tr>
+                    <td>应用场景</td>
+                    <td>
+                        ◼️固定型电池<br>
+                        • UPS/数据中心<br>
+                        • 通信基站<br>
+                        • 太阳能储能<br>
+                        • 电动摩托车<br>
+                        <br>
+                        ⚫稳定持续放电（低倍率）<br>
+                        ⚫长循环寿命（>5年）<br>
+                        ⚫免维护<br>
+                        ⚫成本较高（精密隔板、工艺复杂）<br>
+                        ⚫固定安装、低振动环境
+                    </td>
+                    <td>
+                        ◼️动力型电池<br>
+                        • 汽车启动电池<br>
+                        • 工业设备（叉车、拖拉机）<br>
+                        • 需维护的备用电源<br>
+                        <br>
+                        ⚫瞬时高倍率放电（如冷启动）<br>
+                        ⚫中等寿命（3-5年）<br>
+                        ⚫需定期维护<br>
+                        ⚫成本较低（材料用量少、工艺简单）<br>
+                        ⚫高振动、移动场景（车辆、工业设备）
+                    </td>
+                </tr>
+                <tr>
+                    <td>正负板合金成分</td>
+                    <td>
+                        🔹正板Pb-Ca-Sn (Ca:0.1%, Sn:1.2%)<br>
+                        🔹负板Pb-Ca (Ca:0.08%)<br>
+                        <br>
+                        ⚫风帆储能铅锡（Pb/Sn）正板（龚）：<br>
+                        铅（Pb）98.6612%，锡（Sn）1.21%，钙（Ca）0.0863%，铝（Al）0.0222%，硫（S）0.0141%，锑（Sb）<0.004%，硒（Se）0.0046%，磷（P）<0.001%，铋（Bi）0.00051%，银（Ag）0.0002%，镉（Cd）<0.0001%，砷（As）<0.0003%，金（Au）<0.0002%，铜（Cu）0.00016%，铁（Fe）<0.0001%，铟（In）<0.0001%，镍（Ni）<0.0001%，碲（Te）0.00049%，锌（Zn）0.00029%，钠（Na）0.00038%，钯（Pd）<0.0001<br>
+                        <br>
+                        ⚫风帆储能铅锡（Pb/Sn）负板（龚）：<br>
+                        铅 (Pb)98.5818%，锡 (Sn)0.228%，钙 (Ca)0.138%，铝 (Al)0.0212%，硫 (S)0.0184%，硒 (Se)0.0077%，磷 (P)<0.001%，银 (Ag)0.00027%，锑 (Sb)<0.0004%，铋 (Bi)0.00059%，镉 (Cd)<0.0001%，砷 (As)<0.0003%，金 (Au)0.00034%，铜 (Cu)0.00016%，铁 (Fe)<0.0001%，铟 (In)<0.0001%，镍 (Ni)<0.0001%，碲 (Te)0.00046%，锌 (Zn)0.00022%，钠 (Na)0.00055%，钯 (Pd)<0.0001%
+                    </td>
+                    <td>
+                        🔹正极板一般包含50%-60%的铅钙合金、20%-30%的氧化铅以及10%-20%的活性物质；<br>
+                        🔹负极板通常含有90%-95%的铅钙合金和5%-10%的活性物质。<br>
+                        <br>
+                        🔹正板Pb-Sb (Sb:3-6%)<br>
+                        🔹负板Pb-Ca/Sb (Ca:0.06%, Sb≤1%)<br>
+                        🔹正极板：Pb-Ca-Sn (Pb:98.6% ,Sn13%, Ca:0.07%, Al:0.026%)<br>
+                        🔹负极板：Pb-Ca-Sn (Pb:98.6% ,Sn0.3%, Ca:0.09%, Al:0.03%)<br>
+                        <br>
+                        ⚫汽车正板第一组（Pb/Sb）铸焊不沾锡工艺（龚）：<br>
+                        铅(Pb):96.734%，锑(Sb):2.5466%，锡(Sn):0.5778%，砷(As):0.0591%，镉(Cd):0.0016%，银(Ag):0.0022%，铋(Bi):0.0059%，锌(Zn):<0.003%，铝(Al):0.0016%，铁(Fe):0.0006%，镍(Ni):0.0008%，铟(In):<0.001%，碲(Te):<0.001%，硫(S):<0.005%，铜(Cu):0.0595%<br>
+                        <br>
+                        ⚫汽车正板第二组（Pb/Sb）铸焊不沾锡工艺（龚）：<br>
+                        铅(Pb):96.748%，锑(Sb):2.5363%，锡(Sn):0.5736%，砷(As):0.0594%，镉(Cd):0.0016%，银(Ag):0.0022%，铋(Bi):0.0060%，锌(Zn):<0.003%，铝(Al):0.0016%，铁(Fe):0.0016%，镍(Ni):0.0006%，铟(In):<0.001%，碲(Te):<0.001%，硫(S):<0.001%，铜(Cu):<0.005%<br>
+                        <br>
+                        ⚫汽车负板第二组（Pb/Sb）铸焊不沾锡工艺（龚）：铅（Pb）99.13-99.2%，锡（Sn）0.6-0.7%，钙（Ca）0.1-0.13%，铝（Al）0.02-0.03%，硫（S）0.001%
+                    </td>
+                </tr>
+                <tr>
+                    <td>正负板设计差异化及作用</td>
+                    <td>
+                        🔹抑制析氢<br>
+                        🔹匹配免维护需求<br>
+                        🔹降低自放电率<br>
+                        🔹提高安全性<br>
+                        🔹高氧化环境下需抗腐蚀<br>
+                        🔹抑制析氧副反应<br>
+                        🔹延长循环寿命<br>
+                        🔹减少水损耗
+                    </td>
+                    <td>
+                        🔹降低成本<br>
+                        🔹提升导电性<br>
+                        🔹支持大电流放电<br>
+                        🔹抗硫化<br>
+                        🔹增强机械强度<br>
+                        🔹适应深度放电<br>
+                        🔹支撑活性物质膨胀<br>
+                        🔹简化铸造工艺
+                    </td>
+                </tr>
+                <tr>
+                    <td>电池主体部分</td>
+                    <td>
+                        🔹电解液：液态硫酸吸附于AGM隔板或胶体固化（GEL），浓度约30%-40%，密度1.28-1.32g/cm³。
+                          免维护设计，无需补水，氧气复合效率高。
+                         <br>
+                        🔹隔板：材料为超细玻璃纤维（AGM）或气相二氧化硅胶体（GEL）。
+                                AGM隔板孔率>90%，压缩后保持电解液均匀吸附。<br>
+                        🔹外壳：材料为ABS工程塑料或强化聚丙烯（PP）。
+                                具备高密封性、防爆阀设计，耐压>20kPa。
+                                抗冲击、耐腐蚀，适应-40℃~60℃环境。
+                    </td>
+                    <td>
+                        🔹电解液：由纯硫酸和蒸馏水配制而成，硫酸浓度一般在27% -37%，对应电解液密度为1.24-1.30g/cm³。<br>
+                        🔹隔板：常用的隔板材料有木质、微孔橡胶、微孔塑料、玻璃纤维和纸板等，一般要求隔板的孔率为60%。<br>
+                        🔹外壳：制造外壳的材料一般有硬橡胶、聚丙烯塑料两种，具有耐酸、耐热、耐寒、耐振等特性。<br>
+                        <br>
+                        需要注意的是，不同厂家生产的汽车铅酸电池，以及不同型号的电池，原材料的具体成分和比例可能会有所差异
+                    </td>
+                </tr>
+                <tr>
+                    <td>装配类型</td>
+                    <td>
+                        ◼️紧装配：多采用玻璃纤维隔板（AGM）或胶体电解液（GEL），通过吸附电解液实现免维护，适用于数据中心备电等关键场景。<br>
+                        <br>
+                        • 防止极板变形：通过紧密压缩极板和隔板，减少充放电过程中活性物质的膨胀和脱落，延长循环寿命。<br>
+                        • 降低内阻：极板间距小，电解液分布更均匀，减少电阻，提升效率。<br>
+                        • 抑制电解液分层：减少电解液因重力导致的浓度不均（硫酸下沉），适合深度放电场景。<br>
+                        • 防短路：紧密结构减少极板震动导致的短路风险。
+                    </td>
+                    <td>
+                        ◼️松装配：<br>
+                        • 改善电解液扩散：更大的极板间距和孔隙率，加快电解液流动，支持高倍率放电。<br>
+                        • 降低成本：简化工艺，减少隔板材料用量，适合大规模生产。<br>
+                        • 散热优化：松结构利于热量散发，避免高温下性能衰退。
+                    </td>
+                </tr>
+                <tr>
+                    <td>电池特性</td>
+                    <td>
+                        ◼️阀控式VRLA电池（AGM隔板）特性<br>
+                        • 电解液形态：液态硫酸吸附于玻璃纤维隔板中（"半干态"）<br>
+                        • 氧复合效率：高（氧气通过隔板孔隙快速扩散至负极）<br>
+                        • 放电性能：支持高倍率放电（如汽车启动电流）<br>
+                        • 抗震动性：较好（紧装配+隔板固定极板）<br>
+                        • 温度适应性：低温性能好（电解液流动性强）<br>
+                        • 循环寿命：约300-500次（深循环型）<br>
+                        • 成本：较低<br>
+                        <br>
+                        ⚫适用场景：<br>
+                        适合需要 高功率输出、快速充电、低温环境 的场景，如：<br>
+                        汽车启停系统（Start-Stop）<br>
+                        高功率UPS电源<br>
+                        <br>
+                        ◼️阀控式VRLA电池（GEL胶体）特性<br>
+                        • 电解液形态：硫酸与二氧化硅形成胶体（固态/凝胶态）<br>
+                        • 氧复合效率：较低（胶体阻碍气体扩散，需依赖缓慢渗透）<br>
+                        • 放电性能：适合中低倍率、深循环放电（如太阳能储能）<br>
+                        • 抗震动性：极佳（胶体固化电解液，抗震性能优异）<br>
+                        • 温度适应性：高温性能优（胶体耐温性更强）<br>
+                        • 循环寿命：约500-800次（深循环型）<br>
+                        • 成本：较高<br>
+                        <br>
+                        ⚫适用场景：<br>
+                        适合 深循环、高温环境、长寿命需求 的场景，如：<br>
+                        太阳能储能系统<br>
+                        电动轮椅/高尔夫球车<br>
+                        离网电力系统
+                    </td>
+                    <td>
+                        ◼️富液式（Flooded）铅酸蓄电池 特性<br>
+      <br>
+      🔹电解液形态：自由流动液态硫酸<br>
+      🔹氧复合效率：无（需定期补水维护）<br>
+      🔹放电性能：瞬时高倍率放电（如冷启动电流>500A）<br>
+      🔹抗震动性：良好（松装配适应机械振动）<br>
+      🔹温度适应性：耐高温性一般（需通风散热）<br>
+      🔹循环寿命：约200-300次（浅循环）<br>
+      🔹成本：低（材料与工艺简单）<br>
+	  <br>
+      ⚫适用场景：<br>
+      适合 高倍率放电、频繁充放电、低成本需求 的场景，如：<br>
+      汽车启动电池（冷启动）<br>
+      工业叉车/拖拉机电源<br>
+      需维护的备用电源<br>
+      <br>
+      ◼️富液式（Flooded）特殊设计特性<br>
+      <br>
+      🔹电解液分层抑制：通过定期充电维护减缓硫酸下沉<br>
+      🔹极板腐蚀防护：高纯度铅合金降低自放电率<br>
+      🔹维护需求：需定期检查电解液液面及密度<br>
+      🔹散热设计：开放式结构利于自然对流降温<br>
+      ⚫补充说明：<br>
+	  <br>
+      富液式电池在高温或深度放电场景下需加强维护，以延长使用寿命。
+                    </td>
+                </tr>
+                <tr>
+                    <td>铸焊机焊汇流排</td>
+                    <td>
+					🔹铅锑合金：如Pb-Sb3铅锑合金，锑（Sb）含量2.5%-3.5%，铅（Pb）≥96%，杂质含量总和≤0.5%。<br>
+                    🔹典型工艺：铅（Pb）96.7%-96.8%，锑（Sb）2.5%-2.6%，锡（Sn）0.57%-0.58%。<br>
+                      特性：高导电性、抗蠕变，适用于免维护电池的铸焊工艺。<br>
+					</td>
+                    <td>
+                        🔹铅锑合金：如Pb-Sb8铅锑合金，锑（Sb）含量在7.5%-8.5%，其余为铅（Pb），杂质含量总和不超过0.3%，其中银（Ag）不大于0.0005%，铜（Cu）不大于0.001%，砷（As）不大于0.0005%，铋（Bi）不大于0.003%，锡（Sn）不大于0.001%，锌（Zn）不大于0.0005%，铁（Fe）不大于0.0005%。<br>
+                        <br>
+                        🔹铅钙合金：钙含量通常在0.1%左右，为改善性能还可能加入少量的铝、锡、铈等元素。例如，加入少量铝有保护钙的效果，锡能改善钝化膜的性能，铈可以改善铅酸电池板栅合金的阳极膜性质。<br>
+                        <br>
+                        🔹铅锑合金(Pb-Sb)光谱化学分析，铸焊不沾锡工艺（龚）：<br>
+                        铅(Pb):96.636%锑(Sb):3.0188%锡(Sn):0.1758%砷(As):0.1243镉(Cd):0.0014%银(Ag):0.0021%铋(Bi):0.0055%锌(Zn):<0.003%铝(Al):0.0016%铁(Fe):0.0006%镍(Ni):0.0012%铟(In):<0.001%碲(Te):<0.001%硫(S):<0.005%铜(Cu):0.0228%
+                    </td>
+                </tr>
+            </table>
+        </div>
+        
+        <div class="tab-content" id="tab2" style="display: none;">
+            <h2>常用配方表</h2>
+            
+            <table>
+                <caption></caption>
+                <thead>
+                    <tr>
+                        <th>项目</th>
+                        <th>用量</th>
+                        <th>操作说明</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- 脱模剂配方A部分 -->
+                    <tr class="section-header">
+                        <td colspan="3">
+                            铸板喷模剂配方 A（用金科力软木粉）
+                            <a href="https://cdn04132025.gitlink.org.cn/api/v1/repos/ajeo/gy/raw/滑石粉.png" class="image-link" target="_blank">配滑石粉</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>1. RO水(RO water)</td>
+                        <td>45L<br>
+						   【5L】</td>
+                        <td>将规定的水加到容器中加热到60℃。<br>Heat the specified water to 60℃.</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            2. 骨胶(ossecolla)
+                            <div class="image-links">
+                                <a href="https://cdn04132025.gitlink.org.cn/api/v1/repos/ajeo/gy/raw/骨胶包装.png" class="image-link" target="_blank">骨胶包装图</a>
+                                <a href="https://cdn04132025.gitlink.org.cn/api/v1/repos/ajeo/gy/raw/骨胶实物.png" class="image-link" target="_blank">骨胶实物图</a>
+                                <a href="https://cdn04132025.gitlink.org.cn/api/v1/repos/ajeo/gy/raw/骨胶说明.png" class="image-link" target="_blank">骨胶说明图</a>
+                            </div>
+                        </td>
+                        <td>630±50g<br>
+						    【70g】
+						</td>
+                        <td rowspan="2">加入骨胶、聚乙烯醇搅拌，加热至90℃以上，继续搅拌45分钟。<br>Add bone glue, polyvinyl alcohol, heat to 90℃ and continue stirring for 45 minutes.</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            3. 
+                            <a href="https://cdn04132025.gitlink.org.cn/api/v1/repos/ajeo/gy/raw/聚乙烯醇pva.png" class="image-link" target="_blank">
+                                聚乙烯醇(polyvinyl alcohol)
+                            </a>
+                            <span class="numbered-images">
+                                <a href="https://cdn04132025.gitlink.org.cn/api/v1/repos/ajeo/gy/raw/聚乙烯醇pva20-99.png" class="image-link" target="_blank">1</a>
+                                <a href="https://cdn04132025.gitlink.org.cn/api/v1/repos/ajeo/gy/raw/聚乙烯醇pva23-99.png" class="image-link" target="_blank">2</a>
+                            </span>
+                        </td>
+                        <td>180±50g<br>
+						   【20g】  </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            4. 
+                            <a href="https://cdn04132025.gitlink.org.cn/api/v1/repos/ajeo/gy/raw/软木粉.png" class="image-link" target="_blank">
+                                300/600目软木粉(Cork powder)
+                            </a>
+                        </td>
+                        <td>1200±300g<br>
+						    【130g】</td>
+                        <td>加入软木粉，搅匀即可使用。<br>Add the cork powder, stir well and use.</td>
+                    </tr>
+                    
+                    <!-- 通用助焊剂部分 -->
+                    <tr class="section-header">
+                        <td colspan="3">通用助焊剂</td>
+                    </tr>
+                    <tr>
+                        <td colspan="3">🔹油性助焊剂：由75％～81％的乙二醇、6％～12％的乙二酸和余量的聚合磷酸制成。更优比例是77％～79％的乙二醇、8％～10％的乙二酸和余量聚合磷酸。</td>
+                    </tr>
+                    <tr>
+                        <td colspan="3">🔹冲压极板助焊剂：按质量百分比，包括10％～35％的有机酸活化剂、0.1％～0.5％的表面活性剂、20％～65％的纯水和10％～25％的pH调节剂。</td>
+                    </tr>
+                    <tr>
+                        <td colspan="3">🔹通用助焊剂：由45％～55％的亚磷酸、0.5％～1.5％的表面活性剂、0.1％～0.2％的助溶剂、1.5％～2.5％的醇类、0.01‰～0.02‰的染色剂、0.1％～0.5％的添加剂和余量的溶剂组成。</td>
+                    </tr>
+                    <tr>
+                        <td colspan="3">🔹此外，还有由长链脂肪酸50％～70％、增粘剂20％～30％、表面活性剂1.0％～3.0％和余量载体溶剂制成的助焊剂。不同配方的助焊剂适用于不同的焊接工艺和材料，实际应用中可根据具体情况选择</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 标签切换功能
+            const tabLabels = document.querySelectorAll('.tab-label');
+            const tab1 = document.getElementById('tab1');
+            const tab2 = document.getElementById('tab2');
+            
+            tabLabels.forEach(label => {
+                label.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    
+                    // 更新标签样式
+                    tabLabels.forEach(lbl => {
+                        lbl.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                    
+                    // 显示对应内容
+                    if (tabId === 'tab1') {
+                        tab1.style.display = 'block';
+                        tab2.style.display = 'none';
+                    } else {
+                        tab1.style.display = 'none';
+                        tab2.style.display = 'block';
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

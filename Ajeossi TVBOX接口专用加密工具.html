@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ajeossi TVBOX接口专用加密工具</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .version {
+            font-size: 14px;
+            color: #2196F3;
+            text-align: center;
+            margin-top: -20px;
+            margin-bottom: 20px;
+        }
+        .panel {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        input[type="text"], input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        .file-upload {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+        }
+        .file-upload-btn {
+            border: 2px dashed #ccc;
+            border-radius: 4px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            background-color: #f9f9f9;
+            transition: all 0.3s;
+        }
+        .file-upload-btn:hover:not(.disabled) {
+            border-color: #4CAF50;
+            background-color: #f0fff0;
+        }
+        .file-upload-btn.disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+        .file-upload-input {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+        .result-area {
+            display: none;
+            margin-top: 20px;
+        }
+        .result-box {
+            margin-bottom: 20px;
+            position: relative;
+        }
+        .result-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        textarea {
+            width: 100%;
+            height: 120px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            resize: none;
+            font-family: Consolas, Monaco, monospace;
+            font-size: 14px;
+        }
+        .btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        .btn:hover {
+            background-color: #45a049;
+        }
+        .btn-download {
+            background-color: #2196F3;
+        }
+        .btn-download:hover {
+            background-color: #0b7dda;
+        }
+        .btn-copy {
+            background-color: #ff9800;
+        }
+        .btn-copy:hover {
+            background-color: #e68a00;
+        }
+        .btn-clear {
+            background-color: #f44336;
+        }
+        .btn-clear:hover {
+            background-color: #d32f2f;
+        }
+        .info-text {
+            font-size: 12px;
+            color: #777;
+            margin-top: 5px;
+        }
+        .image-preview {
+            max-width: 100%;
+            margin-top: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            display: none;
+        }
+        .image-processing {
+            margin-top: 20px;
+        }
+        .status-text {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #666;
+        }
+        .iv-display {
+            background-color: #f0f0f0;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .download-hint {
+            font-size: 12px;
+            color: #d32f2f;
+            background-color: #ffebee;
+            padding: 8px;
+            border-radius: 4px;
+            margin-top: 10px;
+            border-left: 3px solid #f44336;
+        }
+        .browser-warning {
+            display: none;
+            font-size: 12px;
+            color: #d32f2f;
+            margin-top: 5px;
+            padding: 8px;
+            background-color: #ffebee;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>💻TVBOX接口 🔓专用加密工具@Ajeossi</h1>
+    <div class="version">Enc2504_Ver1.2.8</div>
+    
+    <div class="panel">
+        <div class="form-group">
+            <label for="password">加密密码 (3-16位):</label>
+            <input type="text" id="password" value="20250527" placeholder="请输入3-16位密码">
+            <div class="info-text">密码长度不足16位将自动补零</div>
+        </div>
+        
+        <div class="form-group">
+            <label for="iv">IV偏移量 (16位):</label>
+            <div class="iv-display" id="iv">1234567891234000</div>
+        </div>
+        
+        <div class="form-group">
+            <label>文件AES加密模式:</label>
+            <div class="file-upload">
+                <div class="file-upload-btn" id="fileUploadLabel">
+                    点击或拖拽待加密文件到此处 (支持.json/.txt)
+                </div>
+                <input type="file" id="fileInput" class="file-upload-input" accept=".json,.txt">
+            </div>
+        </div>
+        
+        <div class="button-group">
+            <button class="btn btn-clear" onclick="clearAllData()">清除所有数据</button>
+        </div>
+    </div>
+    
+    <div id="resultContainer" class="panel result-area">
+        <div class="result-box">
+            <div class="result-title">AES加密数据:</div>
+            <textarea id="customFormatResult" readonly></textarea>
+            <button class="btn btn-copy" onclick="copyToClipboard('customFormatResult')">复制数据</button>
+            <button class="btn btn-download" onclick="downloadResult('customFormatResult', 'custom_format.txt')">下载数据</button>
+        </div>
+        
+        <div class="result-box">
+            <div class="result-title">Base64编码数据:</div>
+            <textarea id="base64Result" readonly></textarea>
+            <button class="btn btn-copy" onclick="copyToClipboard('base64Result')">复制数据</button>
+            <button class="btn btn-download" onclick="downloadResult('base64Result', 'base64_result.txt')">下载数据</button>
+        </div>
+    </div>
+
+    <div id="imageProcessing" class="panel image-processing">
+        <div class="result-title">图片隐写加密模式：</div>
+        <div class="form-group">
+            <label></label>
+            <div class="file-upload">
+                <div class="file-upload-btn disabled" id="imageUploadLabel">
+                    请先生成Base64编码，再上传待加密图片
+                </div>
+                <input type="file" id="imageInput" class="file-upload-input" accept="image/*" disabled>
+            </div>
+            <img id="imagePreview" class="image-preview" alt="图片预览">
+        </div>
+        <div id="statusText" class="status-text"></div>
+        <button id="downloadImageBtn" class="btn btn-download" style="display:none;">下载已加密图片</button>
+        <div class="download-hint">
+            <strong>下载提示：</strong> 
+            1. 默认保存为.bmp格式<br>
+            2. 在保存对话框中可手动修改扩展名为.png/.jpg<br>
+            3. 360浏览器用户可能需要手动输入完整文件名(如"文件名.png")
+        </div>
+        <div id="browserWarning" class="browser-warning">
+            检测到您正在使用360浏览器，下载时请手动输入完整文件名(如"文件名.png")
+        </div>
+    </div>
+
+    <script>
+        // 常量定义
+        const INITIAL_PASSWORD = "20250421"; // 初始密码常量
+        const INITIAL_IV = "1234567891234000"; // 初始IV常量
+        
+        // 全局变量
+        let base64Data = '';
+        let processedImageBlob = null;
+        
+        // DOM元素
+        const passwordInput = document.getElementById('password');
+        const ivElement = document.getElementById('iv');
+        const fileInput = document.getElementById('fileInput');
+        const fileUploadLabel = document.getElementById('fileUploadLabel');
+        const imageInput = document.getElementById('imageInput');
+        const imageUploadLabel = document.getElementById('imageUploadLabel');
+        const imagePreview = document.getElementById('imagePreview');
+        const downloadImageBtn = document.getElementById('downloadImageBtn');
+        const statusText = document.getElementById('statusText');
+        const browserWarning = document.getElementById('browserWarning');
+
+        // 初始化检测360浏览器
+        if (/QihooBrowser|QHBrowser|360EE|360SE/i.test(navigator.userAgent)) {
+            browserWarning.style.display = 'block';
+        }
+
+        // 文件上传处理
+        fileInput.addEventListener('change', function(e) {
+            if (this.files.length > 0) {
+                fileUploadLabel.textContent = this.files[0].name;
+                processFile(this.files[0]);
+            }
+        });
+        
+        // 拖拽功能
+        fileUploadLabel.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.style.borderColor = '#4CAF50';
+            this.style.backgroundColor = '#f0fff0';
+        });
+        
+        fileUploadLabel.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            this.style.borderColor = '#ccc';
+            this.style.backgroundColor = '#f9f9f9';
+        });
+        
+        fileUploadLabel.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.style.borderColor = '#ccc';
+            this.style.backgroundColor = '#f9f9f9';
+            
+            if (e.dataTransfer.files.length > 0) {
+                fileInput.files = e.dataTransfer.files;
+                fileUploadLabel.textContent = e.dataTransfer.files[0].name;
+                processFile(e.dataTransfer.files[0]);
+            }
+        });
+        
+        // 图片上传处理
+        imageInput.addEventListener('change', function(e) {
+            if (this.files.length > 0) {
+                imageUploadLabel.textContent = this.files[0].name;
+                statusText.textContent = "正在处理图片...";
+                processImage(this.files[0]);
+            }
+        });
+        
+        // 图片下载按钮点击事件
+        downloadImageBtn.addEventListener('click', function() {
+            downloadProcessedImage();
+        });
+        
+        // 优化的图片下载函数（兼容360浏览器）
+        function downloadProcessedImage() {
+            if (!processedImageBlob) {
+                alert('没有可下载的图片！');
+                return;
+            }
+            
+            try {
+                // 创建下载链接
+                const url = URL.createObjectURL(processedImageBlob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'encrypted_image.bmp';
+                
+                // 特殊处理360浏览器
+                if (/QihooBrowser|QHBrowser|360EE|360SE/i.test(navigator.userAgent)) {
+                    a.target = '_blank'; // 新窗口打开
+                    document.body.appendChild(a);
+                    a.click();
+                    setTimeout(() => {
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                    }, 100);
+                } else {
+                    // 标准浏览器处理
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    setTimeout(() => URL.revokeObjectURL(url), 100);
+                }
+            } catch (error) {
+                console.error('下载失败:', error);
+                alert('下载失败，请尝试使用其他浏览器或手动输入完整文件名');
+            }
+        }
+        
+        function enableImageUpload() {
+            imageUploadLabel.classList.remove('disabled');
+            imageUploadLabel.textContent = '点击或拖拽待加密图片到此处';
+            imageInput.disabled = false;
+        }
+        
+        function disableImageUpload() {
+            imageUploadLabel.classList.add('disabled');
+            imageUploadLabel.textContent = '请先生成Base64编码';
+            imageInput.disabled = true;
+        }
+        
+        function processFile(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const fileContent = e.target.result;
+                try {
+                    const data = JSON.parse(fileContent);
+                    encryptData(JSON.stringify(data));
+                } catch (error) {
+                    encryptData(fileContent);
+                }
+            };
+            reader.readAsText(file);
+        }
+        
+        function encryptData(data) {
+            let password = passwordInput.value.trim();
+            const iv = ivElement.textContent.trim();
+            
+            if (password.length < 3 || password.length > 16) {
+                alert('密码长度必须为3-16位！');
+                return;
+            }
+            
+            // 加密时使用的密码（补零到16位）
+            const encryptionPassword = password.padEnd(16, '0');
+            
+            if (iv.length !== 16) {
+                alert('IV长度必须为16位！');
+                return;
+            }
+            
+            const key = CryptoJS.enc.Utf8.parse(encryptionPassword);
+            
+            // 执行AES加密 (使用补零后的密码)
+            const encrypted = CryptoJS.AES.encrypt(
+                CryptoJS.enc.Utf8.parse(data),
+                key,
+                {
+                    iv: CryptoJS.enc.Utf8.parse(iv),
+                    mode: CryptoJS.mode.CBC,
+                    padding: CryptoJS.pad.Pkcs7
+                }
+            );
+            
+            // 构建自定义格式
+            // 密码去掉右侧的零后转HEX
+            const trimmedPassword = password.replace(/0+$/, '');
+            const passwordHex = CryptoJS.enc.Utf8.parse(trimmedPassword).toString(CryptoJS.enc.Hex);
+            
+            // IV去掉右侧的零后转HEX
+            const trimmedIV = iv.replace(/0+$/, '');
+            const ivHex = CryptoJS.enc.Utf8.parse(trimmedIV).toString(CryptoJS.enc.Hex);
+            
+            const customFormat = (
+                "2423" + // 固定前缀
+                passwordHex + // 去掉右侧零的密码HEX
+                "2324" + // 固定中缀
+                encrypted.ciphertext.toString(CryptoJS.enc.Hex) + // 加密数据
+                ivHex // 去掉右侧零的IV HEX
+            );
+            
+            // 生成Base64编码
+            base64Data = CryptoJS.enc.Base64.stringify(CryptoJS.enc.Utf8.parse(customFormat));
+            
+            document.getElementById('customFormatResult').value = customFormat;
+            document.getElementById('base64Result').value = base64Data;
+            document.getElementById('resultContainer').style.display = 'block';
+            
+            enableImageUpload();
+        }
+        
+        function processImage(file) {
+            const reader = new FileReader();
+            
+            // 读取为ArrayBuffer
+            reader.readAsArrayBuffer(file);
+            
+            reader.onload = function(e) {
+                // 1. 获取图片原始数据
+                const imageBuffer = e.target.result;
+                const imageBytes = new Uint8Array(imageBuffer);
+                
+                // 2. 将Base64数据转换为字节数组
+                const base64Bytes = new TextEncoder().encode(base64Data);
+                
+                // 3. 创建新ArrayBuffer（图片数据 + Base64数据）
+                const combinedBuffer = new ArrayBuffer(imageBytes.length + base64Bytes.length);
+                const combinedBytes = new Uint8Array(combinedBuffer);
+                
+                // 4. 直接拼接数据
+                combinedBytes.set(imageBytes, 0);
+                combinedBytes.set(base64Bytes, imageBytes.length);
+                
+                // 5. 创建Blob并保存到全局变量
+                processedImageBlob = new Blob([combinedBytes], {type: 'image/bmp'});
+                
+                // 显示预览（使用原始图片）
+                const previewReader = new FileReader();
+                previewReader.onload = function(e) {
+                    imagePreview.src = e.target.result;
+                    imagePreview.style.display = 'block';
+                };
+                previewReader.readAsDataURL(file);
+                
+                // 显示下载按钮
+                downloadImageBtn.style.display = 'inline-block';
+                
+                statusText.textContent = "图片隐写加密完成！";
+            };
+        }
+        
+        function downloadResult(textareaId, filename) {
+            const content = document.getElementById(textareaId).value;
+            if (!content) {
+                alert('没有可下载的内容！');
+                return;
+            }
+            
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+        
+        function copyToClipboard(textareaId) {
+            const textarea = document.getElementById(textareaId);
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                alert('已复制到剪贴板！');
+            } catch (err) {
+                console.error('复制失败:', err);
+                alert('复制失败，请手动选择文本后复制。');
+            }
+            window.getSelection().removeAllRanges();
+        }
+        
+        function clearAllData() {
+            // 重置密码和IV为初始值
+            passwordInput.value = INITIAL_PASSWORD;
+            ivElement.textContent = INITIAL_IV;
+            
+            // 清除文件输入
+            fileInput.value = '';
+            fileUploadLabel.textContent = '点击或拖拽待加密文件到此处 (支持.json/.txt)';
+            
+            // 清除图片输入
+            imageInput.value = '';
+            imageUploadLabel.textContent = '请先生成Base64编码，再上传待加密图片';
+            disableImageUpload();
+            
+            // 清除结果区域
+            document.getElementById('customFormatResult').value = '';
+            document.getElementById('base64Result').value = '';
+            document.getElementById('resultContainer').style.display = 'none';
+            
+            // 清除图片处理区域
+            imagePreview.src = '';
+            imagePreview.style.display = 'none';
+            statusText.textContent = '';
+            downloadImageBtn.style.display = 'none';
+            
+            // 释放Blob对象
+            processedImageBlob = null;
+            
+            // 重置全局变量
+            base64Data = '';
+            
+            alert('所有数据已重置，密码和IV已恢复为初始值！');
+        }
+    </script>
+</body>
+</html>

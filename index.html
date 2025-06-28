@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ajeossi空间</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" id="custom-favicon" href="" type="image/png">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #01a982, #007a63);
+            color: #333;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+        
+        /* 背景动画 */
+        .animation-wrapper {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+        
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            animation: float 15s infinite linear;
+        }
+        
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+            }
+            100% {
+                transform: translateY(-100px) rotate(360deg);
+            }
+        }
+        
+        /* 主容器 */
+        .wrapper {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px 20px 80px;
+            position: relative;
+            z-index: 10;
+        }
+        
+        /* 页眉样式 */
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 20px;
+            position: relative;
+        }
+        
+        .logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+            position: relative;
+        }
+        
+        /* 圆形遮罩容器 */
+        .logo-container {
+            width: 128px;
+            height: 128px;
+            border-radius: 50%;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.2);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            border: 3px solid rgba(255, 255, 255, 0.5);
+            transition: transform 0.3s ease;
+        }
+        
+        .logo-container:hover {
+            transform: scale(1.05);
+        }
+        
+        .logo-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+        
+        .logo i {
+            font-size: 2.8rem;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            color: #fff;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            margin-bottom: 10px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+        
+        .header p {
+            color: rgba(255, 255, 255, 0.85);
+            font-size: 1.8rem;
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.6;
+            background: rgba(0, 0, 0, 0.15);
+            padding: 12px 20px;
+            border-radius: 50px;
+            display: inline-block;
+            margin-top: 10px;
+        }
+        
+        /* 内容卡片 */
+        .content {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            margin-bottom: 30px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .content:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+        }
+        
+        .content-top {
+            padding: 20px;
+            background: linear-gradient(90deg, #01a982, #02b38d);
+            color: white;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .content-top::before {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+            transform: rotate(30deg);
+        }
+        
+        .content-top h2 {
+            font-size: 1.0rem;
+            margin-bottom: 5px;
+            font-weight: 600;
+            position: relative;
+        }
+        
+        .content-top .subtitle {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            position: relative;
+        }
+        
+        /* 资源列表 */
+        .resource-list {
+            padding: 20px;
+        }
+        
+        .resource-list ul {
+            list-style: none;
+        }
+        .resource-list li {
+          padding: 10px 0;
+          margin-bottom: 6px; /* 明确设置行距 */
+          border-bottom: 1px solid #f0f0f0;
+          transition: background-color 0.2s;
+        }
+       
+        .resource-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .resource-list li:hover {
+            background-color: #f9f9f9;
+        }
+        
+        /* 类别标题 - 统一样式 */
+        .category-title {
+            display: block;
+            font-size: 1.4rem;
+            color: #01a982;
+            font-weight: 700;
+            margin-bottom: 12px;
+            padding-left: 30px;
+            position: relative;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .category-title::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 50%;
+            height: 2px;
+            width: 20px;
+            background: #01a982;
+            opacity: 0.7;
+        }
+        
+        /* 类别链接容器 - 统一样式 */
+        .category-links {
+            display: flex;
+            flex-direction: column;
+            gap: 6px; /* 缩小行距 */
+            padding-left: 30px;
+        }
+        
+        /* 链接条目 - 统一样式 */
+        .link-item {
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+            padding: 8px 10px;
+            border-radius: 6px;
+            background: #f8f9fa;
+            cursor: pointer;
+        }
+        
+        .link-item:hover {
+            background: #e9f7f3;
+            transform: translateX(5px);
+        }
+        
+        .link-item i {
+            font-size: 1.1rem;
+            min-width: 28px;
+            text-align: center;
+            color: #01a982;
+        }
+        
+        .link-item .link-text {
+            flex: 1;
+        }
+        
+        .link-item .link-text .title {
+            font-weight: 600;
+            color: #333;
+            font-size: 1.2rem; /* 缩小字体 */
+        }
+        
+        /* 移除链接下划线 */
+        a {
+            text-decoration: none !important;
+        }
+        
+        a:hover {
+            text-decoration: underline !important;
+        }
+        
+        /* 重要提示 */
+        .important-note {
+            background: #fff9e6;
+            border-left: 4px solid #ffcc00;
+            padding: 18px;
+            margin: 20px 0 10px;
+            border-radius: 0 8px 8px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .important-note::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="none"/><path d="M0,50 L100,50 M50,0 L50,100" stroke="rgba(255,204,0,0.1)" stroke-width="2"/></svg>');
+            opacity: 0.3;
+        }
+        
+        .important-note h3 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #d35400;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+            position: relative;
+        }
+        
+        .important-note p {
+            font-size: 0.75rem;
+            margin-bottom: 5px;
+            line-height: 1.5;
+        }
+        
+        .important-note .red {
+            color: #e74c3c;
+            font-weight: 600;
+        }
+        
+        /* 页脚 */
+        .footer {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.85);
+            padding: 15px;
+            font-size: 0.65rem;
+            margin-top: 25px;
+            background: rgba(0, 0, 0, 0.15);
+            border-radius: 10px;
+            max-width: 600px;
+            margin: 25px auto 0;
+        }
+        
+        .footer a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .footer a:hover {
+            text-decoration: underline;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .logo-container {
+                width: 100px;
+                height: 100px;
+            }
+            
+            .content-top h2 {
+                font-size: 0.7rem;
+            }
+            .content-top .subtitle {
+            font-size: 0.6rem;
+			}
+            .category-title {
+                font-size: 1.3rem;
+                padding-left: 25px;
+            }
+            
+            .category-links {
+                padding-left: 25px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 1.7rem;
+            }
+            
+            .header p {
+                font-size: 0.9rem;
+                padding: 10px 15px;
+            }
+            
+            .content-top {
+                padding: 15px 10px;
+            }
+            
+            .resource-list {
+                padding: 15px 10px;
+            }
+            
+            .logo-container {
+                width: 80px;
+                height: 80px;
+            }
+            
+            .category-title {
+                font-size: 1.2rem;
+                padding-left: 20px;
+            }
+            
+            .category-title::before {
+                width: 15px;
+            }
+            
+            .category-links {
+                padding-left: 20px;
+            }
+            
+            .link-item {
+                padding: 8px 10px;
+            }
+            
+            .link-item .link-text .title {
+                font-size: 1.1rem;
+            }
+        }
+        
+        /* 动画效果 */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .content {
+            animation: fadeIn 0.6s ease-out forwards;
+        }
+        
+        .resource-list li:nth-child(1) { animation-delay: 0.1s; }
+        .resource-list li:nth-child(2) { animation-delay: 0.2s; }
+        .resource-list li:nth-child(3) { animation-delay: 0.3s; }
+        .resource-list li:nth-child(4) { animation-delay: 0.4s; }
+        
+        /* 图标加载状态 */
+        .logo-container .placeholder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            background: #007a63;
+            color: white;
+            font-size: 2.5rem;
+        }
+        
+        /* 装饰性元素 */
+        .decoration {
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+            z-index: -1;
+        }
+        
+        .decoration-1 {
+            top: 10%;
+            left: 5%;
+            width: 300px;
+            height: 300px;
+        }
+        
+        .decoration-2 {
+            bottom: 10%;
+            right: 5%;
+            width: 250px;
+            height: 250px;
+        }
+        
+        /* 旋转动画 */
+        @keyframes rotate {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        
+        .logo-container img.rotating {
+            animation: rotate 15s linear infinite;
+            animation-play-state: running;
+        }
+        
+        .logo-container:hover img.rotating {
+            animation-play-state: paused;
+        }
+        
+        /* 旋转提示文本 */
+        .rotation-tip {
+            position: absolute;
+            bottom: -25px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.7);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .logo-container:hover + .rotation-tip {
+            opacity: 1;
+        }
+
+        /* 复制成功提示 */
+        .copy-notification {
+            position: fixed;
+            top: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.85);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            z-index: 1000;
+            font-size: 16px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+        
+        .copy-notification.show {
+            opacity: 1;
+        }
+        
+        .copy-notification i {
+            margin-right: 8px;
+            color: #2ecc71;
+        }
+		/* 新增功能标签样式 */
+.new-feature {
+    font-size: 0.9rem;
+    color: #663366;
+    background: rgba(230, 126, 34, 0.1);
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: 5px;
+    display: inline-block;
+    vertical-align: middle;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 0.7; }
+    50% { opacity: 1; }
+    100% { opacity: 0.7; }
+}
+    </style>
+</head>
+<body>
+    <!-- 背景粒子 -->
+    <div class="animation-wrapper" id="particles"></div>
+    
+    <!-- 装饰性元素 -->
+    <div class="decoration decoration-1"></div>
+    <div class="decoration decoration-2"></div>
+    
+    <!-- 复制成功提示 -->
+    <div class="copy-notification" id="copyNotification">
+        <i class="fas fa-check-circle"></i>
+        <span>接口地址已复制到剪贴板！</span>
+    </div>
+    
+    <div class="wrapper">
+        <div class="header">
+            <div class="logo">
+                <div class="logo-container" id="logo-container">
+                    <div class="placeholder">
+                        <i class="fas fa-hotel"></i>
+                    </div>
+                </div>
+                <div class="rotation-tip">咋这么调皮呢</div>
+            </div>
+            <h1>Ajeossi</h1>
+            <p>凡心所向，素履所往，生如逆旅，一苇以航</p>
+        </div>
+        
+        <div class="content">
+            <div class="content-top">
+                <h2>请使用 Ctrl+D 收藏本页</h2>
+                <p class="subtitle">保存到浏览器收藏夹，随时访问资源</p>
+            </div>
+            
+            <div class="resource-list">
+                <ul>
+                    <!-- 平台资源类别 -->
+                    <li>
+                        <span class="category-title">平台资源</span>
+                        <div class="category-links">
+						    <a href="./售后平台登录.html" target="_blank" class="link-item">
+                                <i class="fas fa-network-wired"></i>
+                                <div class="link-text">
+                                    <div class="title">深蓝售后资源共享平台 <span class="new-feature">专属资源需授权访问</span></div>
+									
+                                </div>
+                            </a>							
+                            <a href="https://www.google.cn/intl/zh-CN/chrome/" target="_blank" class="link-item">
+                                <i class="fas fa-globe"></i>
+                                <div class="link-text">
+									<div class="title">Chrome浏览器 <span class="new-feature">推荐手机平板可以熄屏听本页音乐</span></div>
+                                </div>
+                            </a>
+                        </div>
+                    </li>
+					 <!-- 影音娱乐类别 -->
+                    <li>
+                        <span class="category-title">娱乐生活</span>
+                        <div class="category-links">
+						      <a href="https://ajeossi-tv.pages.dev" target="_blank" class="link-item">
+                                <i class="fas fa-lock"></i>
+                                <div class="link-text">
+                                    <div class="title">Ajeossi 媒体库（Cloudflare部署）<span class="new-feature">自由观影，畅享精彩</span></div>
+                                </div>
+                            </a>
+						     <a href="./play.html" target="_blank" class="link-item">
+                                <i class="fas fa-lock"></i>
+                                <div class="link-text">
+                                    <div class="title">Ajeossi 媒体库（需用QQ浏览器） <span class="new-feature">自建MF广播TV直播音视频点播</span></div>
+                                </div>
+                            </a>
+							 <a href="./yingyin-dh.html" target="_blank" class="link-item">
+                                <i class="fas fa-film"></i>
+                                <div class="link-text">
+                                    <div class="title">Ajeossi 影音导航 <span class="new-feature">一站式在线听音乐看电影追剧</span></div>
+                                </div>
+                            </a>
+							<a href="https://www.ilengcang.cc/" target="_blank" class="link-item">
+                                <i class="fas fa-futbol"></i>
+                                <div class="link-text">
+                                    <div class="title">蓝鲸体育 <span class="new-feature">在线观看</span></div>
+                                </div>
+                            </a>							 
+							 <a href="https://www.msdmanuals.cn/" target="_blank" class="link-item">
+                                <i class="fas fa-medkit"></i>
+                                <div class="link-text">
+                                    <div class="title">默沙东诊疗手册 <span class="new-feature">医学知识库</span></div>
+                                </div>
+                            </a>
+							 <a href="./数独大师.html" target="_blank" class="link-item">
+                                <i class="fas fa-th"></i>
+                                <div class="link-text">
+									<div class="title">数独大师 <span class="new-feature">原创自用.新增进度分享.功能</span></div>
+                                </div>
+                            </a>
+							<a href="https://www.sudoku-cn.com/" target="_blank" class="link-item">
+                                <i class="fas fa-th"></i>
+                                <div class="link-text">
+                                    <div class="title">在线数独 <span class="new-feature">备用</span></div>
+                                </div>
+                            </a>
+                        </div>
+                    </li>
+					<!-- 视频软件类别 -->
+                    <li>
+                        <span class="category-title">影视软件</span>
+                        <div class="category-links">
+                            <a href="https://d.kstore.dev/download/8043/ys/%E5%BD%B1%E8%A7%86%E4%BB%93%E7%94%B5%E8%A7%86%E7%89%886.1.3.apk" target="_blank" class="link-item">
+                                <i class="fas fa-tv"></i>
+                                <div class="link-text">
+                                    <div class="title">APP影视仓电视版6.1.3.apk <span class="new-feature"> 需下载安装 更新6.13</span></div>
+                                </div>
+                            </a>
+                            
+                            <a href="https://d.kstore.dev/download/8043/ys/%E5%BD%B1%E8%A7%86%E4%BB%93%E6%89%8B%E6%9C%BA%E7%89%883.1.8.1.apk" target="_blank" class="link-item">
+                                <i class="fas fa-mobile-alt"></i>
+                                <div class="link-text">
+                                    <div class="title">APP影视仓手机版3.1.8.1.apk <span class="new-feature">需下载安装 更新6.13</span></div>
+                                </div>
+                            </a>						
+                             <a href="#" class="link-item" id="interfaceLink">
+                                <i class="fas fa-share-alt"></i>
+                                <div class="link-text">
+                                    <div class="title">影视仓接口 <span class="new-feature">安装影视仓后粘贴到配置</span></div>
+                                </div>
+                            </a>
+							<a href="https://cdn04132025.gitlink.org.cn/api/v1/repos/ajeo/c1/raw/应用管家v1.5.8.apk" target="_blank" class="link-item">
+                                <i class="fas fa-tools"></i>
+                                <div class="link-text">
+                                    <div class="title">APP应用管家v1.5.8.apk</div>
+                                </div>
+                            </a>
+                        </div>
+                    </li>
+
+                    <!-- 办公工具类别 -->
+                    <li>
+                        <span class="category-title">办公工具</span>
+                        <div class="category-links">
+						    <a href="https://tinywow.com/" target="_blank" class="link-item">
+                                <i class="fas fa-file"></i>
+                                <div class="link-text">
+                                    <div class="title">在线智能办公工具.html</div>
+                                </div>
+                            </a> 
+                            <a href="https://www.365calc.cn/" target="_blank" class="link-item">
+                                <i class="fas fa-file"></i>
+                                <div class="link-text">
+                                    <div class="title">在线365快速计算器</div>
+                                </div>
+                            </a> 							
+                            <a href="./Excel 数据合并汇总工具登录.html" target="_blank" class="link-item">
+                                <i class="fas fa-file-excel"></i>
+                                <div class="link-text">
+                                    <div class="title">Excel数据合并汇总工具V2506.010.html <span class="new-feature">原创自用</span></div>
+                                </div>
+                            </a>                            
+                            
+                            <a href="./Excel常用符快捷键.html" target="_blank" class="link-item">
+                                <i class="fas fa-file-excel"></i>
+                                <div class="link-text">
+                                    <div class="title">Excel 常用特殊符号输入.html <span class="new-feature">收集整理</span></div>
+                                </div>
+                            </a>
+                            
+                            <a href="./链条卡型号规格表.html" target="_blank" class="link-item">
+                                <i class="fas fa-file-excel"></i>
+                                <div class="link-text">
+                                    <div class="title">链条卡型号规格表.html <span class="new-feature">收集整理</span></div>
+                                </div>
+                            </a>
+                             <a href="./公称管子尺寸和公称直径对照表.html" target="_blank" class="link-item">
+                                <i class="fas fa-file-word"></i>
+                                <div class="link-text">
+                                    <div class="title">公称管子尺寸和公称直径--对照表.html <span class="new-feature">收集整理</span></div>
+                                </div>
+                            </a>
+                        </div>
+                    </li>
+                     
+					
+                    <!-- 技术资料类别 -->
+                    <li>
+                        <span class="category-title">技术资料</span>
+                        <div class="category-links">
+                            <a href="./铅酸蓄电池及配方.html" target="_blank" class="link-item">
+                                <i class="fas fa-car-battery"></i>
+                                <div class="link-text">
+                                    <div class="title">铅酸蓄电池及配方.html <span class="new-feature">专属资源需授权访问</span></div>
+                                </div>
+                            </a>
+                           
+							 
+							 <a href="./东讯电机驱动器故障代码.html" target="_blank" class="link-item">
+                                <i class="fas fa-file-pdf"></i>
+                                <div class="link-text">
+                                    <div class="title">东讯电机驱动器故障代码.html</div>
+                                </div>
+                            </a>
+							<a href="./川木电机驱动器故障代码.html" target="_blank" class="link-item">
+                                <i class="fas fa-file-pdf"></i>
+                                <div class="link-text">
+                                    <div class="title">川木电机驱器动故障代码.html</div>
+                                </div>
+                            </a>
+							 
+							 <a href="./pc/比例调节阀角度电流对应表.png" target="_blank" class="link-item">
+                                <i class="fas fa-image"></i>
+                                <div class="link-text">
+                                    <div class="title">比例调节阀角度电流对应表.png</div>
+                                </div>
+                            </a>
+							<a href="./旧款（传力）称重校秤说明.html" target="_blank" class="link-item">
+                                <i class="fas fa-file-word"></i>
+                                <div class="link-text">
+                                    <div class="title">旧款(传力)称重校秤说明.html</div>
+                                </div>
+                            </a>
+							 <a href="./新款（珠海长陆）称重校秤说明.html" target="_blank" class="link-item">
+                                <i class="fas fa-file-word"></i>
+                                <div class="link-text">
+                                    <div class="title">新款（珠海长陆）称重校秤说明.html</div>
+                                </div>
+                            </a>
+							<a href="https://www.123684.com/s/L43ijv-6icdd" target="_blank" class="link-item">
+                                <i class="fas fa-file-pdf"></i>
+                                <div class="link-text">
+                                    <div class="title">铅锅燃烧器BTG 15-20-28 P CN.pdf</div>
+                                </div>
+                            </a>
+                        </div>
+                    </li>
+					<!-- 平台资源类别 -->
+                    <li>
+                        <span class="category-title">学习导航资源</span>
+                        <div class="category-links">
+						    
+							<a href="https://tuostudy.upnb.top/" target="_blank" class="link-item">
+                                <i class="fas fa-network-wired"></i>
+                                <div class="link-text">
+                                    <div class="title">图欧学习资源导航 <span class="new-feature">终身学习者的导航站</span></div>
+									
+                                </div>
+                            </a>
+							 <a href="https://yinghezhinan.com/" target="_blank" class="link-item">
+                                <i class="fas fa-network-wired"></i>
+                                <div class="link-text">
+                                    <div class="title">硬核指南 <span class="new-feature">实用的上网资源导航</span></div>
+									
+                                </div>
+                            </a>
+							 <a href="https://openi.cn/" target="_blank" class="link-item">
+                                <i class="fas fa-network-wired"></i>
+                                <div class="link-text">
+                                    <div class="title">OpenI-AI时代 <span class="new-feature">AI智能资源导航</span></div>
+									
+                                </div>
+                            </a>
+							<a href="https://iitang.com/" target="_blank" class="link-item">
+                                <i class="fas fa-network-wired"></i>
+                                <div class="link-text">
+                                    <div class="title">一糖导航 <span class="new-feature">实用的上网资源导航</span></div>
+									
+                                </div>
+                            </a>
+							
+                            <a href="https://www.microsoft.com/zh-cn/edge/download" target="_blank" class="link-item">
+                                <i class="fas fa-globe"></i>
+                                <div class="link-text">
+									<div class="title">Edge浏览器 <span class="new-feature">推荐手机平板可以熄屏听本页音乐</span></div>
+                                </div>
+                            </a>
+                        </div>
+                    </li>
+                     <!-- 加密工具类别 -->
+                    <li>
+                        <span class="category-title">专用工具</span>
+                        <div class="category-links">
+						      <a href="./三角形计算工具.html" target="_blank" class="link-item">
+                                <i class="fas fa-tools"></i>
+                                <div class="link-text">
+                                    <div class="title">高级三角形计算工具.html <span class="new-feature">原创自用</span></div>
+                                </div>
+                            </a>
+                            <a href="./Ajeossi TVBOX接口专用加密工具.html" target="_blank" class="link-item">
+                                <i class="fas fa-lock"></i>
+                                <div class="link-text">
+                                    <div class="title">自用源接口加密v1.28 <span class="new-feature">原创自用</span></div>
+                                </div>
+                            </a>
+                             <a href="./Ajeossi TVBOX接口专用解密工具.html" target="_blank" class="link-item">
+                                <i class="fas fa-key"></i>
+                                <div class="link-text">
+                                    <div class="title">自用源接口解密v1.39 <span class="new-feature">原创自用</span></div>
+                                </div>
+                            </a>
+                        </div>
+                    </li>
+                    <!-- 重要提示 -->
+                    <li>
+                        <div class="important-note">
+                            <h3><i class="fas fa-exclamation-circle"></i> 重要提示</h3>
+                            <p><span class="red">访问提示：</span>如果网址被屏蔽，电脑请安装 <a href="https://www.google.cn/chrome/" target="_blank" style="color: #3498db; font-weight:600;">Chrome浏览器</a> 访问，手机推荐用Edge浏览器访问！</p>
+                            <p><span class="red">使用说明：</span>自用资源，请勿恶意传播，尊重开发者劳动成果</p>
+                            <p><span class="red">更新说明：</span>资源将不定期更新，请收藏本页面获取最新资源</p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>© 2019-2025 Ajossi网络. All Rights Reserved</p>
+            <p>收藏本页面，<a href="#">永不迷路</a> | <a href="#">资源反馈</a></p>
+        </div>
+    </div>
+
+    <script>
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            // 图片URL常量（优化为一个）
+            const IMAGE_URL = 'https://cdn04132025.gitlink.org.cn/api/v1/repos/ajeo/wd/raw/Aje128.png';
+            
+            // 设置favicon
+            const faviconLink = document.getElementById('custom-favicon');
+            faviconLink.href = IMAGE_URL;
+            
+            // 创建动态粒子背景
+            function createParticles() {
+                const container = document.getElementById('particles');
+                const particleCount = 80;
+                
+                for (let i = 0; i < particleCount; i++) {
+                    const particle = document.createElement('div');
+                    particle.classList.add('particle');
+                    const size = Math.random() * 80 + 2;
+                    particle.style.width = `${size}px`;
+                    particle.style.height = `${size}px`;
+                    particle.style.left = `${Math.random() * 100}%`;
+                    particle.style.top = `${Math.random() * 100}%`;
+                    particle.style.opacity = Math.random() * 0.5 + 0.2;
+                    particle.style.animationDuration = `${Math.random() * 30 + 5}s`;
+                    particle.style.animationDelay = `${Math.random() * 5}s`;
+                    
+                    container.appendChild(particle);
+                }
+            }
+            
+            createParticles();
+            
+            // 添加收藏提示
+            document.addEventListener('keydown', function(e) {
+                if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
+                    alert('已添加到收藏夹！请妥善保存本页面以便日后访问。');
+                }
+            });
+            
+            // 加载128px圆形图标
+            const logoContainer = document.getElementById('logo-container');
+            const img = new Image();
+            img.src = IMAGE_URL;
+            img.onload = function() {
+                // 移除占位图标
+                logoContainer.innerHTML = '';
+                // 添加旋转类
+                img.classList.add('rotating');
+                // 添加圆形遮罩容器中的图片
+                logoContainer.appendChild(img);
+                // 添加悬停效果
+                logoContainer.addEventListener('mouseenter', function() {
+                    this.style.transform = 'scale(1.05)';
+                });
+                logoContainer.addEventListener('mouseleave', function() {
+                    this.style.transform = 'scale(1)';
+                });
+            };
+            img.onerror = function() {
+                // 如果图片加载失败，保留占位图标
+                console.error('自定义图标加载失败，使用备用图标');
+            };
+            
+            // 接口链接复制功能
+            const interfaceLink = document.getElementById('interfaceLink');
+            const copyNotification = document.getElementById('copyNotification');
+            const interfaceAddress = "https://cdn04132025.gitlink.org.cn/api/v1/repos/ajeo/k1/raw/01.bmp";
+            
+            interfaceLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // 创建临时textarea元素用于复制
+                const textarea = document.createElement('textarea');
+                textarea.value = interfaceAddress;
+                textarea.setAttribute('readonly', '');
+                textarea.style.position = 'absolute';
+                textarea.style.left = '-9999px';
+                document.body.appendChild(textarea);
+                
+                // 选择文本并复制
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                
+                // 显示复制成功通知
+                copyNotification.classList.add('show');
+                
+                // 3秒后隐藏通知
+                setTimeout(() => {
+                    copyNotification.classList.remove('show');
+                }, 3000);
+            });
+        });
+    </script>
+</body>
+    <script type="text/javascript" src="https://myhkw.cn/player/js/jquery.min.js"></script>
+    <script type="text/javascript" id="myhk" src="https://myhkw.cn/api/player/174832804969" key="174832804969" m="1"></script>
+</html>

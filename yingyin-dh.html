@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>影音在线</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+
+        html, body {
+            height: 100%;
+        }
+
+        body {
+            background: #f9f9f9;
+            color: #333;
+            min-height: 100%;
+            overflow-x: hidden;
+            position: relative;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .wrapper {
+            max-width: 1000px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 10;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            flex: 1;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px 0;
+        }
+
+        .header h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            color: #4CAF50;
+            text-shadow: 0 2px 4px rgba(76, 175, 80, 0.1);
+        }
+
+        .header p {
+            color: #757575;
+            font-size: 1.1rem;
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .category-title {
+            display: block;
+            font-size: 1.5rem;
+            color: #4CAF50;
+            font-weight: 700;
+            margin: 30px 0 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e8f5e9;
+            position: relative;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .category-title::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            bottom: -2px;
+            width: 80px;
+            height: 2px;
+            background: #4CAF50;
+        }
+
+        .resource-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .link-item {
+            display: inline-block;
+            background: #ffffff;
+            padding: 16px 20px;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            color: #333;
+            text-decoration: none !important;
+            position: relative;
+            overflow: hidden;
+            border-left: 4px solid #4CAF50;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+            min-width: 300px;
+        }
+
+        .link-item::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, rgba(76, 175, 80, 0.05), transparent);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .link-item:hover {
+            background: #f1f8e9;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.1);
+        }
+
+        .link-item:hover::before {
+            opacity: 1;
+        }
+
+        .link-item .title {
+            font-weight: 600;
+            font-size: 1.05rem;
+            margin-bottom: 5px;
+            position: relative;
+            color: #388E3C;
+        }
+
+        .link-item .description {
+            font-size: 0.9rem;
+            color: #757575;
+            position: relative;
+        }
+
+        .footer {
+            text-align: center;
+            color: #757575;
+            padding: 25px 15px 15px;
+            font-size: 0.9rem;
+            margin-top: 40px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .footer a {
+            color: #4CAF50;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .link-item {
+            animation: fadeIn 0.5s ease-out forwards;
+            opacity: 0;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.2rem;
+            }
+            
+            .resource-list {
+                gap: 10px;
+            }
+            
+            .link-item {
+                min-width: 100%;
+            }
+            
+            .wrapper {
+                padding: 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .header p {
+                font-size: 1rem;
+            }
+            
+            .category-title {
+                font-size: 1.3rem;
+            }
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #4CAF50;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #388E3C;
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <div class="header">
+            <h1>影音在线导航</h1>
+            <p>一站式影音资源平台，电影、音乐、VIP解析、下载工具应有尽有</p>
+        </div>
+		   <!-- 在线音乐 -->
+        <div class="category-title">在线音乐</div>
+        <div class="resource-list">
+			 <a href="https://mu-jie.cc/musicBox/" target="_blank" class="link-item" style="animation-delay: 0.2s">
+                <div class="title">枫叶音乐盒 </div>
+                <div class="description">网易云音乐为主的网页版免费音乐</div>
+            </a>
+			 <a href="https://www.yinyue.pro/" target="_blank" class="link-item" style="animation-delay: 0.2s">
+                <div class="title">音乐序章 </div>
+                <div class="description">网易云音乐为主的在线音乐播放器</div>
+            </a>
+		     <a href="https://www.zz123.com/" target="_blank" class="link-item" style="animation-delay: 0.2s">
+                <div class="title">种子音乐</div>
+                <div class="description">免费在线Mp3听歌｜热门歌曲排行榜</div>
+            </a>		     
+            <a href="http://music.alger.fun/" target="_blank" class="link-item" style="animation-delay: 0.1s">
+                <div class="title">Alger Music</div>
+                <div class="description">在线听音乐平台</div>
+            </a>
+            <a href="https://music.migu.cn/" target="_blank" class="link-item" style="animation-delay: 0.1s">
+                <div class="title">咪咕音乐</div>
+                <div class="description">高品质音乐平台</div>
+            </a>
+            <a href="https://5sing.kugou.com/index.html" target="_blank" class="link-item" style="animation-delay: 0.2s">
+                <div class="title">5sing音乐</div>
+                <div class="description">原创音乐基地</div>
+            </a>
+			 <a href="https://www.dtshot.com/" target="_blank" class="link-item" style="animation-delay: 0.1s">
+                <div class="title">无损音乐吧</div>
+                <div class="description">API在线听，下载收费</div>
+            </a>
+			<a href="https://www.xmwav.com/" target="_blank" class="link-item" style="animation-delay: 0.2s">
+                <div class="title">电脑版｜熊猫无损音乐</div>
+                <div class="description">无损音乐网盘下载</div>
+            </a>
+        </div>
+          <!-- 移动平台在线电影 -->
+        <div class="category-title">移动平台在线电影</div>
+        <div class="resource-list">
+            <a href="https://www.nmdvd.cc/" target="_blank" class="link-item" style="animation-delay: 1.4s">
+                <div class="title">农民影视</div>
+                <div class="description">高清影视资源库</div>
+            </a>
+            <a href="https://gaze.run/" target="_blank" class="link-item" style="animation-delay: 1.4s">
+                <div class="title">注视影视</div>
+                <div class="description">国内高口碑影视剧资源</div>
+            </a>
+           <a href="https://www.imoviebot.com/" target="_blank" class="link-item" style="animation-delay: 1.3s">
+                <div class="title">爱看机器人</div>
+                <div class="description">AI推荐影视资源</div>
+            </a>
+			<a href="https://www.lxyingshi.com/" target="_blank" class="link-item" style="animation-delay: 1.2s">
+                <div class="title">灵犀影视</div>
+                <div class="description">智能推荐影视平台</div>
+            </a>
+        </div>
+        <!-- PC平台在线电影 -->
+        <div class="category-title">PC平台在线电影</div>
+        <div class="resource-list">
+            <a href="https://www.rauljc.com/" target="_blank" class="link-item" style="animation-delay: 0.1s">
+                <div class="title">金牌影院</div>
+                <div class="description">高清电影资源平台</div>
+            </a>         
+
+            <a href="https://www.jdys.art/" target="_blank" class="link-item" style="animation-delay: 0.5s">
+                <div class="title">绝对影视</div>
+                <div class="description">高清影视资源库</div>
+            </a>
+
+            <a href="https://www.dsxysw.com/" target="_blank" class="link-item" style="animation-delay: 0.6s">
+                <div class="title">大师兄影视</div>
+                <div class="description">经典与最新影视资源</div>
+            </a>
+
+            <a href="https://www.hanjukankan.com/" target="_blank" class="link-item" style="animation-delay: 0.7s">
+                <div class="title">韩剧看看</div>
+                <div class="description">韩剧资源大全</div>
+            </a>          
+            <a href="https://www.novipnoad.net/" target="_blank" class="link-item" style="animation-delay: 0.9s">
+                <div class="title">NO视频</div>
+                <div class="description">免VIP观看平台</div>
+            </a>           
+        </div>
+         <!-- 在线小说有声读物 -->
+        <div class="category-title">在线小说有声读物 </div>
+        <div class="resource-list">
+            <a href="https://www.xxsy.net/" target="_blank" class="link-item" style="animation-delay: 0.1s">
+                <div class="title">潇湘书院</div>
+                <div class="description">总裁小说, 重生小说, 种田文, 都市言情, 穿越小说</div>
+            </a>
+
+            <a href="https://snapany.com/zh/bilibili" target="_blank" class="link-item" style="animation-delay: 0.2s">
+                <div class="title">B站视频解析下载</div>
+                <div class="description">B站视频下载工具</div>
+            </a>
+        </div>    
+        <!-- 在线会员解析 -->
+        <div class="category-title">会员解析</div>
+        <div class="resource-list">
+            <a href="https://yemu.xyz/shouye/" target="_blank" class="link-item" style="animation-delay: 0.1s">
+                <div class="title">夜幕解析</div>
+                <div class="description">VIP电影解析免费看</div>
+            </a>
+             <a href="https://yinghezhinan.com/site/vipshipinjiexi/" target="_blank" class="link-item" style="animation-delay: 0.1s">
+                <div class="title">VIP付费视频解析</div>
+                <div class="description">轻松观看全网付费影视剧</div>
+            </a>
+            <a href="https://snapany.com/zh/bilibili" target="_blank" class="link-item" style="animation-delay: 0.2s">
+                <div class="title">B站视频解析下载</div>
+                <div class="description">B站视频下载工具</div>
+            </a>
+        </div>    
+          <!-- 影视下载 -->
+        <div class="category-title">影视下载</div>
+        <div class="resource-list">
+		      <a href="https://www.foxjun.com/" target="_blank" class="link-item" style="animation-delay: 0.1s">
+                <div class="title">狐狸君</div>
+                <div class="description">磁链下载</div>
+            </a>
+		     <a href="https://www.seedhub.cc/" target="_blank" class="link-item">
+                <div class="title">Seedhub</div>
+				<div class="description">网盘分享资源</div>
+             </a>          
+        </div>
+        <!-- 下载工具 -->
+        <div class="category-title">下载工具</div>
+        <div class="resource-list">
+            <a href="https://cobalt.tools/" target="_blank" class="link-item" style="animation-delay: 0.1s">
+                <div class="title">下载神器</div>
+                <div class="description">影视资源下载工具</div>
+            </a>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>© 2025 Ajeossi影音在线导航 | 免责声明：本网站仅提供资源导航服务</p>
+        <p>收藏本页面，<a href="#">永不迷路</a> | <a href="#">资源反馈</a></p>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const linkItems = document.querySelectorAll('.link-item');
+            linkItems.forEach((item, index) => {
+                const delay = (index % 10) * 0.1;
+                item.style.animationDelay = `${delay}s`;
+            });
+        });
+    </script>
+</body>
+</html>
