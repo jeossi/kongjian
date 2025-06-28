@@ -201,7 +201,7 @@
             z-index: 100;
             display: none;
             border: 1px solid var(--border);
-			max-height: 300px; /* 设置最大高度 */
+            max-height: 300px; /* 设置最大高度 */
            overflow-y: auto;  /* 添加垂直滚动条 */
            flex-direction: column; /* 垂直排列 */
         }
@@ -237,7 +237,7 @@
             cursor: pointer;
             color: var(--primary);
             font-weight: 500;
-			flex-shrink: 0; /* 防止清除按钮被压缩 */
+            flex-shrink: 0; /* 防止清除按钮被压缩 */
             margin-top: auto; /* 清除按钮保持在底部 */
         }
         
@@ -1297,13 +1297,7 @@
             }
             
             .search-box {
-                padding: 10px 15px 10px 40px;
-                font-size: 14px;
-            }
-            
-            .search-icon {
-                left: 15px;
-                font-size: 20px;
+                min-width: 150px;
             }
             
             .history-btn, .theme-toggle {
@@ -1665,6 +1659,23 @@
             color: var(--dark-gray);
             margin-top: 5px;
         }
+        
+        /* 新增缓存加载进度条 */
+        .cache-progress {
+            height: 5px;
+            background: rgba(67, 97, 238, 0.2);
+            border-radius: 3px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+        
+        .cache-progress-bar {
+            height: 100%;
+            width: 0%;
+            background: var(--primary);
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
     </style>
 </head>
 <body>
@@ -1706,13 +1717,16 @@
                     <span>线路数据缓存</span>
                     <button id="clear-cache-btn">清除</button>
                 </div>
+                <div class="cache-progress">
+                    <div class="cache-progress-bar" id="cache-progress-bar"></div>
+                </div>
                 <div class="cache-info" id="cache-info"></div>
             </div>
             <div class="proxy-panel" id="proxy-panel">
                 <div class="proxy-option" data-proxy="1">代理服务 1 (推荐)</div>
                 <div class="proxy-option" data-proxy="2">代理服务 2 (备用)</div>
                 <div class="proxy-option" data-proxy="3">代理服务 3 (备用)</div>
-                <div class="proxy-option active" data-proxy="0">不使用代理</div>
+                <div class="proxy-option" data-proxy="0">不使用代理</div>
                 
                 <div class="custom-proxy-container">
                     <input type="text" class="custom-proxy-input" id="custom-proxy-input" placeholder="输入自定义代理URL模板" onclick="this.select()">
@@ -1806,7 +1820,7 @@
                         <div class="error-options">
                             <button id="retry-btn">重试</button>
                             <button id="next-error-btn">播放下一个</button>
-                            <button id="report-btn">报告问题</button>
+                            <button id="switch-proxy-btn">切换代理</button> <!-- 修改按钮文本和ID -->
                         </div>
                     </div>
                     
@@ -2080,7 +2094,7 @@
         const errorMessage = document.getElementById('error-message');
         const retryBtn = document.getElementById('retry-btn');
         const nextErrorBtn = document.getElementById('next-error-btn');
-        const reportBtn = document.getElementById('report-btn');
+        const switchProxyBtn = document.getElementById('switch-proxy-btn'); // 修改按钮ID
         const browserHint = document.getElementById('browser-hint');
         const statsStatus = document.getElementById('stats-status');
         const statsBuffer = document.getElementById('stats-buffer');
@@ -2094,6 +2108,7 @@
         const testCustomProxyBtn = document.getElementById('test-custom-proxy-btn');
         const testVideoUrl = document.getElementById('test-video-url');
         const testPlayBtn = document.getElementById('test-play-btn');
+        const cacheProgressBar = document.getElementById('cache-progress-bar');
         
         // DOM 元素
         const channelList = document.getElementById('channel-list');
@@ -2132,7 +2147,7 @@
         let proxyRequiredMap = {}; // 记录URL是否需要代理
         
         // 代理设置 - 使用多个备用代理服务
-        let proxyIndex = 0; // 0: 不使用代理（初始状态）
+        let proxyIndex = 1; // 1: 使用代理服务1 (默认开启)
         const PROXY_SERVICES = {
             0: "", // 不使用代理
             1: "https://cors-proxy2.ajeossiqq.workers.dev/",
@@ -2150,7 +2165,13 @@
         let flvPlayer = null;
         
         // 代理函数 - 封装所有请求
-        async function fetchWithProxy(url) {
+        async function fetchWithProxy(url, isAudio = false) {
+            // 如果是音频文件，不使用代理
+            if (isAudio) {
+                console.log(`音频资源，直接请求: ${url}`);
+                return fetch(url);
+            }
+            
             // 添加必要的请求头，模拟浏览器行为
             const headers = {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
@@ -2206,78 +2227,77 @@
         }
         
         // 测试代理服务
-        // 修改testProxyService函数，添加超时处理
-async function testProxyService(proxyIndex) {
-    proxyStatusText.textContent = "测试中...";
-    proxyStatusText.className = "proxy-status-text proxy-loading";
-    
-    // 使用一个测试URL
-    const testUrl = "https://vd2.bdstatic.com/mda-qcuhkcz656hdjjx7/qhd/cae_h264/1711903492331661818/mda-qcuhkcz656hdjjx7.mp4";
-    let proxyUrl = '';
-    
-    try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5秒超时
-        
-        const startTime = Date.now();
-        let response;
-        
-        if (proxyIndex === 0) {
-            // 不使用代理
-            response = await fetch(testUrl, {
-                signal: controller.signal,
-                headers: {
-                    'Range': 'bytes=0-1' // 只请求前2个字节，减少流量
+        async function testProxyService(proxyIndex) {
+            proxyStatusText.textContent = "测试中...";
+            proxyStatusText.className = "proxy-status-text proxy-loading";
+            
+            // 使用一个测试URL
+            const testUrl = "https://vd2.bdstatic.com/mda-qcuhkcz656hdjjx7/qhd/cae_h264/1711903492331661818/mda-qcuhkcz656hdjjx7.mp4";
+            let proxyUrl = '';
+            
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 5000); // 5秒超时
+                
+                const startTime = Date.now();
+                let response;
+                
+                if (proxyIndex === 0) {
+                    // 不使用代理
+                    response = await fetch(testUrl, {
+                        signal: controller.signal,
+                        headers: {
+                            'Range': 'bytes=0-1' // 只请求前2个字节，减少流量
+                        }
+                    });
+                } 
+                else if (proxyIndex === 5) {
+                    // 自定义代理
+                    const customProxy = localStorage.getItem('customProxy');
+                    if (!customProxy) {
+                        throw new Error('自定义代理未设置');
+                    }
+                    proxyUrl = `${customProxy}${encodeURIComponent(testUrl)}`;
+                    response = await fetch(proxyUrl, {
+                        signal: controller.signal,
+                        headers: {
+                            'Range': 'bytes=0-1'
+                        }
+                    });
+                } 
+                else {
+                    proxyUrl = `${PROXY_SERVICES[proxyIndex]}${encodeURIComponent(testUrl)}`;
+                    response = await fetch(proxyUrl, {
+                        signal: controller.signal,
+                        headers: {
+                            'Range': 'bytes=0-1'
+                        }
+                    });
                 }
-            });
-        } 
-        else if (proxyIndex === 5) {
-            // 自定义代理
-            const customProxy = localStorage.getItem('customProxy');
-            if (!customProxy) {
-                throw new Error('自定义代理未设置');
+                
+                clearTimeout(timeoutId);
+                const endTime = Date.now();
+                const responseTime = endTime - startTime;
+                
+                if (response.ok) {
+                    let proxyName = proxyIndex === 5 ? '自定义代理' : `代理服务${proxyIndex}`;
+                    proxyStatusText.textContent = `${proxyName} 可用 (${responseTime}ms)`;
+                    proxyStatusText.className = "proxy-status-text proxy-success";
+                    return true;
+                } else {
+                    let proxyName = proxyIndex === 5 ? '自定义代理' : `代理服务${proxyIndex}`;
+                    proxyStatusText.textContent = `${proxyName} 不可用 (HTTP ${response.status})`;
+                    proxyStatusText.className = "proxy-status-text proxy-failure";
+                    return false;
+                }
+            } catch (e) {
+                console.error(`代理服务 ${proxyIndex} 测试失败:`, e);
+                let proxyName = proxyIndex === 5 ? '自定义代理' : `代理服务${proxyIndex}`;
+                proxyStatusText.textContent = `${proxyName} 不可用: ${e.name === 'AbortError' ? '请求超时' : e.message}`;
+                proxyStatusText.className = "proxy-status-text proxy-failure";
+                return false;
             }
-            proxyUrl = `${customProxy}${encodeURIComponent(testUrl)}`;
-            response = await fetch(proxyUrl, {
-                signal: controller.signal,
-                headers: {
-                    'Range': 'bytes=0-1'
-                }
-            });
-        } 
-        else {
-            proxyUrl = `${PROXY_SERVICES[proxyIndex]}${encodeURIComponent(testUrl)}`;
-            response = await fetch(proxyUrl, {
-                signal: controller.signal,
-                headers: {
-                    'Range': 'bytes=0-1'
-                }
-            });
         }
-        
-        clearTimeout(timeoutId);
-        const endTime = Date.now();
-        const responseTime = endTime - startTime;
-        
-        if (response.ok) {
-            let proxyName = proxyIndex === 5 ? '自定义代理' : `代理服务${proxyIndex}`;
-            proxyStatusText.textContent = `${proxyName} 可用 (${responseTime}ms)`;
-            proxyStatusText.className = "proxy-status-text proxy-success";
-            return true;
-        } else {
-            let proxyName = proxyIndex === 5 ? '自定义代理' : `代理服务${proxyIndex}`;
-            proxyStatusText.textContent = `${proxyName} 不可用 (HTTP ${response.status})`;
-            proxyStatusText.className = "proxy-status-text proxy-failure";
-            return false;
-        }
-    } catch (e) {
-        console.error(`代理服务 ${proxyIndex} 测试失败:`, e);
-        let proxyName = proxyIndex === 5 ? '自定义代理' : `代理服务${proxyIndex}`;
-        proxyStatusText.textContent = `${proxyName} 不可用: ${e.name === 'AbortError' ? '请求超时' : e.message}`;
-        proxyStatusText.className = "proxy-status-text proxy-failure";
-        return false;
-    }
-}
         
         // 播放/暂停按钮
         playPauseBtn.addEventListener('click', () => {
@@ -2479,30 +2499,65 @@ async function testProxyService(proxyIndex) {
                 const cacheTime = localStorage.getItem('channelsCacheTime');
                 const now = new Date().getTime();
                 
-                if (cachedData && cacheTime && (now - parseInt(cacheTime)) < 24 * 60 * 60 * 1000) {
+                // 缓存有效性检查
+                let cacheValid = false;
+                if (cachedData && cacheTime) {
                     try {
                         const parsedData = JSON.parse(cachedData);
-                        if (!Array.isArray(parsedData)) throw new Error('无效的缓存格式');
-                        
-                        if (parsedData.length > 0 && parsedData[0].name && parsedData[0].url) {
-                            channelsData = parsedData;
-                            renderChannels(channelsData);
-                            
-                            updateCacheStatus(true);
-                            
-                            if (channelsData.length > 0) {
-                                selectChannel(channelsData[0]);
-                            }
-                            return;
+                        if (Array.isArray(parsedData) && parsedData.length > 0 && 
+                            parsedData[0].name && parsedData[0].url) {
+                            cacheValid = true;
                         }
                     } catch (e) {
                         console.error('缓存数据解析失败:', e);
                     }
                 }
                 
+                // 显示缓存加载进度
+                updateCacheProgress(30);
+                
+                if (cacheValid && (now - parseInt(cacheTime)) < 24 * 60 * 60 * 1000) {
+                    try {
+                        channelsData = JSON.parse(cachedData);
+                        renderChannels(channelsData);
+                        
+                        updateCacheStatus(true);
+                        updateCacheProgress(100);
+                        
+                        if (channelsData.length > 0) {
+                            selectChannel(channelsData[0]);
+                        }
+                        return;
+                    } catch (e) {
+                        console.error('缓存数据解析失败:', e);
+                    }
+                }
+                
+                // 缓存无效，从网络加载
+                updateCacheProgress(50);
+                
                 // 使用代理函数获取数据
-                const response = await fetchWithProxy('https://d.kstore.dev/download/8043/ys/SCjieko.txt');
-                if (!response.ok) throw new Error('网络响应错误');
+                let retryCount = 0;
+                const maxRetries = 3;
+                let response;
+                
+                while (retryCount < maxRetries) {
+                    try {
+                        response = await fetchWithProxy('https://d.kstore.dev/download/8043/ys/SCjieko.txt');
+                        if (!response.ok) throw new Error('网络响应错误');
+                        break;
+                    } catch (error) {
+                        retryCount++;
+                        console.error(`加载线路数据失败 (尝试 ${retryCount}/${maxRetries}):`, error);
+                        if (retryCount >= maxRetries) {
+                            throw error;
+                        }
+                        // 重试前等待1秒
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                    }
+                }
+                
+                updateCacheProgress(70);
                 
                 const textData = await response.text();
                 
@@ -2539,9 +2594,12 @@ async function testProxyService(proxyIndex) {
                     }
                 }
                 
+                updateCacheProgress(90);
+                
                 localStorage.setItem('channelsData', JSON.stringify(channelsData));
                 localStorage.setItem('channelsCacheTime', now.toString());
                 updateCacheStatus(false);
+                updateCacheProgress(100);
                 
                 renderChannels(channelsData);
                 
@@ -2554,7 +2612,15 @@ async function testProxyService(proxyIndex) {
                 channelWarning.textContent = error.message;
                 channelWarning.style.display = 'block';
                 statsCache.textContent = '加载失败';
+                
+                // 显示错误面板
+                showPlaybackError(`加载线路数据失败: ${error.message}`);
             }
+        }
+        
+        // 更新缓存进度
+        function updateCacheProgress(percent) {
+            cacheProgressBar.style.width = `${percent}%`;
         }
         
         // 更新缓存状态显示
@@ -2791,8 +2857,15 @@ async function testProxyService(proxyIndex) {
             // 添加到历史记录
             addToHistory(entry, category);
             
+            // 检测是否为音频文件
+            const audioExtensions = ['.mp3', '.wav', '.ogg', '.flac', '.aac', '.m4a'];
+            const isAudioByExtension = audioExtensions.some(ext => entry.url.toLowerCase().includes(ext));
+            
+            // 修改点1: 如果分类包含"广播"或"电台"，则视为音频
+            const isBroadcastCategory = category && (category.includes('广播') || category.includes('电台'));
+            
             // 开始播放
-            startPlayback(entry.url);
+            startPlayback(entry.url, isAudioByExtension || isBroadcastCategory);
         }
 
         // 重置播放器
@@ -2827,10 +2900,10 @@ async function testProxyService(proxyIndex) {
         }
 
         // 开始播放
-        function startPlayback(url) {
+        function startPlayback(url, isAudio = false) {
             // 根据代理设置生成最终URL
             let finalUrl = url;
-            if (proxyIndex !== 0) {
+            if (proxyIndex !== 0 && !isAudio) {
                 if (proxyIndex === 5) {
                     // 自定义代理
                     const customProxy = localStorage.getItem('customProxy');
@@ -2843,6 +2916,11 @@ async function testProxyService(proxyIndex) {
                 } else {
                     finalUrl = `${PROXY_SERVICES[proxyIndex]}${encodeURIComponent(url)}`;
                 }
+            } else if (isAudio) {
+                // 对于音频文件，直接使用原始URL
+                statsProxy.textContent = '未使用';
+                proxyStatus.innerHTML = '<i class="fas fa-unlink"></i> 直接连接';
+                proxyStatus.style.display = 'block';
             }
             
             const protocol = detectProtocol(url);
@@ -3122,17 +3200,11 @@ async function testProxyService(proxyIndex) {
             // 2. 检查视频尺寸
             const hasVideo = videoPlayer.videoWidth > 0 || videoPlayer.videoHeight > 0;
             
-            // 特殊处理：某些MP4文件可能被错误识别
-            if (!isAudioFile && !hasVideo && url.includes('.mp4')) {
-                // 尝试强制播放为视频
-                isAudioFile = false;
-                audioInfo.style.display = 'none';
-                console.log('强制将MP4资源视为视频');
-                return;
-            }
+            // 3. 检查分类是否为广播
+            const isBroadcastCategory = currentCategory && (currentCategory.includes('广播') || currentCategory.includes('电台'));
             
-            // 3. 最终判断
-            if (isAudioByExtension || !hasVideo) {
+            // 最终判断
+            if (isAudioByExtension || !hasVideo || isBroadcastCategory) {
                 isAudioFile = true;
                 audioCategory.textContent = currentCategory || "未知分类";
                 audioPlayingName.textContent = entry.name;
@@ -3284,11 +3356,29 @@ async function testProxyService(proxyIndex) {
                 playNext();
             };
             
-            reportBtn.onclick = () => {
-                errorMessage.textContent = '问题已报告，感谢您的反馈！';
-                setTimeout(() => {
-                    errorPanel.style.display = 'none';
-                }, 2000);
+            // 修改点2: 将报告问题替换为切换代理
+            switchProxyBtn.onclick = () => {
+                // 切换到下一个代理
+                proxyIndex = (proxyIndex + 1) % 4; // 0-3循环
+                if (proxyIndex === 0) proxyIndex = 1; // 跳过0（不使用代理）
+                
+                // 更新UI
+                document.querySelectorAll('.proxy-option').forEach(el => {
+                    el.classList.remove('active');
+                    if (parseInt(el.dataset.proxy) === proxyIndex) {
+                        el.classList.add('active');
+                    }
+                });
+                
+                // 关闭错误面板
+                errorPanel.style.display = 'none';
+                
+                // 重试播放
+                playMedia({
+                    ...currentEntries[currentEntryIndex],
+                    category: currentCategory,
+                    index: currentEntryIndex
+                }, currentCategory);
             };
         }
         
@@ -3526,8 +3616,8 @@ async function testProxyService(proxyIndex) {
             }
         });
 
-        // 初始化代理选项
-        document.querySelector('.proxy-option[data-proxy="0"]').classList.add('active');
+        // 初始化代理选项（默认选择代理服务1）
+        document.querySelector('.proxy-option[data-proxy="1"]').classList.add('active');
 
         // 测试视频播放功能
         testPlayBtn.addEventListener('click', () => {
@@ -3550,10 +3640,11 @@ async function testProxyService(proxyIndex) {
             loadChannels();
             renderPlayHistory();
             
-            // 设置代理状态
-            statsProxy.textContent = '未使用';
-            proxyStatus.innerHTML = '<i class="fas fa-unlink"></i> 直接连接';
+            // 设置代理状态（默认开启代理服务1）
+            statsProxy.textContent = '使用代理 (服务1)';
+            proxyStatus.innerHTML = '<i class="fas fa-globe"></i> 使用CORS代理 (服务1)';
             proxyStatus.style.display = 'block';
+            proxyBtn.classList.add('active');
             
             videoPlayer.addEventListener('enterpictureinpicture', () => {
                 isInPIPMode = true;
