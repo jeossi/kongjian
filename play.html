@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ajeossi 影音库</title>
+    <title>Ajeossi 影音库V629</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/hls.js@1.0.4"></script>
     <script src="https://cdn.jsdelivr.net/npm/flv.js@1.6.2/dist/flv.min.js"></script>
@@ -3337,7 +3337,7 @@
             }, 5000);
         }
         
-        // 显示播放错误
+       // 显示播放错误
         function showPlaybackError(message) {
             errorMessage.textContent = message;
             errorPanel.style.display = 'block';
@@ -3356,12 +3356,32 @@
                 playNext();
             };
             
-            // 修改点2: 将报告问题替换为切换代理
+            // 修改点：将切换代理按钮改为开启/关闭代理切换
             switchProxyBtn.onclick = () => {
-                // 切换到下一个代理
-                proxyIndex = (proxyIndex + 1) % 4; // 0-3循环
-                if (proxyIndex === 0) proxyIndex = 1; // 跳过0（不使用代理）
-                
+                // 切换代理状态
+                if (proxyIndex === 0) {
+                    // 开启代理（使用默认代理1）
+                    proxyIndex = 1;
+                    // 更新代理按钮状态
+                    proxyBtn.classList.add('active');
+                    // 更新代理状态显示
+                    statsProxy.textContent = '使用代理 (服务1)';
+                    proxyStatus.innerHTML = '<i class="fas fa-globe"></i> 使用CORS代理 (服务1)';
+                    proxyStatus.style.display = 'block';
+                    // 更新按钮文本
+                    switchProxyBtn.textContent = '关闭代理';
+                } else {
+                    // 关闭代理
+                    proxyIndex = 0;
+                    // 更新代理按钮状态
+                    proxyBtn.classList.remove('active');
+                    // 更新代理状态显示
+                    statsProxy.textContent = '未使用';
+                    proxyStatus.innerHTML = '<i class="fas fa-unlink"></i> 直接连接';
+                    proxyStatus.style.display = 'block';
+                    // 更新按钮文本
+                    switchProxyBtn.textContent = '开启代理';
+                }
                 // 更新UI
                 document.querySelectorAll('.proxy-option').forEach(el => {
                     el.classList.remove('active');
@@ -3369,7 +3389,6 @@
                         el.classList.add('active');
                     }
                 });
-                
                 // 关闭错误面板
                 errorPanel.style.display = 'none';
                 
@@ -3380,7 +3399,16 @@
                     index: currentEntryIndex
                 }, currentCategory);
             };
+            
+            // 根据当前代理状态设置按钮文本
+            if (proxyIndex === 0) {
+                switchProxyBtn.textContent = '开启代理';
+            } else {
+                switchProxyBtn.textContent = '关闭代理';
+            }
         }
+        
+            
         
         // 缓存管理功能
         cacheBtn.addEventListener('click', (e) => {
