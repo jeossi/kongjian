@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ajeossi 影音库V629.1</title>
+    <title>Ajeossi 影音库V629.2</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/hls.js@1.0.4"></script>
     <script src="https://cdn.jsdelivr.net/npm/flv.js@1.6.2/dist/flv.min.js"></script>
@@ -1725,8 +1725,7 @@
             <div class="proxy-panel" id="proxy-panel">
                 <div class="proxy-option" data-proxy="1">代理服务 1# (推荐)</div>
                 <div class="proxy-option" data-proxy="2">代理服务 2# (标准)</div>
-                <div class="proxy-option" data-proxy="3">代理服务 3# (简化)</div>
-			    <div class="proxy-option" data-proxy="4">代理服务 4# (备用)</div>
+                <div class="proxy-option" data-proxy="3">代理服务 3# (备用)</div>
                 <div class="proxy-option" data-proxy="0">关闭代理服务</div>
                 
                 <div class="custom-proxy-container">
@@ -2151,10 +2150,9 @@
         let proxyIndex = 1; // 1: 使用代理服务1 (默认开启)
         const PROXY_SERVICES = {
             0: "", // 不使用代理
-			1: "https://cors-proxy1.ajeossiqq.workers.dev/",
-            2: "https://cors-proxy.ajeossiqq.workers.dev/",
-            3: "https://cors-proxy2.ajeossiqq.workers.dev/",
-			4: "https://api.codetabs.com/v1/proxy/?quest="
+			1: "https://cors-proxy3.ajeossiqq.workers.dev/",
+            2: "https://cors-proxy1.ajeossiqq.workers.dev/",
+            3: "https://api.codetabs.com/v1/proxy/?quest="
         };
         
         // 播放历史
