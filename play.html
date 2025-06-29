@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ajeossi 影音库V629.3</title>
+    <title>Ajeossi 影音库V629.4</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/hls.js@1.0.4"></script>
     <script src="https://cdn.jsdelivr.net/npm/flv.js@1.6.2/dist/flv.min.js"></script>
@@ -2652,8 +2652,7 @@
                     content = channel.content;
                 } 
                 else {
-                    // 使用代理函数获取数据
-                    const response = await fetchWithProxy(channel.url);
+                    const response = await fetch(channel.url);
                     if (!response.ok) throw new Error('网络响应错误');
                     content = await response.text();
                 }
