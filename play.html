@@ -3,11 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ajeossi 影音库V629.4</title>
+    <title>Ajeossi 影音库 - QQ浏览器兼容解决方案</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@1.0.4"></script>
-    <script src="https://cdn.jsdelivr.net/npm/flv.js@1.6.2/dist/flv.min.js"></script>
-     <style>
+    <style>
         :root {
             --primary: #4361ee;
             --primary-light: #eef2ff;
@@ -85,8 +83,30 @@
             padding: 15px 25px;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
             position: relative;
+            z-index: 10000; /* 确保头部在播放器之上 */
         }
 
+        /* 修复QQ浏览器面板层级问题 */
+        .history-panel, .cache-panel, .proxy-panel {
+            z-index: 10001; /* 确保高于播放器的z-index */
+        }
+        
+        .player-container.fullscreen {
+            z-index: 10000; /* 全屏播放器层级 */
+        }
+        
+        .player-area {
+            z-index: 9000; /* 播放区域层级 */
+        }
+        
+        /* 当播放器全屏时，面板需要更高的层级 */
+        .player-container.fullscreen ~ .header .history-panel,
+        .player-container.fullscreen ~ .header .cache-panel,
+        .player-container.fullscreen ~ .header .proxy-panel {
+            z-index: 10001;
+        }
+
+        /* 其他样式保持不变... */
         .logo {
             display: flex;
             align-items: center;
@@ -198,17 +218,17 @@
             box-shadow: 0 8px 25px var(--shadow);
             padding: 15px;
             margin-top: 10px;
-            z-index: 100;
+            z-index: 10001; /* 修正层级 */
             display: none;
             border: 1px solid var(--border);
-            max-height: 300px; /* 设置最大高度 */
-           overflow-y: auto;  /* 添加垂直滚动条 */
-           flex-direction: column; /* 垂直排列 */
+            max-height: 300px;
+            overflow-y: auto;
+            flex-direction: column;
         }
         .history-list {
-         flex: 1; /* 历史列表占据剩余空间 */
-         overflow-y: auto; /* 添加滚动条 */
-         max-height: 220px; /* 设置最大高度 */
+         flex: 1;
+         overflow-y: auto;
+         max-height: 220px;
         }
 
       .history-panel.active {
@@ -237,8 +257,8 @@
             cursor: pointer;
             color: var(--primary);
             font-weight: 500;
-            flex-shrink: 0; /* 防止清除按钮被压缩 */
-            margin-top: auto; /* 清除按钮保持在底部 */
+            flex-shrink: 0;
+            margin-top: auto;
         }
         
         .clear-history:hover {
@@ -258,7 +278,7 @@
             width: 100%;
             height: 100%;
             background: rgba(0, 0, 0, 0.9);
-            z-index: 1000;
+            z-index: 10002; /* 高于其他面板 */
             display: none;
             padding: 80px 20px 20px;
         }
@@ -350,7 +370,7 @@
             box-shadow: 0 8px 25px var(--shadow);
             padding: 15px;
             margin-top: 10px;
-            z-index: 100;
+            z-index: 10001; /* 修正层级 */
             display: none;
             border: 1px solid var(--border);
         }
@@ -425,6 +445,7 @@
             background: #000;
             border-radius: 0;
             overflow: hidden;
+            z-index: 9000; /* 播放区域层级 */
         }
 
         .player-container {
@@ -434,6 +455,7 @@
             transition: all 0.3s ease;
             border-radius: 0;
             overflow: hidden;
+            z-index: 9000;
         }
 
         #video-player {
@@ -1459,7 +1481,7 @@
             box-shadow: 0 8px 25px var(--shadow);
             padding: 15px;
             margin-top: 10px;
-            z-index: 100;
+            z-index: 10001; /* 修正层级 */
             display: none;
             border: 1px solid var(--border);
         }
@@ -1569,7 +1591,7 @@
             padding: 20px;
             width: 90%;
             max-width: 500px;
-            z-index: 1000;
+            z-index: 10001; /* 修正层级 */
             color: white;
             display: none;
             text-align: center;
@@ -1676,6 +1698,20 @@
             border-radius: 3px;
             transition: width 0.3s ease;
         }
+        
+        /* QQ浏览器特定修复 */
+        @media all and (-webkit-min-device-pixel-ratio:0) and (max-color: 2147483646) and (min-width: 1px) {
+            /* QQ浏览器特定样式 */
+            .history-panel, 
+            .cache-panel, 
+            .proxy-panel {
+                z-index: 10001 !important;
+            }
+            
+            .player-container.fullscreen {
+                z-index: 10000 !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1689,7 +1725,7 @@
             </div>
             <div class="search-container">
                 <i class="fas fa-search search-icon" id="search-icon"></i>
-                <input type="text" class="search-box" id="search-box" placeholder="搜索视频、直播、电台..." onclick="this.select()">
+                <input type="text" class="search-box" id="search-box" placeholder="搜索视频、直播、电台...">
                 <div class="history-container">
                     <button class="history-btn" id="history-btn" title="历史记录">
                         <i class="fas fa-history"></i>
@@ -1700,2201 +1736,2017 @@
                     </div>
                 </div>
                 <button class="cache-btn" id="cache-btn" title="缓存管理">
-                    <i class="fas fa-database"></i>
-                </button>
-                <button class="refresh-btn" id="refresh-btn" title="刷新线路">
-                    <i class="fas fa-sync-alt"></i>
-                </button>
-                <button class="proxy-btn" id="proxy-btn" title="CORS代理设置">
-                    <i class="fas fa-globe"></i>
-                </button>
-                <div class="theme-toggle" id="theme-toggle">
-                    <i class="fas fa-moon"></i>
+                        <i class="fas fa-database"></i>
+                    </button>
+                    <button class="refresh-btn" id="refresh-btn" title="刷新线路">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                    <button class="proxy-btn" id="proxy-btn" title="CORS代理设置">
+                        <i class="fas fa-globe"></i>
+                    </button>
+                    <div class="theme-toggle" id="theme-toggle">
+                        <i class="fas fa-moon"></i>
+                    </div>
                 </div>
-            </div>
-            <div class="cache-panel" id="cache-panel">
-                <div class="cache-item">
-                    <span>线路数据缓存</span>
-                    <button id="clear-cache-btn">清除</button>
+                <div class="cache-panel" id="cache-panel">
+                    <div class="cache-item">
+                        <span>线路数据缓存</span>
+                        <button id="clear-cache-btn">清除</button>
+                    </div>
+                    <div class="cache-progress">
+                        <div class="cache-progress-bar" id="cache-progress-bar"></div>
+                    </div>
+                    <div class="cache-info" id="cache-info"></div>
                 </div>
-                <div class="cache-progress">
-                    <div class="cache-progress-bar" id="cache-progress-bar"></div>
+                <div class="proxy-panel" id="proxy-panel">
+                    <div class="proxy-option" data-proxy="1">代理服务 1 (智能决策)</div>
+                    <div class="proxy-option" data-proxy="3">代理服务 2 (智能决策)</div>
+					<div class="proxy-option" data-proxy="3">代理服务 3 (备用)</div>
+                    <div class="proxy-option" data-proxy="0">关闭代理服务</div>
+                    
+                    <div class="custom-proxy-container">
+                        <input type="text" class="custom-proxy-input" id="custom-proxy-input" placeholder="输入自定义代理URL模板">
+                        <button class="test-proxy-btn" id="test-custom-proxy-btn">测试自定义代理</button>
+                    </div>
+                    
+                    <div class="proxy-status-text" id="proxy-status-text"></div>
                 </div>
-                <div class="cache-info" id="cache-info"></div>
-            </div>
-            <div class="proxy-panel" id="proxy-panel">
-                <div class="proxy-option" data-proxy="1">代理服务 1 (智能决策)</div>
-                <div class="proxy-option" data-proxy="3">代理服务 2 (备用)</div>
-                <div class="proxy-option" data-proxy="0">关闭代理服务</div>
-                
-                <div class="custom-proxy-container">
-                    <input type="text" class="custom-proxy-input" id="custom-proxy-input" placeholder="输入自定义代理URL模板" onclick="this.select()">
-                    <button class="test-proxy-btn" id="test-custom-proxy-btn">测试自定义代理</button>
-                </div>
-                
-                <div class="proxy-status-text" id="proxy-status-text"></div>
-            </div>
-        </header>
+            </header>
 
-        <div class="main-content">
-            <div class="player-area" id="player-area">
-                <div class="player-container" id="player-container">
-                    <video id="video-player" playsinline>
-                        您的浏览器不支持HTML5视频播放
-                    </video>
-                    
-                    <div class="audio-info" id="audio-info">
-                        <div><span class="audio-label">类别：</span><span class="audio-value" id="audio-category"></span></div>
-                        <div><span class="audio-label">正在播放：</span><span class="audio-value" id="audio-playing-name"></span></div>
-                    </div>
-                    
-                    <div class="cache-status" id="cache-status">
-                        <i class="fas fa-database"></i> 使用缓存数据
-                    </div>
-                    
-                    <div class="protocol-indicator" id="protocol-indicator">
-                        正在使用: <span id="protocol-type">未知协议</span>
-                    </div>
-                    
-                    <div class="proxy-status" id="proxy-status">
-                        <i class="fas fa-globe"></i> 使用CORS代理 (服务1)
-                    </div>
-                    
-                    <div class="touch-lock" id="touch-lock">
-                        <i class="fas fa-lock"></i>
-                    </div>
-                    
-                    <div class="danmaku-container" id="danmaku-container"></div>
-                    
-                    <div class="stats-panel" id="stats-panel">
-                        <div class="stats-title">
-                            <i class="fas fa-info-circle"></i> 媒体信息
-                        </div>
-                        <div class="stats-info">
-                            <div class="stats-label">节目:</div>
-                            <div class="stats-value" id="stats-program">-</div>
-                            
-                            <div class="stats-label">状态:</div>
-                            <div class="stats-value" id="stats-status">等待播放</div>
-                            
-                            <div class="stats-label">分辨率:</div>
-                            <div class="stats-value" id="stats-resolution">-</div>
-                            
-                            <div class="stats-label">比特率:</div>
-                            <div class="stats-value" id="stats-bitrate">-</div>
-                            
-                            <div class="stats-label">视频格式:</div>
-                            <div class="stats-value" id="stats-video-format">-</div>
-                            
-                            <div class="stats-label">音频格式:</div>
-                            <div class="stats-value" id="stats-audio-format">-</div>
-                            
-                            <div class="stats-label">缓冲:</div>
-                            <div class="stats-value" id="stats-buffer">0%</div>
-                            
-                            <div class="stats-label">网络速度:</div>
-                            <div class="stats-value" id="stats-speed">-</div>
-                            
-                            <div class="stats-label">协议:</div>
-                            <div class="stats-value" id="stats-protocol">-</div>
-                            
-                            <div class="stats-label">播放引擎:</div>
-                            <div class="stats-value" id="stats-engine">-</div>
-                            
-                            <div class="stats-label">缓存状态:</div>
-                            <div class="stats-value" id="stats-cache">-</div>
-                            
-                            <div class="stats-label">代理状态:</div>
-                            <div class="stats-value" id="stats-proxy">未使用</div>
-                        </div>
-                    </div>
-                    
-                    <div class="status-indicator" id="status-indicator">
-                        正在加载媒体内容...
-                    </div>
-                    
-                    <div class="error-panel" id="error-panel">
-                        <h3>播放遇到问题</h3>
-                        <p id="error-message">无法播放当前内容</p>
-                        <div class="error-options">
-                            <button id="retry-btn">重试</button>
-                            <button id="next-error-btn">播放下一个</button>
-                            <button id="switch-proxy-btn">切换代理</button>
-                        </div>
-                    </div>
-                    
-                    <div class="player-controls">
-                        <div class="control-group">
-                            <button class="control-btn" id="prev-btn">
-                                <i class="fas fa-step-backward"></i>
-                            </button>
-                            
-                            <button class="control-btn" id="play-pause-btn">
-                                <i class="fas fa-play"></i>
-                            </button>
-                            
-                            <button class="control-btn" id="next-btn">
-                                <i class="fas fa-step-forward"></i>
-                            </button>
-                            
-                            <div class="volume-container">
-                                <button class="control-btn" id="volume-btn">
-                                    <i class="fas fa-volume-up"></i>
-                                </button>
-                                <div class="volume-slider" id="volume-slider">
-                                    <div class="volume-level" id="volume-level"></div>
-                                </div>
-                            </div>
-                            <div class="time-display" id="time-display">00:00 / 00:00</div>
+            <div class="main-content">
+                <div class="player-area" id="player-area">
+                    <div class="player-container" id="player-container">
+                        <video id="video-player" playsinline>
+                            您的浏览器不支持HTML5视频播放
+                        </video>
+                        
+                        <div class="audio-info" id="audio-info">
+                            <div><span class="audio-label">类别：</span><span class="audio-value" id="audio-category"></span></div>
+                            <div><span class="audio-label">正在播放：</span><span class="audio-value" id="audio-playing-name"></span></div>
                         </div>
                         
-                        <div class="progress-container">
-                            <div class="progress-bar">
-                                <div class="progress" id="progress-bar"></div>
-                            </div>
+                        <div class="cache-status" id="cache-status">
+                            <i class="fas fa-database"></i> 使用缓存数据
                         </div>
                         
-                        <div class="control-group">
-                            <div class="dropdown" id="speed-dropdown">
-                                <button class="control-btn">
-                                    <i class="fas fa-running"></i>
-                                </button>
-                                <div class="dropdown-content">
-                                    <div class="dropdown-item" data-speed="0.5">0.5x</div>
-                                    <div class="dropdown-item" data-speed="0.75">0.75x</div>
-                                    <div class="dropdown-item active" data-speed="1">正常</div>
-                                    <div class="dropdown-item" data-speed="1.25">1.25x</div>
-                                    <div class="dropdown-item" data-speed="1.5">1.5x</div>
-                                    <div class="dropdown-item" data-speed="2">2x</div>
-                                </div>
+                        <div class="protocol-indicator" id="protocol-indicator">
+                            正在使用: <span id="protocol-type">未知协议</span>
+                        </div>
+                        
+                        <div class="proxy-status" id="proxy-status">
+                            <i class="fas fa-globe"></i> 使用CORS代理 (服务1)
+                        </div>
+                        
+                        <div class="touch-lock" id="touch-lock">
+                            <i class="fas fa-lock"></i>
+                        </div>
+                        
+                        <div class="danmaku-container" id="danmaku-container"></div>
+                        
+                        <div class="stats-panel" id="stats-panel">
+                            <div class="stats-title">
+                                <i class="fas fa-info-circle"></i> 媒体信息
                             </div>
-                            
-                            <div class="dropdown" id="quality-dropdown">
-                                <button class="control-btn">
-                                    <i class="fas fa-binoculars"></i>
-                                    <span class="quality-text">自动</span>
-                                </button>
-                                <div class="dropdown-content">
-                                    <div class="dropdown-item active" data-quality="auto">自动</div>
-                                    <div class="dropdown-item" data-quality="1080">1080P</div>
-                                    <div class="dropdown-item" data-quality="720">720P</div>
-                                    <div class="dropdown-item" data-quality="480">480P</div>
-                                    <div class="dropdown-item" data-quality="360">360P</div>
-                                </div>
-                            </div>
-                            
-                            <button class="control-btn rotate-btn" id="rotate-btn">
-                                <i class="fas fa-retweet rotate-icon"></i>
-                            </button>
-                            
-                            <button class="control-btn screenshot-btn" id="screenshot-btn">
-                                <i class="fas fa-camera"></i>
-                            </button>
-                            
-                            <button class="control-btn loop-btn" id="loop-btn">
-                                <i class="fas fas fa-list"></i>
-                                <span class="loop-mode" id="loop-mode">循环</span>
-                            </button>
-                            
-                            <button class="control-btn" id="pip-btn">
-                                <i class="fas fa-expand"></i>
-                            </button>
-                            
-                            <button class="control-btn" id="fullscreen-btn">
-                                <i class="fas fa-expand-arrows-alt"></i>
-                            </button>
-                            
-                            <button class="control-btn active" id="danmaku-btn">
-                                <i class="fas fa-comment-alt"></i>
-                            </button>
-                            
-                            <button class="control-btn" id="stats-btn">
-                                <i class="fas fa-chart-bar"></i>
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div class="mini-progress" id="mini-progress">
-                        <div class="mini-progress-bar" id="mini-progress-bar"></div>
-                    </div>
-                    
-                    <div class="browser-hint" id="browser-hint"></div>
-                </div>
-                
-                <div class="toggle-sidebar-btn" id="toggle-sidebar-btn">
-                    <i class="fas fa-chevron-left"></i>
-                </div>
-            </div>
-
-            <div class="sidebar" id="sidebar">
-                <div class="sidebar-header">
-                    <div class="sidebar-title">
-                        <i class="fas fa-list"></i> 资源列表
-                    </div>
-                </div>
-                
-                <div class="cache-status-bar" id="cache-status-bar">
-                    <i class="fas fa-database"></i>
-                    <span id="cache-status-text">使用缓存数据</span>
-                </div>
-                
-                <div class="sidebar-content">
-                    <div class="sidebar-section">
-                        <div class="current-playing">
-                            <i class="fas fa-play-circle"></i>
-                            <span id="current-playing">未播放</span>
-                        </div>
-                    </div>
-                    
-                    <div class="sidebar-section">
-                        <h3 class="section-title">
-                            <i class="fas fa-satellite"></i> 线路选择
-                            <span class="warning-message" id="channel-warning" style="display:none"></span>
-                        </h3>
-                        <div class="channels-scroll">
-                            <ul class="channel-list" id="channel-list">
-                                <li class="loading">
-                                    <div class="loading-spinner"></div>
-                                    <span>加载线路中...</span>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                    
-                    <div class="sidebar-section">
-                        <h3 class="section-title">
-                            <i class="fas fa-tags"></i> 分类
-                        </h3>
-                        <div class="category-scroll">
-                            <div class="category-grid" id="category-grid">
-                                <div class="loading">
-                                    <div class="loading-spinner"></div>
-                                    <span>加载分类中...</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- 新增测试视频区域 -->
-                    <div class="sidebar-section">
-                        <h3 class="section-title">
-                            <i class="fas fa-video"></i> 视频测试
-                        </h3>
-                        <div class="test-play-container">
-                            <div class="test-video-label">输入视频链接进行测试：</div>
-                            <input type="text" id="test-video-url" value="https://vd3.bdstatic.com/mda-rbnxjr1a8c2v9ysq/1080p/cae_h264/1740349401384386175/mda-rbnxjr1a8c2v9ysq.mp4" placeholder="输入视频链接进行测试" onclick="this.select()">
-                            <button id="test-play-btn">播放测试视频</button>
-                            <div class="test-video-example">
+                            <div class="stats-info">
+                                <div class="stats-label">节目:</div>
+                                <div class="stats-value" id="stats-program">-</div>
                                 
+                                <div class="stats-label">状态:</div>
+                                <div class="stats-value" id="stats-status">等待播放</div>
+                                
+                                <div class="stats-label">分辨率:</div>
+                                <div class="stats-value" id="stats-resolution">-</div>
+                                
+                                <div class="stats-label">比特率:</div>
+                                <div class="stats-value" id="stats-bitrate">-</div>
+                                
+                                <div class="stats-label">视频格式:</div>
+                                <div class="stats-value" id="stats-video-format">-</div>
+                                
+                                <div class="stats-label">音频格式:</div>
+                                <div class="stats-value" id="stats-audio-format">-</div>
+                                
+                                <div class="stats-label">缓冲:</div>
+                                <div class="stats-value" id="stats-buffer">0%</div>
+                                
+                                <div class="stats-label">网络速度:</div>
+                                <div class="stats-value" id="stats-speed">-</div>
+                                
+                                <div class="stats-label">协议:</div>
+                                <div class="stats-value" id="stats-protocol">-</div>
+                                
+                                <div class="stats-label">播放引擎:</div>
+                                <div class="stats-value" id="stats-engine">-</div>
+                                
+                                <div class="stats-label">缓存状态:</div>
+                                <div class="stats-value" id="stats-cache">-</div>
+                                
+                                <div class="stats-label">代理状态:</div>
+                                <div class="stats-value" id="stats-proxy">未使用</div>
                             </div>
+                        </div>
+                        
+                        <div class="status-indicator" id="status-indicator">
+                            正在加载媒体内容...
+                        </div>
+                        
+                        <div class="error-panel" id="error-panel">
+                            <h3>播放遇到问题</h3>
+                            <p id="error-message">无法播放当前内容</p>
+                            <div class="error-options">
+                                <button id="retry-btn">重试</button>
+                                <button id="next-error-btn">播放下一个</button>
+                                <button id="switch-proxy-btn">切换代理</button>
+                            </div>
+                        </div>
+                        
+                        <div class="player-controls">
+                            <div class="control-group">
+                                <button class="control-btn" id="prev-btn">
+                                    <i class="fas fa-step-backward"></i>
+                                </button>
+                                
+                                <button class="control-btn" id="play-pause-btn">
+                                    <i class="fas fa-play"></i>
+                                </button>
+                                
+                                <button class="control-btn" id="next-btn">
+                                    <i class="fas fa-step-forward"></i>
+                                </button>
+                                
+                                <div class="volume-container">
+                                    <button class="control-btn" id="volume-btn">
+                                        <i class="fas fa-volume-up"></i>
+                                    </button>
+                                    <div class="volume-slider" id="volume-slider">
+                                        <div class="volume-level" id="volume-level"></div>
+                                    </div>
+                                </div>
+                                <div class="time-display" id="time-display">00:00 / 00:00</div>
+                            </div>
+                            
+                            <div class="progress-container">
+                                <div class="progress-bar">
+                                    <div class="progress" id="progress-bar"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="control-group">
+                                <div class="dropdown" id="speed-dropdown">
+                                    <button class="control-btn">
+                                        <i class="fas fa-running"></i>
+                                    </button>
+                                    <div class="dropdown-content">
+                                        <div class="dropdown-item" data-speed="0.5">0.5x</div>
+                                        <div class="dropdown-item" data-speed="0.75">0.75x</div>
+                                        <div class="dropdown-item active" data-speed="1">正常</div>
+                                        <div class="dropdown-item" data-speed="1.25">1.25x</div>
+                                        <div class="dropdown-item" data-speed="1.5">1.5x</div>
+                                        <div class="dropdown-item" data-speed="2">2x</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="dropdown" id="quality-dropdown">
+                                    <button class="control-btn">
+                                        <i class="fas fa-binoculars"></i>
+                                        <span class="quality-text">自动</span>
+                                    </button>
+                                    <div class="dropdown-content">
+                                        <div class="dropdown-item active" data-quality="auto">自动</div>
+                                        <div class="dropdown-item" data-quality="1080">1080P</div>
+                                        <div class="dropdown-item" data-quality="720">720P</div>
+                                        <div class="dropdown-item" data-quality="480">480P</div>
+                                        <div class="dropdown-item" data-quality="360">360P</div>
+                                    </div>
+                                </div>
+                                
+                                <button class="control-btn rotate-btn" id="rotate-btn">
+                                    <i class="fas fa-retweet rotate-icon"></i>
+                                </button>
+                                
+                                <button class="control-btn screenshot-btn" id="screenshot-btn">
+                                    <i class="fas fa-camera"></i>
+                                </button>
+                                
+                                <button class="control-btn loop-btn" id="loop-btn">
+                                    <i class="fas fas fa-list"></i>
+                                    <span class="loop-mode" id="loop-mode">循环</span>
+                                </button>
+                                
+                                <button class="control-btn" id="pip-btn">
+                                    <i class="fas fa-expand"></i>
+                                </button>
+                                
+                                <button class="control-btn" id="fullscreen-btn">
+                                    <i class="fas fa-expand-arrows-alt"></i>
+                                </button>
+                                
+                                <button class="control-btn active" id="danmaku-btn">
+                                    <i class="fas fa-comment-alt"></i>
+                                </button>
+                                
+                                <button class="control-btn" id="stats-btn">
+                                    <i class="fas fa-chart-bar"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="mini-progress" id="mini-progress">
+                            <div class="mini-progress-bar" id="mini-progress-bar"></div>
+                        </div>
+                        
+                        <div class="browser-hint" id="browser-hint"></div>
+                    </div>
+                    
+                    <div class="toggle-sidebar-btn" id="toggle-sidebar-btn">
+                        <i class="fas fa-chevron-left"></i>
+                    </div>
+                </div>
+
+                <div class="sidebar" id="sidebar">
+                    <div class="sidebar-header">
+                        <div class="sidebar-title">
+                            <i class="fas fa-list"></i> 资源列表
                         </div>
                     </div>
                     
-                    <div class="sidebar-section">
-                        <h3 class="section-title">
-                            <i class="fas fa-play-circle"></i> 播放列表
-                        </h3>
-                        <div class="entries-container">
-                            <div class="entries-grid" id="entries-grid">
-                                <div class="loading">
-                                    <div class="loading-spinner"></div>
-                                    <span>加载内容中...</span>
+                    <div class="cache-status-bar" id="cache-status-bar">
+                        <i class="fas fa-database"></i>
+                        <span id="cache-status-text">使用缓存数据</span>
+                    </div>
+                    
+                    <div class="sidebar-content">
+                        <div class="sidebar-section">
+                            <div class="current-playing">
+                                <i class="fas fa-play-circle"></i>
+                                <span id="current-playing">未播放</span>
+                            </div>
+                        </div>
+                        
+                        <div class="sidebar-section">
+                            <h3 class="section-title">
+                                <i class="fas fa-satellite"></i> 线路选择
+                                <span class="warning-message" id="channel-warning" style="display:none"></span>
+                            </h3>
+                            <div class="channels-scroll">
+                                <ul class="channel-list" id="channel-list">
+                                    <li class="loading">
+                                        <div class="loading-spinner"></div>
+                                        <span>加载线路中...</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="sidebar-section">
+                            <h3 class="section-title">
+                                <i class="fas fa-tags"></i> 分类
+                            </h3>
+                            <div class="category-scroll">
+                                <div class="category-grid" id="category-grid">
+                                    <div class="loading">
+                                        <div class="loading-spinner"></div>
+                                        <span>加载分类中...</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 新增测试视频区域 -->
+                        <div class="sidebar-section">
+                            <h3 class="section-title">
+                                <i class="fas fa-video"></i> 视频测试
+                            </h3>
+                            <div class="test-play-container">
+                                <div class="test-video-label">输入视频链接进行测试：</div>
+                                <input type="text" id="test-video-url" value="https://vd3.bdstatic.com/mda-rbnxjr1a8c2v9ysq/1080p/cae_h264/1740349401384386175/mda-rbnxjr1a8c2v9ysq.mp4" placeholder="输入视频链接进行测试">
+                                <button id="test-play-btn">播放测试视频</button>
+                                <div class="test-video-example">
+                                    
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="sidebar-section">
+                            <h3 class="section-title">
+                                <i class="fas fa-play-circle"></i> 播放列表
+                            </h3>
+                            <div class="entries-container">
+                                <div class="entries-grid" id="entries-grid">
+                                    <div class="loading">
+                                        <div class="loading-spinner"></div>
+                                        <span>加载内容中...</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-        
-        <div class="pip-indicator" id="pip-indicator">
-            <i class="fas fa-picture-in-picture"></i>
-            播放器已进入画中画模式
-        </div>
-        
-        <div class="search-panel" id="search-panel">
-            <div class="search-panel-header">
-                <div class="search-panel-title">
-                    <i class="fas fa-search"></i> 搜索结果
-                </div>
-                <button class="close-search-btn" id="close-search-btn">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="search-results-container" id="search-results-container">
-                <div class="no-results">输入关键词搜索媒体资源</div>
-                <div class="search-info">搜索范围：当前线路下所有分类</div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        // 播放器控制逻辑
-        const videoPlayer = document.getElementById('video-player');
-        const playPauseBtn = document.getElementById('play-pause-btn');
-        const volumeBtn = document.getElementById('volume-btn');
-        const volumeSlider = document.getElementById('volume-slider');
-        const volumeLevel = document.getElementById('volume-level');
-        const pipBtn = document.getElementById('pip-btn');
-        const fullscreenBtn = document.getElementById('fullscreen-btn');
-        const danmakuBtn = document.getElementById('danmaku-btn');
-        const statsBtn = document.getElementById('stats-btn');
-        const statsPanel = document.getElementById('stats-panel');
-        const danmakuContainer = document.getElementById('danmaku-container');
-        const progressBar = document.getElementById('progress-bar');
-        const miniProgressBar = document.getElementById('mini-progress-bar');
-        const timeDisplay = document.getElementById('time-display');
-        const themeToggle = document.getElementById('theme-toggle');
-        const playerContainer = document.getElementById('player-container');
-        const pipIndicator = document.getElementById('pip-indicator');
-        const statusIndicator = document.getElementById('status-indicator');
-        const statsProtocol = document.getElementById('stats-protocol');
-        const statsEngine = document.getElementById('stats-engine');
-        const touchLockBtn = document.getElementById('touch-lock');
-        const statsProgram = document.getElementById('stats-program');
-        const statsVideoFormat = document.getElementById('stats-video-format');
-        const statsAudioFormat = document.getElementById('stats-audio-format');
-        const statsResolution = document.getElementById('stats-resolution');
-        const statsBitrate = document.getElementById('stats-bitrate');
-        const rotateBtn = document.getElementById('rotate-btn');
-        const screenshotBtn = document.getElementById('screenshot-btn');
-        const loopBtn = document.getElementById('loop-btn');
-        const loopMode = document.getElementById('loop-mode');
-        const toggleSidebarBtn = document.getElementById('toggle-sidebar-btn');
-        const sidebar = document.getElementById('sidebar');
-        const playerArea = document.getElementById('player-area');
-        const miniProgress = document.getElementById('mini-progress');
-        const historyBtn = document.getElementById('history-btn');
-        const historyPanel = document.getElementById('history-panel');
-        const searchIcon = document.getElementById('search-icon');
-        const searchBox = document.getElementById('search-box');
-        const currentPlaying = document.getElementById('current-playing');
-        const clearHistoryBtn = document.getElementById('clear-history');
-        const searchPanel = document.getElementById('search-panel');
-        const closeSearchBtn = document.getElementById('close-search-btn');
-        const searchResultsContainer = document.getElementById('search-results-container');
-        const qualityDropdown = document.getElementById('quality-dropdown');
-        const qualityText = qualityDropdown.querySelector('.quality-text');
-        const prevBtn = document.getElementById('prev-btn');
-        const nextBtn = document.getElementById('next-btn');
-        const countdownDisplay = document.getElementById('countdown-display');
-        const countdownElement = document.getElementById('countdown');
-        const audioInfo = document.getElementById('audio-info');
-        const audioCategory = document.getElementById('audio-category');
-        const audioPlayingName = document.getElementById('audio-playing-name');
-        const protocolIndicator = document.getElementById('protocol-indicator');
-        const protocolType = document.getElementById('protocol-type');
-        const refreshBtn = document.getElementById('refresh-btn');
-        const cacheBtn = document.getElementById('cache-btn');
-        const cacheStatus = document.getElementById('cache-status');
-        const statsCache = document.getElementById('stats-cache');
-        const channelWarning = document.getElementById('channel-warning');
-        const errorPanel = document.getElementById('error-panel');
-        const errorMessage = document.getElementById('error-message');
-        const retryBtn = document.getElementById('retry-btn');
-        const nextErrorBtn = document.getElementById('next-error-btn');
-        const switchProxyBtn = document.getElementById('switch-proxy-btn');
-        const browserHint = document.getElementById('browser-hint');
-        const statsStatus = document.getElementById('stats-status');
-        const statsBuffer = document.getElementById('stats-buffer');
-        const statsSpeed = document.getElementById('stats-speed');
-        const proxyBtn = document.getElementById('proxy-btn');
-        const proxyStatus = document.getElementById('proxy-status');
-        const statsProxy = document.getElementById('stats-proxy');
-        const proxyPanel = document.getElementById('proxy-panel');
-        const proxyStatusText = document.getElementById('proxy-status-text');
-        const customProxyInput = document.getElementById('custom-proxy-input');
-        const testCustomProxyBtn = document.getElementById('test-custom-proxy-btn');
-        const testVideoUrl = document.getElementById('test-video-url');
-        const testPlayBtn = document.getElementById('test-play-btn');
-        const cacheProgressBar = document.getElementById('cache-progress-bar');
-        
-        // DOM 元素
-        const channelList = document.getElementById('channel-list');
-        const categoryGrid = document.getElementById('category-grid');
-        const entriesGrid = document.getElementById('entries-grid');
-        
-        // 当前状态
-        let currentChannel = null;
-        let currentChannelName = "";
-        let currentCategory = null;
-        let currentEntryIndex = -1;
-        let danmakuEnabled = true;
-        let channelsData = [];
-        let isInPIPMode = false;
-        let isFullscreen = false;
-        let playbackProtocol = '';
-        let touchStartX = 0;
-        let touchStartY = 0;
-        let initialVolume = 1;
-        let touchControlTimer = null;
-        let touchOverlay = null;
-        let isTouchLocked = false;
-        let rotation = 0;
-        let sidebarVisible = true;
-        let playerControlVisible = true;
-        let allEntries = [];
-        let allEntriesForSearch = [];
-        let loopModeState = 2;
-        let currentEntries = [];
-        let currentChannelCategories = {};
-        let countdownTimer = null;
-        let countdownInterval = null;
-        let countdownValue = 6;
-        let isAudioFile = false;
-        let browserCapabilities = {};
-        let proxyRequiredMap = {}; // 记录URL是否需要代理
-        
-        // 代理设置 - 使用智能决策代理服务
-        let proxyIndex = 1; // 1: 使用代理服务1 (默认开启)
-        const PROXY_SERVICES = {
-            0: "", // 不使用代理
-            1: "https://ajeossi.dpdns.org/",
-            2: "https://api.codetabs.com/v1/proxy?quest=",
-        };
-        
-        // 播放历史
-        let playHistory = JSON.parse(localStorage.getItem('playHistory')) || [];
-        
-        // HLS实例
-        let hls = null;
-        
-        // FLV播放器实例
-        let flvPlayer = null;
-        
-        // 代理函数 - 封装所有请求（直播流优化）
-        async function fetchWithProxy(url, isAudio = false) {
-            // 如果是音频文件，不使用代理
-            if (isAudio) {
-                console.log(`音频资源，直接请求: ${url}`);
-                return fetch(url);
-            }
             
-            // 添加必要的请求头，模拟浏览器行为
-            const headers = {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
-                'Referer': window.location.href,
-                'Origin': window.location.origin
+            <div class="pip-indicator" id="pip-indicator">
+                <i class="fas fa-picture-in-picture"></i>
+                播放器已进入画中画模式
+            </div>
+            
+            <div class="search-panel" id="search-panel">
+                <div class="search-panel-header">
+                    <div class="search-panel-title">
+                        <i class="fas fa-search"></i> 搜索结果
+                    </div>
+                    <button class="close-search-btn" id="close-search-btn">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="search-results-container" id="search-results-container">
+                    <div class="no-results">输入关键词搜索媒体资源</div>
+                    <div class="search-info">搜索范围：当前线路下所有分类</div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            // 播放器控制逻辑
+            const videoPlayer = document.getElementById('video-player');
+            const playPauseBtn = document.getElementById('play-pause-btn');
+            const volumeBtn = document.getElementById('volume-btn');
+            const volumeSlider = document.getElementById('volume-slider');
+            const volumeLevel = document.getElementById('volume-level');
+            const pipBtn = document.getElementById('pip-btn');
+            const fullscreenBtn = document.getElementById('fullscreen-btn');
+            const danmakuBtn = document.getElementById('danmaku-btn');
+            const statsBtn = document.getElementById('stats-btn');
+            const statsPanel = document.getElementById('stats-panel');
+            const danmakuContainer = document.getElementById('danmaku-container');
+            const progressBar = document.getElementById('progress-bar');
+            const miniProgressBar = document.getElementById('mini-progress-bar');
+            const timeDisplay = document.getElementById('time-display');
+            const themeToggle = document.getElementById('theme-toggle');
+            const playerContainer = document.getElementById('player-container');
+            const pipIndicator = document.getElementById('pip-indicator');
+            const statusIndicator = document.getElementById('status-indicator');
+            const statsProtocol = document.getElementById('stats-protocol');
+            const statsEngine = document.getElementById('stats-engine');
+            const touchLockBtn = document.getElementById('touch-lock');
+            const statsProgram = document.getElementById('stats-program');
+            const statsVideoFormat = document.getElementById('stats-video-format');
+            const statsAudioFormat = document.getElementById('stats-audio-format');
+            const statsResolution = document.getElementById('stats-resolution');
+            const statsBitrate = document.getElementById('stats-bitrate');
+            const rotateBtn = document.getElementById('rotate-btn');
+            const screenshotBtn = document.getElementById('screenshot-btn');
+            const loopBtn = document.getElementById('loop-btn');
+            const loopMode = document.getElementById('loop-mode');
+            const toggleSidebarBtn = document.getElementById('toggle-sidebar-btn');
+            const sidebar = document.getElementById('sidebar');
+            const playerArea = document.getElementById('player-area');
+            const miniProgress = document.getElementById('mini-progress');
+            const historyBtn = document.getElementById('history-btn');
+            const historyPanel = document.getElementById('history-panel');
+            const searchIcon = document.getElementById('search-icon');
+            const searchBox = document.getElementById('search-box');
+            const currentPlaying = document.getElementById('current-playing');
+            const clearHistoryBtn = document.getElementById('clear-history');
+            const searchPanel = document.getElementById('search-panel');
+            const closeSearchBtn = document.getElementById('close-search-btn');
+            const searchResultsContainer = document.getElementById('search-results-container');
+            const qualityDropdown = document.getElementById('quality-dropdown');
+            const qualityText = qualityDropdown.querySelector('.quality-text');
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            const countdownDisplay = document.getElementById('countdown-display');
+            const countdownElement = document.getElementById('countdown');
+            const audioInfo = document.getElementById('audio-info');
+            const audioCategory = document.getElementById('audio-category');
+            const audioPlayingName = document.getElementById('audio-playing-name');
+            const protocolIndicator = document.getElementById('protocol-indicator');
+            const protocolType = document.getElementById('protocol-type');
+            const refreshBtn = document.getElementById('refresh-btn');
+            const cacheBtn = document.getElementById('cache-btn');
+            const cacheStatus = document.getElementById('cache-status');
+            const statsCache = document.getElementById('stats-cache');
+            const channelWarning = document.getElementById('channel-warning');
+            const errorPanel = document.getElementById('error-panel');
+            const errorMessage = document.getElementById('error-message');
+            const retryBtn = document.getElementById('retry-btn');
+            const nextErrorBtn = document.getElementById('next-error-btn');
+            const switchProxyBtn = document.getElementById('switch-proxy-btn');
+            const browserHint = document.getElementById('browser-hint');
+            const statsStatus = document.getElementById('stats-status');
+            const statsBuffer = document.getElementById('stats-buffer');
+            const statsSpeed = document.getElementById('stats-speed');
+            const proxyBtn = document.getElementById('proxy-btn');
+            const proxyStatus = document.getElementById('proxy-status');
+            const statsProxy = document.getElementById('stats-proxy');
+            const proxyPanel = document.getElementById('proxy-panel');
+            const proxyStatusText = document.getElementById('proxy-status-text');
+            const customProxyInput = document.getElementById('custom-proxy-input');
+            const testCustomProxyBtn = document.getElementById('test-custom-proxy-btn');
+            const testVideoUrl = document.getElementById('test-video-url');
+            const testPlayBtn = document.getElementById('test-play-btn');
+            const cacheProgressBar = document.getElementById('cache-progress-bar');
+            
+            // DOM 元素
+            const channelList = document.getElementById('channel-list');
+            const categoryGrid = document.getElementById('category-grid');
+            const entriesGrid = document.getElementById('entries-grid');
+            
+            // 当前状态
+            let currentChannel = null;
+            let currentChannelName = "";
+            let currentCategory = null;
+            let currentEntryIndex = -1;
+            let danmakuEnabled = true;
+            let channelsData = [];
+            let isInPIPMode = false;
+            let isFullscreen = false;
+            let playbackProtocol = '';
+            let touchStartX = 0;
+            let touchStartY = 0;
+            let initialVolume = 1;
+            let touchControlTimer = null;
+            let touchOverlay = null;
+            let isTouchLocked = false;
+            let rotation = 0;
+            let sidebarVisible = true;
+            let playerControlVisible = true;
+            let allEntries = [];
+            let allEntriesForSearch = [];
+            let loopModeState = 2;
+            let currentEntries = [];
+            let currentChannelCategories = {};
+            let countdownTimer = null;
+            let countdownInterval = null;
+            let countdownValue = 6;
+            let isAudioFile = false;
+            let browserCapabilities = {};
+            let proxyRequiredMap = {}; // 记录URL是否需要代理
+            
+            // 代理设置 - 使用智能决策代理服务
+            let proxyIndex = 1; // 1: 使用代理服务1 (默认开启)
+            const PROXY_SERVICES = {
+                0: "", // 不使用代理
+                1: "https://ajeossi.dpdns.org/",
+				2: "https://jeotv.dpdns.org/",
+                3: "https://api.codetabs.com/v1/proxy?quest=",
             };
             
-            if (proxyIndex === 0) {
-                // 不使用代理
-                console.log(`直接请求: ${url}`);
-                return fetch(url, { headers: headers });
-            }
+            // 播放历史
+            let playHistory = JSON.parse(localStorage.getItem('playHistory')) || [];
             
-            // 处理自定义代理
-            let proxyUrl = '';
-            if (proxyIndex === 5) {
-                // 自定义代理
-                const customProxy = localStorage.getItem('customProxy');
-                if (customProxy) {
-                    proxyUrl = `${customProxy}${encodeURIComponent(url)}`;
-                } else {
-                    throw new Error('自定义代理未设置');
-                }
-            } else {
-                // 智能决策代理处理
-                proxyUrl = `${PROXY_SERVICES[proxyIndex]}${encodeURIComponent(url)}`;
-            }
-            
-            console.log(`使用代理服务 ${proxyIndex}: ${proxyUrl}`);
-            
-            try {
-                const response = await fetch(proxyUrl, { headers: headers });
-                if (!response.ok) {
-                    throw new Error(`代理请求错误: ${response.status} ${response.statusText}`);
-                }
+            // 初始化
+            window.addEventListener('load', () => {
+                detectBrowserCapabilities();
+                loadChannels();
+                renderPlayHistory();
                 
-                // 更新代理状态显示
-                let proxyName = '';
-                if (proxyIndex === 5) {
-                    proxyName = '自定义代理';
-                } else {
-                    proxyName = `代理服务${proxyIndex}`;
-                }
-                
-                statsProxy.textContent = `使用代理 (${proxyName})`;
-                proxyStatus.innerHTML = `<i class="fas fa-globe"></i> 使用CORS代理 (${proxyName})`;
+                // 设置代理状态（默认开启代理服务1）
+                statsProxy.textContent = '使用代理 (服务1)';
+                proxyStatus.innerHTML = '<i class="fas fa-globe"></i> 使用CORS代理 (服务1)';
                 proxyStatus.style.display = 'block';
+                proxyBtn.classList.add('active');
                 
-                return response;
-            } catch (error) {
-                console.error('代理请求捕获错误:', error);
-                throw new Error(`代理请求失败: ${error.message}`);
-            }
-        }
-        
-        // 测试代理服务
-        async function testProxyService(proxyIndex) {
-            proxyStatusText.textContent = "测试中...";
-            proxyStatusText.className = "proxy-status-text proxy-loading";
-            
-            // 使用一个测试URL
-            const testUrl = "https://vd2.bdstatic.com/mda-qcuhkcz656hdjjx7/qhd/cae_h264/1711903492331661818/mda-qcuhkcz656hdjjx7.mp4";
-            let proxyUrl = '';
-            
-            try {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 5000); // 5秒超时
-                
-                const startTime = Date.now();
-                let response;
-                
-                if (proxyIndex === 0) {
-                    // 不使用代理
-                    response = await fetch(testUrl, {
-                        signal: controller.signal,
-                        headers: {
-                            'Range': 'bytes=0-1' // 只请求前2个字节，减少流量
-                        }
-                    });
-                } 
-                else if (proxyIndex === 5) {
-                    // 自定义代理
-                    const customProxy = localStorage.getItem('customProxy');
-                    if (!customProxy) {
-                        throw new Error('自定义代理未设置');
-                    }
-                    proxyUrl = `${customProxy}${encodeURIComponent(testUrl)}`;
-                    response = await fetch(proxyUrl, {
-                        signal: controller.signal,
-                        headers: {
-                            'Range': 'bytes=0-1'
-                        }
-                    });
-                } 
-                else {
-                    proxyUrl = `${PROXY_SERVICES[proxyIndex]}${encodeURIComponent(testUrl)}`;
-                    response = await fetch(proxyUrl, {
-                        signal: controller.signal,
-                        headers: {
-                            'Range': 'bytes=0-1'
-                        }
-                    });
-                }
-                
-                clearTimeout(timeoutId);
-                const endTime = Date.now();
-                const responseTime = endTime - startTime;
-                
-                if (response.ok) {
-                    let proxyName = proxyIndex === 5 ? '自定义代理' : `代理服务${proxyIndex}`;
-                    proxyStatusText.textContent = `${proxyName} 可用 (${responseTime}ms)`;
-                    proxyStatusText.className = "proxy-status-text proxy-success";
-                    return true;
-                } else {
-                    let proxyName = proxyIndex === 5 ? '自定义代理' : `代理服务${proxyIndex}`;
-                    proxyStatusText.textContent = `${proxyName} 不可用 (HTTP ${response.status})`;
-                    proxyStatusText.className = "proxy-status-text proxy-failure";
-                    return false;
-                }
-            } catch (e) {
-                console.error(`代理服务 ${proxyIndex} 测试失败:`, e);
-                let proxyName = proxyIndex === 5 ? '自定义代理' : `代理服务${proxyIndex}`;
-                proxyStatusText.textContent = `${proxyName} 不可用: ${e.name === 'AbortError' ? '请求超时' : e.message}`;
-                proxyStatusText.className = "proxy-status-text proxy-failure";
-                return false;
-            }
-        }
-        
-        // 播放/暂停按钮
-        playPauseBtn.addEventListener('click', () => {
-            if (videoPlayer.paused) {
-                videoPlayer.play().catch(e => {
-                    console.error('播放失败:', e);
+                videoPlayer.addEventListener('enterpictureinpicture', () => {
+                    isInPIPMode = true;
+                    pipIndicator.style.display = 'block';
                 });
-                playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
-            } else {
-                videoPlayer.pause();
-                playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
-            }
-        });
-        
-        // 上一个按钮
-        prevBtn.addEventListener('click', () => {
-            playPrev();
-        });
-        
-        // 下一个按钮
-        nextBtn.addEventListener('click', () => {
-            playNext();
-        });
-        
-        // 音量按钮
-        volumeBtn.addEventListener('click', () => {
-            if (videoPlayer.muted) {
-                videoPlayer.muted = false;
-                volumeBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
-            } else {
-                videoPlayer.muted = true;
-                volumeBtn.innerHTML = '<i class="fas fa-volume-mute"></i>';
-            }
-        });
-        
-        // 音量滑块
-        volumeSlider.addEventListener('click', (e) => {
-            const rect = e.target.getBoundingClientRect();
-            const percent = (e.clientX - rect.left) / rect.width;
-            videoPlayer.volume = percent;
-            volumeLevel.style.width = `${percent * 100}%`;
-        });
-        
-        // 更新播放进度
-        videoPlayer.addEventListener('timeupdate', () => {
-            const percent = (videoPlayer.currentTime / videoPlayer.duration) * 100;
-            progressBar.style.width = `${percent}%`;
-            miniProgressBar.style.width = `${percent}%`;
+                
+                videoPlayer.addEventListener('leavepictureinpicture', () => {
+                    isInPIPMode = false;
+                    pipIndicator.style.display = 'none';
+                });
+                
+                videoPlayer.addEventListener('ended', () => {
+                    if (loopModeState === 1) {
+                        videoPlayer.currentTime = 0;
+                        videoPlayer.play();
+                    } else if (loopModeState === 2) {
+                        playNext();
+                    }
+                });
+                
+                setInterval(() => {
+                    if (!videoPlayer.paused && playbackProtocol !== '') {
+                        const buffer = Math.floor(Math.random() * 20) + 80;
+                        const speed = (Math.random() * 2 + 1).toFixed(1);
+                        statsBuffer.textContent = `${buffer}%`;
+                        statsSpeed.textContent = `${speed} MB/s`;
+                    }
+                }, 2000);
+                
+                playerControlVisible = true;
+                
+                document.addEventListener('click', (e) => {
+                    if (!errorPanel.contains(e.target)) {
+                        errorPanel.style.display = 'none';
+                    }
+                    if (!historyPanel.contains(e.target) && !e.target.closest('#history-btn')) {
+                        historyPanel.classList.remove('active');
+                    }
+                    if (!proxyPanel.contains(e.target) && !e.target.closest('#proxy-btn')) {
+                        proxyPanel.classList.remove('active');
+                    }
+                });
+            });
             
-            const currentTime = formatTime(videoPlayer.currentTime);
-            const duration = formatTime(videoPlayer.duration);
-            timeDisplay.textContent = `${currentTime} / ${duration}`;
-        });
-        
-        // 点击进度条跳转
-        document.querySelector('.progress-bar').addEventListener('click', (e) => {
-            if (isTouchLocked) return;
+            // 播放/暂停按钮
+            playPauseBtn.addEventListener('click', () => {
+                if (videoPlayer.paused) {
+                    videoPlayer.play().catch(e => {
+                        console.error('播放失败:', e);
+                    });
+                    playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
+                } else {
+                    videoPlayer.pause();
+                    playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+                }
+            });
             
-            const rect = e.target.getBoundingClientRect();
-            const percent = (e.clientX - rect.left) / rect.width;
-            videoPlayer.currentTime = percent * videoPlayer.duration;
-        });
-        
-        // 格式化时间
-        function formatTime(seconds) {
-            const mins = Math.floor(seconds / 60);
-            const secs = Math.floor(seconds % 60);
-            return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-        }
-        
-        // 根据URL判断协议类型和视频格式
-        function detectProtocol(url) {
-            try {
-                const urlObj = new URL(url);
-                const path = urlObj.pathname.toLowerCase();
+            // 上一个按钮
+            prevBtn.addEventListener('click', () => {
+                playPrev();
+            });
+            
+            // 下一个按钮
+            nextBtn.addEventListener('click', () => {
+                playNext();
+            });
+            
+            // 音量按钮
+            volumeBtn.addEventListener('click', () => {
+                if (videoPlayer.muted) {
+                    videoPlayer.muted = false;
+                    volumeBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
+                } else {
+                    videoPlayer.muted = true;
+                    volumeBtn.innerHTML = '<i class="fas fa-volume-mute"></i>';
+                }
+            });
+            
+            // 音量滑块
+            volumeSlider.addEventListener('click', (e) => {
+                const rect = e.target.getBoundingClientRect();
+                const percent = (e.clientX - rect.left) / rect.width;
+                videoPlayer.volume = percent;
+                volumeLevel.style.width = `${percent * 100}%`;
+            });
+            
+            // 更新播放进度
+            videoPlayer.addEventListener('timeupdate', () => {
+                const percent = (videoPlayer.currentTime / videoPlayer.duration) * 100;
+                progressBar.style.width = `${percent}%`;
+                miniProgressBar.style.width = `${percent}%`;
                 
-                if (path.endsWith('.m3u8') || url.includes('m3u8')) return 'HLS';
-                if (path.endsWith('.flv') || url.includes('flv')) return 'FLV';
-                if (path.endsWith('.mp4') || url.includes('mp4')) return 'MP4';
-                if (path.endsWith('.webm')) return 'WebM';
-                if (path.endsWith('.avi')) return 'AVI';
-                if (path.endsWith('.mov')) return 'MOV';
-                if (path.endsWith('.mkv')) return 'MKV';
+                const currentTime = formatTime(videoPlayer.currentTime);
+                const duration = formatTime(videoPlayer.duration);
+                timeDisplay.textContent = `${currentTime} / ${duration}`;
+            });
+            
+            // 点击进度条跳转
+            document.querySelector('.progress-bar').addEventListener('click', (e) => {
+                if (isTouchLocked) return;
                 
-                if (path.endsWith('.mp3')) return 'MP3';
-                if (path.endsWith('.wav')) return 'WAV';
-                if (path.endsWith('.ogg')) return 'OGG';
-                if (path.endsWith('.flac')) return 'FLAC';
-                if (path.endsWith('.aac')) return 'AAC';
-                if (path.endsWith('.m4a')) return 'M4A';
+                const rect = e.target.getBoundingClientRect();
+                const percent = (e.clientX - rect.left) / rect.width;
+                videoPlayer.currentTime = percent * videoPlayer.duration;
+            });
+            
+            // 格式化时间
+            function formatTime(seconds) {
+                const mins = Math.floor(seconds / 60);
+                const secs = Math.floor(seconds % 60);
+                return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            }
+            
+            // 根据URL判断协议类型和视频格式
+            function detectProtocol(url) {
+                try {
+                    const urlObj = new URL(url);
+                    const path = urlObj.pathname.toLowerCase();
+                    
+                    if (path.endsWith('.m3u8') || url.includes('m3u8')) return 'HLS';
+                    if (path.endsWith('.flv') || url.includes('flv')) return 'FLV';
+                    if (path.endsWith('.mp4') || url.includes('mp4')) return 'MP4';
+                    if (path.endsWith('.webm')) return 'WebM';
+                    if (path.endsWith('.avi')) return 'AVI';
+                    if (path.endsWith('.mov')) return 'MOV';
+                    if (path.endsWith('.mkv')) return 'MKV';
+                    
+                    if (path.endsWith('.mp3')) return 'MP3';
+                    if (path.endsWith('.wav')) return 'WAV';
+                    if (path.endsWith('.ogg')) return 'OGG';
+                    if (path.endsWith('.flac')) return 'FLAC';
+                    if (path.endsWith('.aac')) return 'AAC';
+                    if (path.endsWith('.m4a')) return 'M4A';
+                    
+                    if (url.includes('rtmp')) return 'RTMP';
+                    if (url.includes('rtsp')) return 'RTSP';
+                    
+                    return '未知';
+                } catch (e) {
+                    return '未知';
+                }
+            }
+            
+            // 获取视频格式信息
+            function detectVideoFormat(url) {
+                const h264Pattern = /h264|avc/i;
+                const h265Pattern = /h265|hevc/i;
+                const vp9Pattern = /vp9/i;
+                const av1Pattern = /av1/i;
                 
-                if (url.includes('rtmp')) return 'RTMP';
-                if (url.includes('rtsp')) return 'RTSP';
+                if (h264Pattern.test(url)) {
+                    return 'H.264/AVC';
+                } else if (h265Pattern.test(url)) {
+                    return 'H.265/HEVC';
+                } else if (vp9Pattern.test(url)) {
+                    return 'VP9';
+                } else if (av1Pattern.test(url)) {
+                    return 'AV1';
+                }
+                
+                if (url.includes('.mp4') || url.includes('.m4v')) {
+                    return 'H.264/AVC';
+                } else if (url.includes('.webm')) {
+                    return 'VP9';
+                } else if (url.includes('.mkv')) {
+                    return 'H.265/HEVC';
+                }
                 
                 return '未知';
-            } catch (e) {
-                return '未知';
-            }
-        }
-        
-        // 获取视频格式信息
-        function detectVideoFormat(url) {
-            const h264Pattern = /h264|avc/i;
-            const h265Pattern = /h265|hevc/i;
-            const vp9Pattern = /vp9/i;
-            const av1Pattern = /av1/i;
-            
-            if (h264Pattern.test(url)) {
-                return 'H.264/AVC';
-            } else if (h265Pattern.test(url)) {
-                return 'H.265/HEVC';
-            } else if (vp9Pattern.test(url)) {
-                return 'VP9';
-            } else if (av1Pattern.test(url)) {
-                return 'AV1';
             }
             
-            if (url.includes('.mp4') || url.includes('.m4v')) {
-                return 'H.264/AVC';
-            } else if (url.includes('.webm')) {
-                return 'VP9';
-            } else if (url.includes('.mkv')) {
-                return 'H.265/HEVC';
-            }
-            
-            return '未知';
-        }
-        
-        // 解析文本格式数据
-        function parseTextFormat(content) {
-            const lines = content.trim().split('\n');
-            const categories = {};
-            let currentCategory = null;
-            
-            for (const line of lines) {
-                if (line.trim() === '') continue;
+            // 解析文本格式数据
+            function parseTextFormat(content) {
+                const lines = content.trim().split('\n');
+                const categories = {};
+                let currentCategory = null;
                 
-                if (line.includes(',#genre#')) {
-                    const parts = line.split(',#genre#');
-                    if (parts.length > 0) {
-                        currentCategory = parts[0].trim();
-                        if (currentCategory) {
-                            categories[currentCategory] = [];
+                for (const line of lines) {
+                    if (line.trim() === '') continue;
+                    
+                    if (line.includes(',#genre#')) {
+                        const parts = line.split(',#genre#');
+                        if (parts.length > 0) {
+                            currentCategory = parts[0].trim();
+                            if (currentCategory) {
+                                categories[currentCategory] = [];
+                            }
                         }
+                        continue;
                     }
-                    continue;
-                }
-                
-                const parts = line.split(',');
-                if (parts.length >= 2 && currentCategory) {
-                    const channelName = parts[0].trim();
-                    const channelUrl = parts.slice(1).join(',').trim();
-                    if (channelName && channelUrl) {
-                        categories[currentCategory].push({ 
-                            name: channelName, 
-                            url: channelUrl 
-                        });
-                    }
-                }
-            }
-            
-            return categories;
-        }
-        
-        // 解析M3U格式数据
-        function parseM3UFormat(content) {
-            const lines = content.trim().split('\n');
-            const categories = {};
-            let currentCategory = "直播频道";
-            categories[currentCategory] = [];
-            
-            for (let i = 0; i < lines.length; i++) {
-                const line = lines[i].trim();
-                if (line.startsWith('#EXTINF:')) {
+                    
                     const parts = line.split(',');
-                    if (parts.length > 1) {
-                        const channelName = parts[parts.length - 1].trim();
-                        if (i + 1 < lines.length) {
-                            const channelUrl = lines[i + 1].trim();
-                            if (channelUrl && !channelUrl.startsWith('#')) {
-                                categories[currentCategory].push({ 
-                                    name: channelName, 
-                                    url: channelUrl 
-                                });
-                                i++;
+                    if (parts.length >= 2 && currentCategory) {
+                        const channelName = parts[0].trim();
+                        const channelUrl = parts.slice(1).join(',').trim();
+                        if (channelName && channelUrl) {
+                            categories[currentCategory].push({ 
+                                name: channelName, 
+                                url: channelUrl 
+                            });
+                        }
+                    }
+                }
+                
+                return categories;
+            }
+            
+            // 解析M3U格式数据
+            function parseM3UFormat(content) {
+                const lines = content.trim().split('\n');
+                const categories = {};
+                let currentCategory = "直播频道";
+                categories[currentCategory] = [];
+                
+                for (let i = 0; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    if (line.startsWith('#EXTINF:')) {
+                        const parts = line.split(',');
+                        if (parts.length > 1) {
+                            const channelName = parts[parts.length - 1].trim();
+                            if (i + 1 < lines.length) {
+                                const channelUrl = lines[i + 1].trim();
+                                if (channelUrl && !channelUrl.startsWith('#')) {
+                                    categories[currentCategory].push({ 
+                                        name: channelName, 
+                                        url: channelUrl 
+                                    });
+                                    i++;
+                                }
                             }
                         }
                     }
                 }
+                
+                return categories;
             }
             
-            return categories;
-        }
-        
-        // 加载线路数据（带缓存功能）
-        async function loadChannels() {
-            try {
-                const cachedData = localStorage.getItem('channelsData');
-                const cacheTime = localStorage.getItem('channelsCacheTime');
-                const now = new Date().getTime();
-                
-                if (cachedData && cacheTime && (now - parseInt(cacheTime)) < 24 * 60 * 60 * 1000) {
-                    try {
-                        const parsedData = JSON.parse(cachedData);
-                        if (!Array.isArray(parsedData)) throw new Error('无效的缓存格式');
-                        
-                        if (parsedData.length > 0 && parsedData[0].name && parsedData[0].url) {
-                            channelsData = parsedData;
-                            renderChannels(channelsData);
+            // 加载线路数据（带缓存功能）
+            async function loadChannels() {
+                try {
+                    const cachedData = localStorage.getItem('channelsData');
+                    const cacheTime = localStorage.getItem('channelsCacheTime');
+                    const now = new Date().getTime();
+                    
+                    if (cachedData && cacheTime && (now - parseInt(cacheTime)) < 24 * 60 * 60 * 1000) {
+                        try {
+                            const parsedData = JSON.parse(cachedData);
+                            if (!Array.isArray(parsedData)) throw new Error('无效的缓存格式');
                             
-                            updateCacheStatus(true);
-                            
-                            if (channelsData.length > 0) {
-                                selectChannel(channelsData[0]);
+                            if (parsedData.length > 0 && parsedData[0].name && parsedData[0].url) {
+                                channelsData = parsedData;
+                                renderChannels(channelsData);
+                                
+                                updateCacheStatus(true);
+                                
+                                if (channelsData.length > 0) {
+                                    selectChannel(channelsData[0]);
+                                }
+                                return;
                             }
-                            return;
+                        } catch (e) {
+                            console.error('缓存数据解析失败:', e);
                         }
-                    } catch (e) {
-                        console.error('缓存数据解析失败:', e);
                     }
-                }
-                
-                const response = await fetch('https://d.kstore.dev/download/8043/ys/SCjieko.txt');
-                if (!response.ok) throw new Error('网络响应错误');
-                
-                const textData = await response.text();
-                
-                if (textData.startsWith('#EXTM3U')) {
-                    const playlist = parseM3UFormat(textData);
                     
-                    channelsData = [{
-                        name: "默认线路",
-                        url: 'https://d.kstore.dev/download/8043/ys/SCjieko.txt',
-                        content: textData
-                    }];
-                } 
-                else if (textData.includes(',#genre#')) {
-                    const playlist = parseTextFormat(textData);
+                    const response = await fetch('https://d.kstore.dev/download/8043/ys/SCjieko.txt');
+                    if (!response.ok) throw new Error('网络响应错误');
                     
-                    channelsData = [{
-                        name: "默认线路",
-                        url: 'https://d.kstore.dev/download/8043/ys/SCjieko.txt',
-                        content: textData
-                    }];
-                }
-                else {
-                    try {
-                        const data = JSON.parse(textData);
-                        if (!Array.isArray(data)) throw new Error('无效的数据格式');
+                    const textData = await response.text();
+                    
+                    if (textData.startsWith('#EXTM3U')) {
+                        const playlist = parseM3UFormat(textData);
                         
-                        channelsData = data.map(item => ({
-                            name: item.name,
-                            url: item.url
-                        }));
-                    } catch (jsonError) {
-                        console.error('JSON解析失败:', jsonError);
-                        throw new Error('无法识别的数据格式');
+                        channelsData = [{
+                            name: "默认线路",
+                            url: 'https://d.kstore.dev/download/8043/ys/SCjieko.txt',
+                            content: textData
+                        }];
+                    } 
+                    else if (textData.includes(',#genre#')) {
+                        const playlist = parseTextFormat(textData);
+                        
+                        channelsData = [{
+                            name: "默认线路",
+                            url: 'https://d.kstore.dev/download/8043/ys/SCjieko.txt',
+                            content: textData
+                        }];
                     }
+                    else {
+                        try {
+                            const data = JSON.parse(textData);
+                            if (!Array.isArray(data)) throw new Error('无效的数据格式');
+                            
+                            channelsData = data.map(item => ({
+                                name: item.name,
+                                url: item.url
+                            }));
+                        } catch (jsonError) {
+                            console.error('JSON解析失败:', jsonError);
+                            throw new Error('无法识别的数据格式');
+                        }
+                    }
+                    
+                    localStorage.setItem('channelsData', JSON.stringify(channelsData));
+                    localStorage.setItem('channelsCacheTime', now.toString());
+                    updateCacheStatus(false);
+                    
+                    renderChannels(channelsData);
+                    
+                    if (channelsData.length > 0) {
+                        selectChannel(channelsData[0]);
+                    }
+                } catch (error) {
+                    console.error('加载线路数据失败:', error);
+                    channelList.innerHTML = '<li class="channel-item">数据加载失败，请刷新重试</li>';
+                    channelWarning.textContent = error.message;
+                    channelWarning.style.display = 'block';
+                    statsCache.textContent = '加载失败';
                 }
+            }
+            
+            // 更新缓存状态显示
+            function updateCacheStatus(isCached) {
+                const cacheStatusBar = document.getElementById('cache-status-bar');
+                const cacheStatusText = document.getElementById('cache-status-text');
                 
-                localStorage.setItem('channelsData', JSON.stringify(channelsData));
-                localStorage.setItem('channelsCacheTime', now.toString());
-                updateCacheStatus(false);
-                
-                renderChannels(channelsData);
-                
-                if (channelsData.length > 0) {
-                    selectChannel(channelsData[0]);
+                if (isCached) {
+                    cacheStatusBar.style.display = 'flex';
+                    cacheStatusText.textContent = '使用缓存数据';
+                    cacheStatusBar.style.backgroundColor = '#e6f7ff';
+                    statsCache.textContent = '已缓存';
+                    
+                    // 缓存按钮高亮
+                    cacheBtn.classList.add('active');
+                } else {
+                    cacheStatusBar.style.display = 'flex';
+                    cacheStatusText.textContent = '使用最新数据';
+                    cacheStatusBar.style.backgroundColor = '#f6ffed';
+                    statsCache.textContent = '无缓存';
+                    
+                    // 缓存按钮取消高亮
+                    cacheBtn.classList.remove('active');
                 }
-            } catch (error) {
-                console.error('加载线路数据失败:', error);
-                channelList.innerHTML = '<li class="channel-item">数据加载失败，请刷新重试</li>';
-                channelWarning.textContent = error.message;
-                channelWarning.style.display = 'block';
-                statsCache.textContent = '加载失败';
             }
-        }
-        // 更新缓存进度
-        function updateCacheProgress(percent) {
-            cacheProgressBar.style.width = `${percent}%`;
-        }
-        
-        // 更新缓存状态显示
-        function updateCacheStatus(isCached) {
-            const cacheStatusBar = document.getElementById('cache-status-bar');
-            const cacheStatusText = document.getElementById('cache-status-text');
             
-            if (isCached) {
-                cacheStatusBar.style.display = 'flex';
-                cacheStatusText.textContent = '使用缓存数据';
-                cacheStatusBar.style.backgroundColor = '#e6f7ff';
-                statsCache.textContent = '已缓存';
+            // 渲染线路列表
+            function renderChannels(channels) {
+                channelList.innerHTML = '';
                 
-                // 缓存按钮高亮
-                cacheBtn.classList.add('active');
-            } else {
-                cacheStatusBar.style.display = 'flex';
-                cacheStatusText.textContent = '使用最新数据';
-                cacheStatusBar.style.backgroundColor = '#f6ffed';
-                statsCache.textContent = '无缓存';
-                
-                // 缓存按钮取消高亮
-                cacheBtn.classList.remove('active');
+                channels.forEach((channel, index) => {
+                    const li = document.createElement('li');
+                    li.className = 'channel-item';
+                    if (index === 0) li.classList.add('active');
+                    li.innerHTML = ` ${channel.name}`;
+                    
+                    const cacheIndicator = document.createElement('div');
+                    cacheIndicator.className = 'cache-indicator';
+                    li.appendChild(cacheIndicator);
+                    
+                    li.addEventListener('click', () => {
+                        selectChannel(channel);
+                    });
+                    
+                    channelList.appendChild(li);
+                });
             }
-        }
-        
-        // 渲染线路列表
-        function renderChannels(channels) {
-            channelList.innerHTML = '';
             
-            channels.forEach((channel, index) => {
-                const li = document.createElement('li');
-                li.className = 'channel-item';
-                if (index === 0) li.classList.add('active');
-                li.innerHTML = ` ${channel.name}`;
+            // 选择频道
+            async function selectChannel(channel) {
+                allEntriesForSearch = [];
                 
-                const cacheIndicator = document.createElement('div');
-                cacheIndicator.className = 'cache-indicator';
-                li.appendChild(cacheIndicator);
-                
-                li.addEventListener('click', () => {
-                    selectChannel(channel);
+                document.querySelectorAll('.channel-item').forEach((item, index) => {
+                    if (channelsData[index].name === channel.name) {
+                        item.classList.add('active');
+                    } else {
+                        item.classList.remove('active');
+                    }
                 });
                 
-                channelList.appendChild(li);
-            });
-        }
-        
-        // 选择频道
-        async function selectChannel(channel) {
-            allEntriesForSearch = [];
-            
-            document.querySelectorAll('.channel-item').forEach((item, index) => {
-                if (channelsData[index].name === channel.name) {
-                    item.classList.add('active');
-                } else {
-                    item.classList.remove('active');
+                currentChannel = channel;
+                currentChannelName = channel.name;
+                
+                try {
+                    categoryGrid.innerHTML = '<div class="loading"><div class="loading-spinner"></div><span>加载分类中...</span></div>';
+                    entriesGrid.innerHTML = '<div class="loading"><div class="loading-spinner"></div><span>加载内容中...</span></div>';
+                    
+                    let content = '';
+                    
+                    if (channel.content) {
+                        content = channel.content;
+                    } 
+                    else {
+                        const response = await fetch(channel.url);
+                        if (!response.ok) throw new Error('网络响应错误');
+                        content = await response.text();
+                    }
+                    
+                    let categories = {};
+                    
+                    if (content.includes(',#genre#')) {
+                        categories = parseTextFormat(content);
+                    } else if (content.startsWith('#EXTM3U')) {
+                        categories = parseM3UFormat(content);
+                    } else {
+                        throw new Error('未知的格式');
+                    }
+                    
+                    currentChannelCategories = categories;
+                    
+                    Object.keys(categories).forEach(category => {
+                        categories[category].forEach(entry => {
+                            allEntriesForSearch.push({
+                                ...entry,
+                                category: category
+                            });
+                        });
+                    });
+                    
+                    renderCategories(categories);
+                    
+                    const firstCategory = Object.keys(categories)[0];
+                    if (firstCategory) {
+                        selectCategory(firstCategory, categories[firstCategory], channel.name);
+                    }
+                } catch (error) {
+                    console.error('加载分类数据失败:', error);
+                    categoryGrid.innerHTML = '<div class="category-item-container">数据加载失败</div>';
+                    entriesGrid.innerHTML = '<div class="loading">数据加载失败，请刷新重试</div>';
                 }
-            });
+            }
             
-            currentChannel = channel;
-            currentChannelName = channel.name;
-            
-            try {
-                categoryGrid.innerHTML = '<div class="loading"><div class="loading-spinner"></div><span>加载分类中...</span></div>';
-                entriesGrid.innerHTML = '<div class="loading"><div class="loading-spinner"></div><span>加载内容中...</span></div>';
-                
-                let content = '';
-                
-                if (channel.content) {
-                    content = channel.content;
-                } 
-                else {
-                    const response = await fetch(channel.url);
-                    if (!response.ok) throw new Error('网络响应错误');
-                    content = await response.text();
-                }
-                
-                let categories = {};
-                
-                if (content.includes(',#genre#')) {
-                    categories = parseTextFormat(content);
-                } else if (content.startsWith('#EXTM3U')) {
-                    categories = parseM3UFormat(content);
-                } else {
-                    throw new Error('未知的格式');
-                }
-                
-                currentChannelCategories = categories;
+            // 渲染分类列表
+            function renderCategories(categories) {
+                categoryGrid.innerHTML = '';
                 
                 Object.keys(categories).forEach(category => {
-                    categories[category].forEach(entry => {
-                        allEntriesForSearch.push({
-                            ...entry,
-                            category: category
-                        });
+                    const categoryContainer = document.createElement('div');
+                    categoryContainer.className = 'category-item-container';
+                    categoryContainer.textContent = category;
+                    
+                    categoryContainer.addEventListener('click', () => {
+                        selectCategory(category, categories[category]);
                     });
+                    
+                    categoryGrid.appendChild(categoryContainer);
                 });
                 
-                renderCategories(categories);
-                
-                const firstCategory = Object.keys(categories)[0];
-                if (firstCategory) {
-                    selectCategory(firstCategory, categories[firstCategory], channel.name);
+                if (categoryGrid.firstChild) {
+                    categoryGrid.firstChild.classList.add('active');
                 }
-            } catch (error) {
-                console.error('加载分类数据失败:', error);
-                categoryGrid.innerHTML = '<div class="category-item-container">数据加载失败</div>';
-                entriesGrid.innerHTML = '<div class="loading">数据加载失败，请刷新重试</div>';
-            }
-        }
-        
-        // 渲染分类列表
-        function renderCategories(categories) {
-            categoryGrid.innerHTML = '';
-            
-            Object.keys(categories).forEach(category => {
-                const categoryContainer = document.createElement('div');
-                categoryContainer.className = 'category-item-container';
-                categoryContainer.textContent = category;
-                
-                categoryContainer.addEventListener('click', () => {
-                    selectCategory(category, categories[category]);
-                });
-                
-                categoryGrid.appendChild(categoryContainer);
-            });
-            
-            if (categoryGrid.firstChild) {
-                categoryGrid.firstChild.classList.add('active');
-            }
-        }
-        
-        // 选择分类
-        function selectCategory(category, entries, channelName = '') {
-            document.querySelectorAll('.category-item-container').forEach(item => {
-                if (item.textContent === category) {
-                    item.classList.add('active');
-                } else {
-                    item.classList.remove('active');
-                }
-            });
-            
-            currentCategory = category;
-            currentEntries = entries;
-            
-            renderEntries(entries, category);
-        }
-        
-        // 渲染条目列表
-        function renderEntries(entries, category, isBroadcastChannel = false) {
-            entriesGrid.innerHTML = '';
-            
-            if (entries.length === 0) {
-                entriesGrid.innerHTML = '<div class="entry-item"><div class="entry-name">该分类下没有内容</div></div>';
-                return;
             }
             
-            allEntries = [];
-            
-            entries.forEach((entry, index) => {
-                const entryWithCategory = {
-                    ...entry,
-                    category: category,
-                    index: index
-                };
-                
-                allEntries.push(entryWithCategory);
-                
-                const entryItem = document.createElement('div');
-                entryItem.className = 'entry-item';
-                
-                entryItem.innerHTML = `
-                    <div class="entry-name">${entry.name}</div>
-                `;
-                
-                entryItem.addEventListener('click', () => {
-                    playMedia(entryWithCategory, category);
-                });
-                
-                entriesGrid.appendChild(entryItem);
-            });
-        }
-        
-        // 渲染播放历史
-        function renderPlayHistory() {
-            const historyList = historyPanel.querySelector('.history-list');
-            if (historyList) historyList.remove();
-            
-            if (playHistory.length === 0) {
-                historyPanel.querySelector('.no-history').style.display = 'block';
-                return;
-            }
-            
-            historyPanel.querySelector('.no-history').style.display = 'none';
-            
-            const historyListEl = document.createElement('div');
-            historyListEl.className = 'history-list';
-            
-            playHistory.forEach(item => {
-                const historyItem = document.createElement('div');
-                historyItem.className = 'history-item';
-                historyItem.textContent = item.name;
-                
-                historyItem.addEventListener('click', () => {
-                    playMedia(item, item.category);
-                    historyPanel.classList.remove('active');
-                });
-                
-                historyListEl.appendChild(historyItem);
-            });
-            
-            historyPanel.insertBefore(historyListEl, clearHistoryBtn);
-        }
-        
-        // 播放媒体
-        function playMedia(entry, category) {
-            currentCategory = category;
-            currentEntryIndex = entry.index;
-            
-            // 更新UI
-            highlightCurrentEntry();
-            currentPlaying.textContent = entry.name;
-            statsProgram.textContent = entry.name;
-            
-            // 重置播放器状态
-            resetPlayer();
-            
-            // 显示加载状态
-            statusIndicator.classList.add('active');
-            statusIndicator.textContent = `正在加载: ${entry.name}`;
-            
-            // 添加到历史记录
-            addToHistory(entry, category);
-            
-            // 检测是否为音频文件
-            const audioExtensions = ['.mp3', '.wav', '.ogg', '.flac', '.aac', '.m4a'];
-            const isAudioByExtension = audioExtensions.some(ext => entry.url.toLowerCase().includes(ext));
-            
-            // 修改点1: 如果分类包含"广播"或"电台"，则视为音频
-            const isBroadcastCategory = category && (category.includes('广播') || category.includes('电台'));
-            
-            // 开始播放
-            startPlayback(entry.url, isAudioByExtension || isBroadcastCategory);
-        }
-
-        // 重置播放器
-        function resetPlayer() {
-            // 停止之前的播放尝试
-            videoPlayer.pause();
-            videoPlayer.src = '';
-            videoPlayer.load();
-            
-            // 销毁现有的HLS实例
-            if (hls) {
-                hls.destroy();
-                hls = null;
-            }
-            
-            // 销毁现有的FLV实例
-            if (flvPlayer) {
-                flvPlayer.destroy();
-                flvPlayer = null;
-            }
-            
-            // 隐藏音频信息
-            audioInfo.style.display = 'none';
-            isAudioFile = false;
-            
-            // 重置统计信息
-            statsResolution.textContent = '-';
-            statsBitrate.textContent = '-';
-            statsBuffer.textContent = '0%';
-            statsSpeed.textContent = '-';
-            statsStatus.textContent = '准备中';
-        }
-
-        // 开始播放（直播流优化）
-        function startPlayback(url, isAudio = false) {
-            // 根据代理设置生成最终URL
-            let finalUrl = url;
-            if (proxyIndex !== 0 && !isAudio) {
-                if (proxyIndex === 5) {
-                    // 自定义代理
-                    const customProxy = localStorage.getItem('customProxy');
-                    if (customProxy) {
-                        finalUrl = `${customProxy}${encodeURIComponent(url)}`;
+            // 选择分类
+            function selectCategory(category, entries, channelName = '') {
+                document.querySelectorAll('.category-item-container').forEach(item => {
+                    if (item.textContent === category) {
+                        item.classList.add('active');
                     } else {
-                        handlePlaybackError('自定义代理未设置');
-                        return;
+                        item.classList.remove('active');
                     }
-                } else {
-                    finalUrl = `${PROXY_SERVICES[proxyIndex]}${encodeURIComponent(url)}`;
-                }
-            } else if (isAudio) {
-                // 对于音频文件，直接使用原始URL
-                statsProxy.textContent = '未使用';
-                proxyStatus.innerHTML = '<i class="fas fa-unlink"></i> 直接连接';
-                proxyStatus.style.display = 'block';
-            }
-            
-            const protocol = detectProtocol(url);
-            playbackProtocol = protocol;
-            statsProtocol.textContent = protocol;
-            protocolType.textContent = protocol;
-            protocolIndicator.style.display = 'block';
-            
-            // 获取视频格式
-            const videoFormat = detectVideoFormat(url);
-            statsVideoFormat.textContent = videoFormat;
-            
-            // 检查编码支持
-            if (videoFormat === 'H.265/HEVC' && !browserCapabilities.h265) {
-                handlePlaybackError('当前浏览器不支持H.265编码');
-                return;
-            }
-            
-            // 针对iOS的特殊播放策略
-            if (browserCapabilities.isIOS && protocol === 'MP4') {
-                playMediaOnIOS(finalUrl);
-                return;
-            }
-            
-            // 根据协议选择播放策略
-            if (protocol === 'HLS') {
-                if (browserCapabilities.hlsNative || browserCapabilities.isIOS) {
-                    playNativeHLS(finalUrl);
-                } else if (browserCapabilities.mse) {
-                    playHLSjs(finalUrl);
-                } else {
-                    fallbackToNative(finalUrl);
-                }
-            } else if (protocol === 'FLV') {
-                if (browserCapabilities.flv) {
-                    playFLVjs(finalUrl);
-                } else {
-                    fallbackToNative(finalUrl);
-                }
-            } else {
-                playNative(finalUrl);
-            }
-        }
-
-        // 播放原生HLS（Safari）
-        function playNativeHLS(url) {
-            console.log('使用原生HLS播放');
-            statsEngine.textContent = '原生HLS';
-            videoPlayer.crossOrigin = 'anonymous';
-            videoPlayer.src = url;
-            
-            videoPlayer.addEventListener('loadedmetadata', () => {
-                videoPlayer.play().then(() => {
-                    onPlaybackSuccess();
-                }).catch(e => {
-                    console.error('原生HLS播放失败:', e);
-                    handlePlaybackError('原生HLS播放失败', e);
                 });
-            });
-            
-            videoPlayer.addEventListener('error', (e) => {
-                handlePlaybackError('原生HLS错误', e);
-            });
-        }
-
-        // 使用HLS.js播放（直播流优化）
-        function playHLSjs(url) {
-            console.log('使用HLS.js播放');
-            if (!Hls.isSupported()) {
-                handlePlaybackError('HLS.js不被支持');
-                return;
+                
+                currentCategory = category;
+                currentEntries = entries;
+                
+                renderEntries(entries, category);
             }
             
-            statsEngine.textContent = 'HLS.js';
-            hls = new Hls({
-                debug: false,
-                enableWorker: true,
-                liveSyncDuration: 30,
-                liveBackBufferLength: 60,
-                liveMaxLatencyDuration: 60
-            });
-            
-            hls.loadSource(url);
-            hls.attachMedia(videoPlayer);
-            
-            hls.on(Hls.Events.MANIFEST_PARSED, () => {
-                videoPlayer.play().then(() => {
-                    onPlaybackSuccess();
-                }).catch(e => {
-                    console.error('HLS.js播放失败:', e);
-                    handlePlaybackError('HLS.js播放失败', e);
-                });
-            });
-            
-            hls.on(Hls.Events.ERROR, (event, data) => {
-                console.error('HLS错误:', data);
-                if (data.fatal) {
-                    switch (data.type) {
-                        case Hls.ErrorTypes.NETWORK_ERROR:
-                            console.warn('网络错误，尝试重新加载');
-                            hls.startLoad();
-                            break;
-                        case Hls.ErrorTypes.MEDIA_ERROR:
-                            console.warn('媒体错误，尝试恢复');
-                            hls.recoverMediaError();
-                            break;
-                        default:
-                            handlePlaybackError('HLS致命错误', data);
-                            break;
-                    }
+            // 渲染条目列表
+            function renderEntries(entries, category, isBroadcastChannel = false) {
+                entriesGrid.innerHTML = '';
+                
+                if (entries.length === 0) {
+                    entriesGrid.innerHTML = '<div class="entry-item"><div class="entry-name">该分类下没有内容</div></div>';
+                    return;
                 }
-            });
-        }
-
-        // 使用FLV.js播放（直播流优化）
-        function playFLVjs(url) {
-            console.log('使用FLV.js播放');
-            if (!flvjs.isSupported()) {
-                handlePlaybackError('FLV.js不被支持');
-                return;
-            }
-            
-            statsEngine.textContent = 'FLV.js';
-            flvPlayer = flvjs.createPlayer({
-                type: 'flv',
-                url: url,
-                isLive: true,
-                hasAudio: true,
-                hasVideo: true,
-                stashInitialSize: 1024 * 1024
-            });
-            
-            flvPlayer.attachMediaElement(videoPlayer);
-            flvPlayer.load();
-            
-            // 添加事件监听
-            flvPlayer.on(flvjs.Events.METADATA_ARRIVED, () => {
-                videoPlayer.play().then(() => {
-                    onPlaybackSuccess();
-                }).catch(e => {
-                    console.error('FLV播放失败:', e);
-                    handlePlaybackError('FLV播放失败', e);
-                });
-            });
-            
-            flvPlayer.on(flvjs.Events.ERROR, (errorType, errorDetail, errorInfo) => {
-                console.error('FLV错误:', errorType, errorDetail);
                 
-                // 直播流错误自动重试
-                if (errorType === flvjs.ErrorTypes.NETWORK_ERROR) {
-                    console.warn('网络错误，5秒后重试...');
-                    setTimeout(() => {
-                        if (flvPlayer) {
-                            flvPlayer.unload();
-                            flvPlayer.detachMediaElement();
-                            flvPlayer = null;
-                        }
-                        playFLVjs(url);
-                    }, 5000);
-                } else {
-                    handlePlaybackError('FLV播放错误', errorDetail);
-                }
-            });
-        }
-
-        // 原生播放 - 修复MP4播放问题
-        function playNative(url) {
-            console.log('使用原生播放器');
-            statsEngine.textContent = '原生播放器';
-            videoPlayer.crossOrigin = 'anonymous';
-            videoPlayer.src = url;
-            
-            // 修复MP4加载问题
-            const handleLoadedMetadata = () => {
-                // 移除事件监听器，避免重复触发
-                videoPlayer.removeEventListener('loadedmetadata', handleLoadedMetadata);
+                allEntries = [];
                 
-                // 尝试播放
-                const playPromise = videoPlayer.play();
-                
-                if (playPromise !== undefined) {
-                    playPromise.then(() => {
-                        onPlaybackSuccess();
-                    }).catch(e => {
-                        console.log('自动播放失败，需要用户交互');
-                        // 显示播放按钮，让用户手动播放
-                        statusIndicator.textContent = '点击播放按钮开始';
-                        statusIndicator.classList.add('active');
-                        playPauseBtn.style.display = 'block';
+                entries.forEach((entry, index) => {
+                    const entryWithCategory = {
+                        ...entry,
+                        category: category,
+                        index: index
+                    };
+                    
+                    allEntries.push(entryWithCategory);
+                    
+                    const entryItem = document.createElement('div');
+                    entryItem.className = 'entry-item';
+                    
+                    entryItem.innerHTML = `
+                        <div class="entry-name">${entry.name}</div>
+                    `;
+                    
+                    entryItem.addEventListener('click', () => {
+                        playMedia(entryWithCategory, category);
                     });
-                }
-            };
-            
-            // 添加loadedmetadata事件监听
-            videoPlayer.addEventListener('loadedmetadata', handleLoadedMetadata);
-            
-            // 添加error事件监听
-            videoPlayer.addEventListener('error', (e) => {
-                console.error('原生播放错误:', e);
-                handlePlaybackError('原生播放错误', e);
-            });
-            
-            // 添加超时处理
-            setTimeout(() => {
-                if (videoPlayer.readyState < 2) {
-                    console.log('视频加载超时，尝试直接播放');
-                    videoPlayer.play().then(() => {
-                        onPlaybackSuccess();
-                    }).catch(e => {
-                        console.log('超时后播放失败');
-                        statusIndicator.textContent = '点击播放按钮开始';
-                        statusIndicator.classList.add('active');
-                        playPauseBtn.style.display = 'block';
-                    });
-                }
-            }, 5000);
-        }
-
-        // iOS设备播放MP4的特殊策略
-        function playMediaOnIOS(url) {
-            console.log('使用iOS特殊策略播放MP4');
-            statsEngine.textContent = 'iOS特殊策略';
-            
-            // 创建新的视频元素，避免iOS限制
-            const tempVideo = document.createElement('video');
-            tempVideo.setAttribute('playsinline', 'true');
-            tempVideo.setAttribute('webkit-playsinline', 'true');
-            tempVideo.setAttribute('controls', 'false');
-            tempVideo.crossOrigin = 'anonymous';
-            tempVideo.src = url;
-            
-            // 添加到DOM（隐藏）
-            tempVideo.style.display = 'none';
-            document.body.appendChild(tempVideo);
-            
-            // 尝试播放
-            tempVideo.play().then(() => {
-                // 成功播放后切换到主播放器
-                videoPlayer.src = url;
-                videoPlayer.play().then(() => {
-                    onPlaybackSuccess();
-                    document.body.removeChild(tempVideo);
-                }).catch(e => {
-                    handlePlaybackError('iOS主播放器播放失败', e);
-                    document.body.removeChild(tempVideo);
+                    
+                    entriesGrid.appendChild(entryItem);
                 });
-            }).catch(e => {
-                handlePlaybackError('iOS临时播放失败', e);
-                document.body.removeChild(tempVideo);
-            });
-        }
-
-        // 回退到原生播放
-        function fallbackToNative(url) {
-            console.log('回退到原生播放');
-            playNative(url);
-        }
-
-        // 播放成功处理
-        function onPlaybackSuccess() {
-            console.log('播放成功');
-            playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
-            statusIndicator.classList.remove('active');
-            statsStatus.textContent = '播放中';
+            }
             
-            // 更新分辨率信息
-            setTimeout(() => {
-                if (videoPlayer.videoWidth > 0 && videoPlayer.videoHeight > 0) {
-                    statsResolution.textContent = `${videoPlayer.videoWidth}x${videoPlayer.videoHeight}`;
-                } else {
-                    statsResolution.textContent = '1920x1080';
+            // 渲染播放历史
+            function renderPlayHistory() {
+                const historyList = historyPanel.querySelector('.history-list');
+                if (historyList) historyList.remove();
+                
+                if (playHistory.length === 0) {
+                    historyPanel.querySelector('.no-history').style.display = 'block';
+                    return;
                 }
                 
-                // 检查媒体类型
-                checkMediaType();
-            }, 1000);
-        }
-
-        // 处理播放错误（直播流优化）
-        function handlePlaybackError(message, error = null) {
-            console.error(`${message}:`, error);
-            let errorDetail = '未知错误';
-            
-            if (error) {
-                // 从错误对象中提取详细信息
-                if (error.message) errorDetail = error.message;
-                if (error.name) errorDetail += ` (${error.name})`;
-                if (error.code) errorDetail += ` [code: ${error.code}]`;
-            }
-            
-            // 更新UI显示详细错误
-            statusIndicator.textContent = `${message}: ${errorDetail}`;
-            statsStatus.textContent = '播放失败';
-            
-            // 显示错误面板
-            showPlaybackError(`${message}: ${errorDetail}`);
-        }
-
-        // 检查媒体类型
-        function checkMediaType() {
-            if (!currentEntries || currentEntryIndex === -1 || currentEntryIndex >= currentEntries.length) {
-                return;
-            }
-
-            const entry = currentEntries[currentEntryIndex];
-            const url = entry.url.toLowerCase();
-            
-            // 1. 检查URL扩展名
-            const audioExtensions = ['.mp3', '.wav', '.ogg', '.flac', '.aac', '.m4a'];
-            const isAudioByExtension = audioExtensions.some(ext => url.includes(ext));
-            
-            // 2. 检查视频尺寸
-            const hasVideo = videoPlayer.videoWidth > 0 || videoPlayer.videoHeight > 0;
-            
-            // 3. 检查分类是否为广播
-            const isBroadcastCategory = currentCategory && (currentCategory.includes('广播') || currentCategory.includes('电台'));
-            
-            // 最终判断
-            if (isAudioByExtension || !hasVideo || isBroadcastCategory) {
-                isAudioFile = true;
-                audioCategory.textContent = currentCategory || "未知分类";
-                audioPlayingName.textContent = entry.name;
-                audioInfo.style.display = 'block';
+                historyPanel.querySelector('.no-history').style.display = 'none';
                 
-                const audioFormat = detectProtocol(entry.url);
-                statsAudioFormat.textContent = audioFormat;
-            } else {
-                isAudioFile = false;
+                const historyListEl = document.createElement('div');
+                historyListEl.className = 'history-list';
+                
+                playHistory.forEach(item => {
+                    const historyItem = document.createElement('div');
+                    historyItem.className = 'history-item';
+                    historyItem.textContent = item.name;
+                    
+                    historyItem.addEventListener('click', () => {
+                        playMedia(item, item.category);
+                        historyPanel.classList.remove('active');
+                    });
+                    
+                    historyListEl.appendChild(historyItem);
+                });
+                
+                historyPanel.insertBefore(historyListEl, clearHistoryBtn);
+            }
+            
+            // 播放媒体
+            function playMedia(entry, category) {
+                currentCategory = category;
+                currentEntryIndex = entry.index;
+                
+                // 更新UI
+                highlightCurrentEntry();
+                currentPlaying.textContent = entry.name;
+                statsProgram.textContent = entry.name;
+                
+                // 重置播放器状态
+                resetPlayer();
+                
+                // 显示加载状态
+                statusIndicator.classList.add('active');
+                statusIndicator.textContent = `正在加载: ${entry.name}`;
+                
+                // 添加到历史记录
+                addToHistory(entry, category);
+                
+                // 检测是否为音频文件
+                const audioExtensions = ['.mp3', '.wav', '.ogg', '.flac', '.aac', '.m4a'];
+                const isAudioByExtension = audioExtensions.some(ext => entry.url.toLowerCase().includes(ext));
+                
+                // 修改点1: 如果分类包含"广播"或"电台"，则视为音频
+                const isBroadcastCategory = category && (category.includes('广播') || category.includes('电台'));
+                
+                // 开始播放
+                startPlayback(entry.url, isAudioByExtension || isBroadcastCategory);
+            }
+
+            // 重置播放器
+            function resetPlayer() {
+                // 停止之前的播放尝试
+                videoPlayer.pause();
+                videoPlayer.src = '';
+                videoPlayer.load();
+                
+                // 隐藏音频信息
                 audioInfo.style.display = 'none';
+                isAudioFile = false;
+                
+                // 重置统计信息
+                statsResolution.textContent = '-';
+                statsBitrate.textContent = '-';
+                statsBuffer.textContent = '0%';
+                statsSpeed.textContent = '-';
+                statsStatus.textContent = '准备中';
             }
-        }
 
-        // 播放上一个节目
-        function playPrev() {
-            if (currentEntries.length === 0 || currentEntryIndex === -1) return;
-            
-            let prevIndex = currentEntryIndex - 1;
-            if (prevIndex < 0) {
-                prevIndex = currentEntries.length - 1;
-            }
-            
-            const prevEntry = {
-                ...currentEntries[prevIndex],
-                category: currentCategory,
-                index: prevIndex
-            };
-            
-            playMedia(prevEntry, currentCategory);
-        }
-        
-        // 播放下一个节目（直播流优化）
-        function playNext() {
-            if (currentEntries.length === 0 || currentEntryIndex === -1) return;
-            
-            const nextIndex = (currentEntryIndex + 1) % currentEntries.length;
-            const nextEntry = {
-                ...currentEntries[nextIndex],
-                category: currentCategory,
-                index: nextIndex
-            };
-            
-            playMedia(nextEntry, currentCategory);
-        }
-        
-        // 添加到播放历史
-        function addToHistory(entry, category) {
-            const existingIndex = playHistory.findIndex(item => 
-                item.name === entry.name && item.url === entry.url);
-            
-            if (existingIndex !== -1) {
-                playHistory.splice(existingIndex, 1);
-            }
-            
-            playHistory.unshift({
-                name: entry.name,
-                url: entry.url,
-                category: category
-            });
-            
-            if (playHistory.length > 20) {
-                playHistory.pop();
-            }
-            
-            localStorage.setItem('playHistory', JSON.stringify(playHistory));
-            renderPlayHistory();
-        }
-        
-        // 高亮当前播放条目
-        function highlightCurrentEntry() {
-            document.querySelectorAll('.entry-item').forEach(item => {
-                item.classList.remove('active');
-            });
-            
-            const entryItems = document.querySelectorAll('.entry-item');
-            if (entryItems[currentEntryIndex]) {
-                entryItems[currentEntryIndex].classList.add('active');
-            }
-        }
-        
-        // 浏览器能力检测
-        function detectBrowserCapabilities() {
-            const ua = navigator.userAgent;
-            const isSafari = /^((?!chrome|android).)*safari/i.test(ua) || ua.includes('iPhone') || ua.includes('iPad');
-            const isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
-            
-            browserCapabilities = {
-                hlsNative: videoPlayer.canPlayType('application/vnd.apple.mpegurl') !== '',
-                mse: !!window.MediaSource,
-                flv: flvjs.isSupported(),
-                vp9: videoPlayer.canPlayType('video/webm; codecs="vp9"') === 'probably',
-                h265: videoPlayer.canPlayType('video/mp4; codecs="hvc1"') === 'probably',
-                pip: !!document.pictureInPictureEnabled,
-                touch: 'ontouchstart' in window || navigator.maxTouchPoints > 0,
-                isSafari: isSafari,
-                isIOS: isIOS
-            };
-            
-            console.log('浏览器支持情况:', browserCapabilities);
-            
-            // 显示浏览器提示信息
-            showBrowserHint();
-            
-            return browserCapabilities;
-        }
-        
-        // 显示浏览器提示信息
-        function showBrowserHint() {
-            let hintText = '';
-            
-            if (browserCapabilities.touch) {
-                hintText = '触摸设备：左右滑动调节进度，上下滑动调节音量';
-            } else if (browserCapabilities.isIOS) {
-                hintText = 'iOS设备：原生支持HLS格式';
-            } else if (browserCapabilities.isSafari) {
-                hintText = 'Safari：原生支持HLS格式';
-            } else if (navigator.userAgent.includes('Firefox')) {
-                hintText = 'Firefox：使用MSE技术播放视频';
-            } else if (navigator.userAgent.includes('Edg')) {
-                hintText = 'Microsoft Edge：优化播放体验';
-            } else {
-                hintText = 'Chrome：全面支持所有格式';
-            }
-            
-            browserHint.textContent = hintText;
-            browserHint.style.display = 'block';
-            
-            setTimeout(() => {
-                browserHint.style.display = 'none';
-            }, 5000);
-        }
-        
-       // 显示播放错误
-        function showPlaybackError(message) {
-            errorMessage.textContent = message;
-            errorPanel.style.display = 'block';
-            
-            retryBtn.onclick = () => {
-                errorPanel.style.display = 'none';
-                playMedia({
-                    ...currentEntries[currentEntryIndex],
-                    category: currentCategory,
-                    index: currentEntryIndex
-                }, currentCategory);
-            };
-            
-            nextErrorBtn.onclick = () => {
-                errorPanel.style.display = 'none';
-                playNext();
-            };
-            
-            switchProxyBtn.onclick = () => {
-                // 切换代理状态
-                if (proxyIndex === 0) {
-                    // 开启代理（使用默认代理1）
-                    proxyIndex = 1;
-                    // 更新代理按钮状态
-                    proxyBtn.classList.add('active');
-                    // 更新代理状态显示
-                    statsProxy.textContent = '使用代理 (服务1)';
-                    proxyStatus.innerHTML = '<i class="fas fa-globe"></i> 使用CORS代理 (服务1)';
-                    proxyStatus.style.display = 'block';
-                    // 更新按钮文本
-                    switchProxyBtn.textContent = '关闭代理';
-                } else {
-                    // 关闭代理
-                    proxyIndex = 0;
-                    // 更新代理按钮状态
-                    proxyBtn.classList.remove('active');
-                    // 更新代理状态显示
+            // 开始播放（直播流优化）
+            function startPlayback(url, isAudio = false) {
+                // 根据代理设置生成最终URL
+                let finalUrl = url;
+                if (proxyIndex !== 0 && !isAudio) {
+                    if (proxyIndex === 5) {
+                        // 自定义代理
+                        const customProxy = localStorage.getItem('customProxy');
+                        if (customProxy) {
+                            finalUrl = `${customProxy}${encodeURIComponent(url)}`;
+                        } else {
+                            handlePlaybackError('自定义代理未设置');
+                            return;
+                        }
+                    } else {
+                        finalUrl = `${PROXY_SERVICES[proxyIndex]}${encodeURIComponent(url)}`;
+                    }
+                } else if (isAudio) {
+                    // 对于音频文件，直接使用原始URL
                     statsProxy.textContent = '未使用';
                     proxyStatus.innerHTML = '<i class="fas fa-unlink"></i> 直接连接';
                     proxyStatus.style.display = 'block';
-                    // 更新按钮文本
-                    switchProxyBtn.textContent = '开启代理';
                 }
-                // 更新UI
-                document.querySelectorAll('.proxy-option').forEach(el => {
-                    el.classList.remove('active');
-                    if (parseInt(el.dataset.proxy) === proxyIndex) {
-                        el.classList.add('active');
-                    }
-                });
-                // 关闭错误面板
-                errorPanel.style.display = 'none';
                 
-                // 重试播放
-                playMedia({
-                    ...currentEntries[currentEntryIndex],
+                const protocol = detectProtocol(url);
+                playbackProtocol = protocol;
+                statsProtocol.textContent = protocol;
+                protocolType.textContent = protocol;
+                protocolIndicator.style.display = 'block';
+                
+                // 获取视频格式
+                const videoFormat = detectVideoFormat(url);
+                statsVideoFormat.textContent = videoFormat;
+                
+                // 检查编码支持
+                if (videoFormat === 'H.265/HEVC' && !browserCapabilities.h265) {
+                    handlePlaybackError('当前浏览器不支持H.265编码');
+                    return;
+                }
+                
+                // 针对iOS的特殊播放策略
+                if (browserCapabilities.isIOS && protocol === 'MP4') {
+                    playMediaOnIOS(finalUrl);
+                    return;
+                }
+                
+                // 根据协议选择播放策略
+                if (protocol === 'HLS') {
+                    if (browserCapabilities.hlsNative || browserCapabilities.isIOS) {
+                        playNativeHLS(finalUrl);
+                    } else if (browserCapabilities.mse) {
+                        playHLSjs(finalUrl);
+                    } else {
+                        fallbackToNative(finalUrl);
+                    }
+                } else if (protocol === 'FLV') {
+                    if (browserCapabilities.flv) {
+                        playFLVjs(finalUrl);
+                    } else {
+                        fallbackToNative(finalUrl);
+                    }
+                } else {
+                    playNative(finalUrl);
+                }
+            }
+
+            // 播放原生HLS（Safari）
+            function playNativeHLS(url) {
+                console.log('使用原生HLS播放');
+                statsEngine.textContent = '原生HLS';
+                videoPlayer.crossOrigin = 'anonymous';
+                videoPlayer.src = url;
+                
+                videoPlayer.addEventListener('loadedmetadata', () => {
+                    videoPlayer.play().then(() => {
+                        onPlaybackSuccess();
+                    }).catch(e => {
+                        console.error('原生HLS播放失败:', e);
+                        handlePlaybackError('原生HLS播放失败', e);
+                    });
+                });
+                
+                videoPlayer.addEventListener('error', (e) => {
+                    handlePlaybackError('原生HLS错误', e);
+                });
+            }
+
+            // 原生播放 - 修复MP4播放问题
+            function playNative(url) {
+                console.log('使用原生播放器');
+                statsEngine.textContent = '原生播放器';
+                videoPlayer.crossOrigin = 'anonymous';
+                videoPlayer.src = url;
+                
+                // 修复MP4加载问题
+                const handleLoadedMetadata = () => {
+                    // 移除事件监听器，避免重复触发
+                    videoPlayer.removeEventListener('loadedmetadata', handleLoadedMetadata);
+                    
+                    // 尝试播放
+                    const playPromise = videoPlayer.play();
+                    
+                    if (playPromise !== undefined) {
+                        playPromise.then(() => {
+                            onPlaybackSuccess();
+                        }).catch(e => {
+                            console.log('自动播放失败，需要用户交互');
+                            // 显示播放按钮，让用户手动播放
+                            statusIndicator.textContent = '点击播放按钮开始';
+                            statusIndicator.classList.add('active');
+                            playPauseBtn.style.display = 'block';
+                        });
+                    }
+                };
+                
+                // 添加loadedmetadata事件监听
+                videoPlayer.addEventListener('loadedmetadata', handleLoadedMetadata);
+                
+                // 添加error事件监听
+                videoPlayer.addEventListener('error', (e) => {
+                    console.error('原生播放错误:', e);
+                    handlePlaybackError('原生播放错误', e);
+                });
+                
+                // 添加超时处理
+                setTimeout(() => {
+                    if (videoPlayer.readyState < 2) {
+                        console.log('视频加载超时，尝试直接播放');
+                        videoPlayer.play().then(() => {
+                            onPlaybackSuccess();
+                        }).catch(e => {
+                            console.log('超时后播放失败');
+                            statusIndicator.textContent = '点击播放按钮开始';
+                            statusIndicator.classList.add('active');
+                            playPauseBtn.style.display = 'block';
+                        });
+                    }
+                }, 5000);
+            }
+
+            // iOS设备播放MP4的特殊策略
+            function playMediaOnIOS(url) {
+                console.log('使用iOS特殊策略播放MP4');
+                statsEngine.textContent = 'iOS特殊策略';
+                
+                // 创建新的视频元素，避免iOS限制
+                const tempVideo = document.createElement('video');
+                tempVideo.setAttribute('playsinline', 'true');
+                tempVideo.setAttribute('webkit-playsinline', 'true');
+                tempVideo.setAttribute('controls', 'false');
+                tempVideo.crossOrigin = 'anonymous';
+                tempVideo.src = url;
+                
+                // 添加到DOM（隐藏）
+                tempVideo.style.display = 'none';
+                document.body.appendChild(tempVideo);
+                
+                // 尝试播放
+                tempVideo.play().then(() => {
+                    // 成功播放后切换到主播放器
+                    videoPlayer.src = url;
+                    videoPlayer.play().then(() => {
+                        onPlaybackSuccess();
+                        document.body.removeChild(tempVideo);
+                    }).catch(e => {
+                        handlePlaybackError('iOS主播放器播放失败', e);
+                        document.body.removeChild(tempVideo);
+                    });
+                }).catch(e => {
+                    handlePlaybackError('iOS临时播放失败', e);
+                    document.body.removeChild(tempVideo);
+                });
+            }
+
+            // 回退到原生播放
+            function fallbackToNative(url) {
+                console.log('回退到原生播放');
+                playNative(url);
+            }
+
+            // 播放成功处理
+            function onPlaybackSuccess() {
+                console.log('播放成功');
+                playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
+                statusIndicator.classList.remove('active');
+                statsStatus.textContent = '播放中';
+                
+                // 更新分辨率信息
+                setTimeout(() => {
+                    if (videoPlayer.videoWidth > 0 && videoPlayer.videoHeight > 0) {
+                        statsResolution.textContent = `${videoPlayer.videoWidth}x${videoPlayer.videoHeight}`;
+                    } else {
+                        statsResolution.textContent = '1920x1080';
+                    }
+                    
+                    // 检查媒体类型
+                    checkMediaType();
+                }, 1000);
+            }
+
+            // 处理播放错误（直播流优化）
+            function handlePlaybackError(message, error = null) {
+                console.error(`${message}:`, error);
+                let errorDetail = '未知错误';
+                
+                if (error) {
+                    // 从错误对象中提取详细信息
+                    if (error.message) errorDetail = error.message;
+                    if (error.name) errorDetail += ` (${error.name})`;
+                    if (error.code) errorDetail += ` [code: ${error.code}]`;
+                }
+                
+                // 更新UI显示详细错误
+                statusIndicator.textContent = `${message}: ${errorDetail}`;
+                statsStatus.textContent = '播放失败';
+                
+                // 显示错误面板
+                showPlaybackError(`${message}: ${errorDetail}`);
+            }
+
+            // 检查媒体类型
+            function checkMediaType() {
+                if (!currentEntries || currentEntryIndex === -1 || currentEntryIndex >= currentEntries.length) {
+                    return;
+                }
+
+                const entry = currentEntries[currentEntryIndex];
+                const url = entry.url.toLowerCase();
+                
+                // 1. 检查URL扩展名
+                const audioExtensions = ['.mp3', '.wav', '.ogg', '.flac', '.aac', '.m4a'];
+                const isAudioByExtension = audioExtensions.some(ext => url.includes(ext));
+                
+                // 2. 检查视频尺寸
+                const hasVideo = videoPlayer.videoWidth > 0 || videoPlayer.videoHeight > 0;
+                
+                // 3. 检查分类是否为广播
+                const isBroadcastCategory = currentCategory && (currentCategory.includes('广播') || currentCategory.includes('电台'));
+                
+                // 最终判断
+                if (isAudioByExtension || !hasVideo || isBroadcastCategory) {
+                    isAudioFile = true;
+                    audioCategory.textContent = currentCategory || "未知分类";
+                    audioPlayingName.textContent = entry.name;
+                    audioInfo.style.display = 'block';
+                    
+                    const audioFormat = detectProtocol(entry.url);
+                    statsAudioFormat.textContent = audioFormat;
+                } else {
+                    isAudioFile = false;
+                    audioInfo.style.display = 'none';
+                }
+            }
+
+            // 播放上一个节目
+            function playPrev() {
+                if (currentEntries.length === 0 || currentEntryIndex === -1) return;
+                
+                let prevIndex = currentEntryIndex - 1;
+                if (prevIndex < 0) {
+                    prevIndex = currentEntries.length - 1;
+                }
+                
+                const prevEntry = {
+                    ...currentEntries[prevIndex],
                     category: currentCategory,
-                    index: currentEntryIndex
-                }, currentCategory);
-            };
-            
-            // 根据当前代理状态设置按钮文本
-            if (proxyIndex === 0) {
-                switchProxyBtn.textContent = '开启代理';
-            } else {
-                switchProxyBtn.textContent = '关闭代理';
-            }
-        }
-        
-        // 缓存管理功能
-        cacheBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const cachePanel = document.getElementById('cache-panel');
-            cachePanel.classList.toggle('active');
-            
-            const cacheInfo = document.getElementById('cache-info');
-            const cacheTime = localStorage.getItem('channelsCacheTime');
-            
-            if (cacheTime) {
-                const date = new Date(parseInt(cacheTime));
-                cacheInfo.textContent = `最后更新时间: ${date.toLocaleString()}`;
-            } else {
-                cacheInfo.textContent = '暂无缓存数据';
-            }
-        });
-        
-        document.getElementById('clear-cache-btn').addEventListener('click', () => {
-            localStorage.removeItem('channelsData');
-            localStorage.removeItem('channelsCacheTime');
-            document.getElementById('cache-panel').classList.remove('active');
-            document.getElementById('cache-status-bar').style.display = 'none';
-            
-            loadChannels();
-            
-            const statusIndicator = document.getElementById('status-indicator');
-            statusIndicator.textContent = '缓存已清除，重新加载数据中...';
-            statusIndicator.classList.add('active');
-            setTimeout(() => {
-                statusIndicator.classList.remove('active');
-            }, 2000);
-            
-            // 缓存按钮取消高亮
-            cacheBtn.classList.remove('active');
-        });
-        
-        document.addEventListener('click', (e) => {
-            const cachePanel = document.getElementById('cache-panel');
-            if (!e.target.closest('#cache-panel') && !e.target.closest('#cache-btn')) {
-                cachePanel.classList.remove('active');
-            }
-        });
-        
-        // 刷新按钮功能
-        refreshBtn.addEventListener('click', () => {
-            localStorage.removeItem('channelsData');
-            localStorage.removeItem('channelsCacheTime');
-            loadChannels();
-            const statusIndicator = document.getElementById('status-indicator');
-            statusIndicator.textContent = '正在刷新线路数据...';
-            statusIndicator.classList.add('active');
-            setTimeout(() => {
-                statusIndicator.classList.remove('active');
-            }, 2000);
-            
-            // 缓存按钮取消高亮
-            cacheBtn.classList.remove('active');
-        });
-        
-        // 搜索功能
-        searchIcon.addEventListener('click', () => {
-            searchPanel.classList.add('active');
-            renderSearchResults(allEntriesForSearch);
-        });
-        
-        searchBox.addEventListener('input', (e) => {
-            const keyword = e.target.value.trim();
-            if (keyword) {
-                const results = allEntriesForSearch.filter(entry => 
-                    entry.name.toLowerCase().includes(keyword.toLowerCase())
-                );
-                renderSearchResults(results);
-            } else {
-                renderSearchResults([]);
-            }
-        });
-        
-        function renderSearchResults(results) {
-            const keyword = searchBox.value.trim().toLowerCase();
-            const container = document.getElementById('search-results-container');
-            
-            if (!keyword) {
-                container.innerHTML = '<div class="no-results">输入关键词搜索媒体资源</div>' +
-                                     '<div class="search-info">搜索范围：当前线路下所有分类</div>';
-                return;
+                    index: prevIndex
+                };
+                
+                playMedia(prevEntry, currentCategory);
             }
             
-            const filtered = results.filter(entry => 
-                entry.name.toLowerCase().includes(keyword) ||
-                (entry.category && entry.category.toLowerCase().includes(keyword))
-            );
-            
-            if (filtered.length === 0) {
-                container.innerHTML = '<div class="no-results">没有找到匹配的结果</div>';
-                return;
+            // 播放下一个节目（直播流优化）
+            function playNext() {
+                if (currentEntries.length === 0 || currentEntryIndex === -1) return;
+                
+                const nextIndex = (currentEntryIndex + 1) % currentEntries.length;
+                const nextEntry = {
+                    ...currentEntries[nextIndex],
+                    category: currentCategory,
+                    index: nextIndex
+                };
+                
+                playMedia(nextEntry, currentCategory);
             }
             
-            let html = '';
-            filtered.forEach(entry => {
-                html += `
-                    <div class="search-result-item" 
-                         data-category="${entry.category}" 
-                         data-name="${entry.name}"
-                         data-url="${entry.url}">
-                        <div class="entry-name">${entry.name}</div>
-                        <div class="entry-category">分类: ${entry.category}</div>
-                    </div>
-                `;
+            // 添加到播放历史
+            function addToHistory(entry, category) {
+                const existingIndex = playHistory.findIndex(item => 
+                    item.name === entry.name && item.url === entry.url);
+                
+                if (existingIndex !== -1) {
+                    playHistory.splice(existingIndex, 1);
+                }
+                
+                playHistory.unshift({
+                    name: entry.name,
+                    url: entry.url,
+                    category: category
+                });
+                
+                if (playHistory.length > 20) {
+                    playHistory.pop();
+                }
+                
+                localStorage.setItem('playHistory', JSON.stringify(playHistory));
+                renderPlayHistory();
+            }
+            
+            // 高亮当前播放条目
+            function highlightCurrentEntry() {
+                document.querySelectorAll('.entry-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                
+                const entryItems = document.querySelectorAll('.entry-item');
+                if (entryItems[currentEntryIndex]) {
+                    entryItems[currentEntryIndex].classList.add('active');
+                }
+            }
+            
+            // 浏览器能力检测
+            function detectBrowserCapabilities() {
+                const ua = navigator.userAgent;
+                const isSafari = /^((?!chrome|android).)*safari/i.test(ua) || ua.includes('iPhone') || ua.includes('iPad');
+                const isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
+                
+                browserCapabilities = {
+                    hlsNative: videoPlayer.canPlayType('application/vnd.apple.mpegurl') !== '',
+                    mse: !!window.MediaSource,
+                    flv: flvjs.isSupported(),
+                    vp9: videoPlayer.canPlayType('video/webm; codecs="vp9"') === 'probably',
+                    h265: videoPlayer.canPlayType('video/mp4; codecs="hvc1"') === 'probably',
+                    pip: !!document.pictureInPictureEnabled,
+                    touch: 'ontouchstart' in window || navigator.maxTouchPoints > 0,
+                    isSafari: isSafari,
+                    isIOS: isIOS
+                };
+                
+                console.log('浏览器支持情况:', browserCapabilities);
+                
+                // 显示浏览器提示信息
+                showBrowserHint();
+                
+                return browserCapabilities;
+            }
+            
+            // 显示浏览器提示信息
+            function showBrowserHint() {
+                let hintText = '';
+                
+                if (browserCapabilities.touch) {
+                    hintText = '触摸设备：左右滑动调节进度，上下滑动调节音量';
+                } else if (browserCapabilities.isIOS) {
+                    hintText = 'iOS设备：原生支持HLS格式';
+                } else if (browserCapabilities.isSafari) {
+                    hintText = 'Safari：原生支持HLS格式';
+                } else if (navigator.userAgent.includes('Firefox')) {
+                    hintText = 'Firefox：使用MSE技术播放视频';
+                } else if (navigator.userAgent.includes('Edg')) {
+                    hintText = 'Microsoft Edge：优化播放体验';
+                } else {
+                    hintText = 'Chrome：全面支持所有格式';
+                }
+                
+                browserHint.textContent = hintText;
+                browserHint.style.display = 'block';
+                
+                setTimeout(() => {
+                    browserHint.style.display = 'none';
+                }, 5000);
+            }
+            
+            // 显示播放错误
+            function showPlaybackError(message) {
+                errorMessage.textContent = message;
+                errorPanel.style.display = 'block';
+                
+                retryBtn.onclick = () => {
+                    errorPanel.style.display = 'none';
+                    playMedia({
+                        ...currentEntries[currentEntryIndex],
+                        category: currentCategory,
+                        index: currentEntryIndex
+                    }, currentCategory);
+                };
+                
+                nextErrorBtn.onclick = () => {
+                    errorPanel.style.display = 'none';
+                    playNext();
+                };
+                
+                switchProxyBtn.onclick = () => {
+                    // 切换代理状态
+                    if (proxyIndex === 0) {
+                        // 开启代理（使用默认代理1）
+                        proxyIndex = 1;
+                        // 更新代理按钮状态
+                        proxyBtn.classList.add('active');
+                        // 更新代理状态显示
+                        statsProxy.textContent = '使用代理 (服务1)';
+                        proxyStatus.innerHTML = '<i class="fas fa-globe"></i> 使用CORS代理 (服务1)';
+                        proxyStatus.style.display = 'block';
+                        // 更新按钮文本
+                        switchProxyBtn.textContent = '关闭代理';
+                    } else {
+                        // 关闭代理
+                        proxyIndex = 0;
+                        // 更新代理按钮状态
+                        proxyBtn.classList.remove('active');
+                        // 更新代理状态显示
+                        statsProxy.textContent = '未使用';
+                        proxyStatus.innerHTML = '<i class="fas fa-unlink"></i> 直接连接';
+                        proxyStatus.style.display = 'block';
+                        // 更新按钮文本
+                        switchProxyBtn.textContent = '开启代理';
+                    }
+                    // 更新UI
+                    document.querySelectorAll('.proxy-option').forEach(el => {
+                        el.classList.remove('active');
+                        if (parseInt(el.dataset.proxy) === proxyIndex) {
+                            el.classList.add('active');
+                        }
+                    });
+                    // 关闭错误面板
+                    errorPanel.style.display = 'none';
+                    
+                    // 重试播放
+                    playMedia({
+                        ...currentEntries[currentEntryIndex],
+                        category: currentCategory,
+                        index: currentEntryIndex
+                    }, currentCategory);
+                };
+                
+                // 根据当前代理状态设置按钮文本
+                if (proxyIndex === 0) {
+                    switchProxyBtn.textContent = '开启代理';
+                } else {
+                    switchProxyBtn.textContent = '关闭代理';
+                }
+            }
+            
+            // 缓存管理功能
+            cacheBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const cachePanel = document.getElementById('cache-panel');
+                cachePanel.classList.toggle('active');
+                
+                const cacheInfo = document.getElementById('cache-info');
+                const cacheTime = localStorage.getItem('channelsCacheTime');
+                
+                if (cacheTime) {
+                    const date = new Date(parseInt(cacheTime));
+                    cacheInfo.textContent = `最后更新时间: ${date.toLocaleString()}`;
+                } else {
+                    cacheInfo.textContent = '暂无缓存数据';
+                }
             });
             
-            container.innerHTML = html;
+            document.getElementById('clear-cache-btn').addEventListener('click', () => {
+                localStorage.removeItem('channelsData');
+                localStorage.removeItem('channelsCacheTime');
+                document.getElementById('cache-panel').classList.remove('active');
+                document.getElementById('cache-status-bar').style.display = 'none';
+                
+                loadChannels();
+                
+                const statusIndicator = document.getElementById('status-indicator');
+                statusIndicator.textContent = '缓存已清除，重新加载数据中...';
+                statusIndicator.classList.add('active');
+                setTimeout(() => {
+                    statusIndicator.classList.remove('active');
+                }, 2000);
+                
+                // 缓存按钮取消高亮
+                cacheBtn.classList.remove('active');
+            });
             
-            document.querySelectorAll('.search-result-item').forEach(item => {
-                item.addEventListener('click', function() {
-                    const category = this.dataset.category;
-                    const name = this.dataset.name;
-                    const url = this.dataset.url;
-                    
-                    if (currentChannelCategories[category]) {
-                        // 在分类中找到对应条目
-                        const entries = currentChannelCategories[category];
-                        const entryIndex = entries.findIndex(e => e.name === name && e.url === url);
+            document.addEventListener('click', (e) => {
+                const cachePanel = document.getElementById('cache-panel');
+                if (!e.target.closest('#cache-panel') && !e.target.closest('#cache-btn')) {
+                    cachePanel.classList.remove('active');
+                }
+            });
+            
+            // 刷新按钮功能
+            refreshBtn.addEventListener('click', () => {
+                localStorage.removeItem('channelsData');
+                localStorage.removeItem('channelsCacheTime');
+                loadChannels();
+                const statusIndicator = document.getElementById('status-indicator');
+                statusIndicator.textContent = '正在刷新线路数据...';
+                statusIndicator.classList.add('active');
+                setTimeout(() => {
+                    statusIndicator.classList.remove('active');
+                }, 2000);
+                
+                // 缓存按钮取消高亮
+                cacheBtn.classList.remove('active');
+            });
+            
+            // 搜索功能
+            searchIcon.addEventListener('click', () => {
+                searchPanel.classList.add('active');
+                renderSearchResults(allEntriesForSearch);
+            });
+            
+            searchBox.addEventListener('input', (e) => {
+                const keyword = e.target.value.trim();
+                if (keyword) {
+                    const results = allEntriesForSearch.filter(entry => 
+                        entry.name.toLowerCase().includes(keyword.toLowerCase())
+                    );
+                    renderSearchResults(results);
+                } else {
+                    renderSearchResults([]);
+                }
+            });
+            
+            function renderSearchResults(results) {
+                const keyword = searchBox.value.trim().toLowerCase();
+                const container = document.getElementById('search-results-container');
+                
+                if (!keyword) {
+                    container.innerHTML = '<div class="no-results">输入关键词搜索媒体资源</div>' +
+                                         '<div class="search-info">搜索范围：当前线路下所有分类</div>';
+                    return;
+                }
+                
+                const filtered = results.filter(entry => 
+                    entry.name.toLowerCase().includes(keyword) ||
+                    (entry.category && entry.category.toLowerCase().includes(keyword))
+                );
+                
+                if (filtered.length === 0) {
+                    container.innerHTML = '<div class="no-results">没有找到匹配的结果</div>';
+                    return;
+                }
+                
+                let html = '';
+                filtered.forEach(entry => {
+                    html += `
+                        <div class="search-result-item" 
+                             data-category="${entry.category}" 
+                             data-name="${entry.name}"
+                             data-url="${entry.url}">
+                            <div class="entry-name">${entry.name}</div>
+                            <div class="entry-category">分类: ${entry.category}</div>
+                        </div>
+                    `;
+                });
+                
+                container.innerHTML = html;
+                
+                document.querySelectorAll('.search-result-item').forEach(item => {
+                    item.addEventListener('click', function() {
+                        const category = this.dataset.category;
+                        const name = this.dataset.name;
+                        const url = this.dataset.url;
                         
-                        if (entryIndex !== -1) {
-                            const entry = {
-                                ...entries[entryIndex],
-                                category: category,
-                                index: entryIndex
-                            };
-                            playMedia(entry, category);
-                            searchPanel.classList.remove('active');
-                            searchBox.value = '';
+                        if (currentChannelCategories[category]) {
+                            // 在分类中找到对应条目
+                            const entries = currentChannelCategories[category];
+                            const entryIndex = entries.findIndex(e => e.name === name && e.url === url);
+                            
+                            if (entryIndex !== -1) {
+                                const entry = {
+                                    ...entries[entryIndex],
+                                    category: category,
+                                    index: entryIndex
+                                };
+                                playMedia(entry, category);
+                                searchPanel.classList.remove('active');
+                                searchBox.value = '';
+                            }
+                        }
+                    });
+                });
+            }
+            
+            // 关闭搜索面板
+            closeSearchBtn.addEventListener('click', () => {
+                searchPanel.classList.remove('active');
+            });
+            
+            // 历史记录面板
+            historyBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                historyPanel.classList.toggle('active');
+            });
+            
+            // 清除历史记录
+            clearHistoryBtn.addEventListener('click', () => {
+                playHistory = [];
+                localStorage.setItem('playHistory', JSON.stringify(playHistory));
+                renderPlayHistory();
+            });
+            
+            // 代理设置功能
+            proxyBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                proxyPanel.classList.toggle('active');
+            });
+            
+            // 代理选项选择
+            document.querySelectorAll('.proxy-option').forEach(option => {
+                option.addEventListener('click', async function() {
+                    const selectedProxy = parseInt(this.dataset.proxy);
+                    
+                    // 更新UI
+                    document.querySelectorAll('.proxy-option').forEach(el => {
+                        el.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                    
+                    // 测试代理可用性
+                    const proxyTestResult = await testProxyService(selectedProxy);
+                    
+                    if (proxyTestResult || selectedProxy === 0) {
+                        proxyIndex = selectedProxy;
+                        
+                        // 更新状态显示
+                        if (proxyIndex === 0) {
+                            statsProxy.textContent = '未使用';
+                            proxyStatus.innerHTML = '<i class="fas fa-unlink"></i> 直接连接';
+                            proxyStatus.style.display = 'block';
+                            
+                            // 代理按钮取消高亮
+                            proxyBtn.classList.remove('active');
+                        } else {
+                            let proxyName = proxyIndex === 5 ? '自定义代理' : `代理服务${proxyIndex}`;
+                            statsProxy.textContent = `使用代理 (${proxyName})`;
+                            proxyStatus.innerHTML = `<i class="fas fa-globe"></i> 使用CORS代理 (${proxyName})`;
+                            proxyStatus.style.display = 'block';
+                            
+                            // 代理按钮高亮
+                            proxyBtn.classList.add('active');
                         }
                     }
                 });
             });
-        }
-        
-        // 关闭搜索面板
-        closeSearchBtn.addEventListener('click', () => {
-            searchPanel.classList.remove('active');
-        });
-        
-        // 历史记录面板
-        historyBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            historyPanel.classList.toggle('active');
-        });
-        
-        // 清除历史记录
-        clearHistoryBtn.addEventListener('click', () => {
-            playHistory = [];
-            localStorage.setItem('playHistory', JSON.stringify(playHistory));
-            renderPlayHistory();
-        });
-        
-        // 代理设置功能
-        proxyBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            proxyPanel.classList.toggle('active');
-        });
-        
-        // 代理选项选择
-        document.querySelectorAll('.proxy-option').forEach(option => {
-            option.addEventListener('click', async function() {
-                const selectedProxy = parseInt(this.dataset.proxy);
+            
+            // 测试代理服务
+            async function testProxyService(proxyIndex) {
+                proxyStatusText.textContent = "测试中...";
+                proxyStatusText.className = "proxy-status-text proxy-loading";
                 
-                // 更新UI
-                document.querySelectorAll('.proxy-option').forEach(el => {
-                    el.classList.remove('active');
-                });
-                this.classList.add('active');
+                // 使用一个测试URL
+                const testUrl = "https://vd2.bdstatic.com/mda-qcuhkcz656hdjjx7/qhd/cae_h264/1711903492331661818/mda-qcuhkcz656hdjjx7.mp4";
+                let proxyUrl = '';
                 
-                // 测试代理可用性
-                const proxyTestResult = await testProxyService(selectedProxy);
-                
-                if (proxyTestResult || selectedProxy === 0) {
-                    proxyIndex = selectedProxy;
+                try {
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5秒超时
                     
-                    // 更新状态显示
+                    const startTime = Date.now();
+                    let response;
+                    
                     if (proxyIndex === 0) {
-                        statsProxy.textContent = '未使用';
-                        proxyStatus.innerHTML = '<i class="fas fa-unlink"></i> 直接连接';
-                        proxyStatus.style.display = 'block';
-                        
-                        // 代理按钮取消高亮
-                        proxyBtn.classList.remove('active');
+                        // 不使用代理
+                        response = await fetch(testUrl, {
+                            signal: controller.signal,
+                            headers: {
+                                'Range': 'bytes=0-1' // 只请求前2个字节，减少流量
+                            }
+                        });
+                    } 
+                    else if (proxyIndex === 5) {
+                        // 自定义代理
+                        const customProxy = localStorage.getItem('customProxy');
+                        if (!customProxy) {
+                            throw new Error('自定义代理未设置');
+                        }
+                        proxyUrl = `${customProxy}${encodeURIComponent(testUrl)}`;
+                        response = await fetch(proxyUrl, {
+                            signal: controller.signal,
+                            headers: {
+                                'Range': 'bytes=0-1'
+                            }
+                        });
+                    } 
+                    else {
+                        proxyUrl = `${PROXY_SERVICES[proxyIndex]}${encodeURIComponent(testUrl)}`;
+                        response = await fetch(proxyUrl, {
+                            signal: controller.signal,
+                            headers: {
+                                'Range': 'bytes=0-1'
+                            }
+                        });
+                    }
+                    
+                    clearTimeout(timeoutId);
+                    const endTime = Date.now();
+                    const responseTime = endTime - startTime;
+                    
+                    if (response.ok) {
+                        let proxyName = proxyIndex === 5 ? '自定义代理' : `代理服务${proxyIndex}`;
+                        proxyStatusText.textContent = `${proxyName} 可用 (${responseTime}ms)`;
+                        proxyStatusText.className = "proxy-status-text proxy-success";
+                        return true;
                     } else {
                         let proxyName = proxyIndex === 5 ? '自定义代理' : `代理服务${proxyIndex}`;
-                        statsProxy.textContent = `使用代理 (${proxyName})`;
-                        proxyStatus.innerHTML = `<i class="fas fa-globe"></i> 使用CORS代理 (${proxyName})`;
-                        proxyStatus.style.display = 'block';
-                        
-                        // 代理按钮高亮
-                        proxyBtn.classList.add('active');
+                        proxyStatusText.textContent = `${proxyName} 不可用 (HTTP ${response.status})`;
+                        proxyStatusText.className = "proxy-status-text proxy-failure";
+                        return false;
+                    }
+                } catch (e) {
+                    console.error(`代理服务 ${proxyIndex} 测试失败:`, e);
+                    let proxyName = proxyIndex === 5 ? '自定义代理' : `代理服务${proxyIndex}`;
+                    proxyStatusText.textContent = `${proxyName} 不可用: ${e.name === 'AbortError' ? '请求超时' : e.message}`;
+                    proxyStatusText.className = "proxy-status-text proxy-failure";
+                    return false;
+                }
+            }
+            
+            // 测试自定义代理按钮
+            testCustomProxyBtn.addEventListener('click', async () => {
+                const customProxy = customProxyInput.value.trim();
+                if (!customProxy) {
+                    proxyStatusText.textContent = '请输入自定义代理URL模板';
+                    proxyStatusText.className = "proxy-status-text proxy-failure";
+                    return;
+                }
+                
+                // 保存自定义代理
+                localStorage.setItem('customProxy', customProxy);
+                
+                // 使用代理索引5表示自定义代理
+                proxyIndex = 5;
+                
+                // 测试自定义代理
+                await testProxyService(5);
+                
+                // 如果测试成功，激活自定义代理选项
+                if (proxyStatusText.className.includes('proxy-success')) {
+                    document.querySelectorAll('.proxy-option').forEach(el => {
+                        el.classList.remove('active');
+                    });
+                    
+                    // 更新状态显示
+                    statsProxy.textContent = '使用代理 (自定义代理)';
+                    proxyStatus.innerHTML = '<i class="fas fa-globe"></i> 使用CORS代理 (自定义代理)';
+                    proxyStatus.style.display = 'block';
+                    
+                    // 代理按钮高亮
+                    proxyBtn.classList.add('active');
+                }
+            });
+
+            // 初始化代理选项（默认选择代理服务1）
+            document.querySelector('.proxy-option[data-proxy="1"]').classList.add('active');
+
+            // 测试视频播放功能
+            testPlayBtn.addEventListener('click', () => {
+                const url = testVideoUrl.value.trim();
+                if (url) {
+                    // 构造一个临时的entry对象
+                    const entry = {
+                        name: '测试视频',
+                        url: url,
+                        category: '测试',
+                        index: 0
+                    };
+                    playMedia(entry, '测试');
+                }
+            });
+            
+            // 按钮功能
+            // 1. 倍速播放功能
+            document.querySelectorAll('#speed-dropdown .dropdown-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    document.querySelectorAll('#speed-dropdown .dropdown-item').forEach(el => {
+                        el.classList.remove('active');
+                    });
+                    item.classList.add('active');
+                    const speed = parseFloat(item.dataset.speed);
+                    videoPlayer.playbackRate = speed;
+                });
+            });
+            
+            // 2. 清晰度选择功能
+            document.querySelectorAll('#quality-dropdown .dropdown-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    document.querySelectorAll('#quality-dropdown .dropdown-item').forEach(el => {
+                        el.classList.remove('active');
+                    });
+                    item.classList.add('active');
+                    // 更新清晰度按钮文字
+                    qualityText.textContent = item.textContent;
+                });
+            });
+            
+            // 3. 画中画按钮
+            pipBtn.addEventListener('click', () => {
+                if (document.pictureInPictureElement) {
+                    document.exitPictureInPicture();
+                } else if (document.pictureInPictureEnabled) {
+                    videoPlayer.requestPictureInPicture().catch(e => console.error('画中画失败:', e));
+                }
+            });
+            
+            // 4. 全屏按钮
+            fullscreenBtn.addEventListener('click', () => {
+                if (!isFullscreen) {
+                    playerContainer.classList.add('fullscreen');
+                    isFullscreen = true;
+                    fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i>';
+                } else {
+                    playerContainer.classList.remove('fullscreen');
+                    isFullscreen = false;
+                    fullscreenBtn.innerHTML = '<i class="fas fa-expand-arrows-alt"></i>';
+                }
+            });
+            
+            // 5. 弹幕按钮
+            danmakuBtn.addEventListener('click', () => {
+                danmakuEnabled = !danmakuEnabled;
+                danmakuBtn.classList.toggle('active', danmakuEnabled);
+            });
+            
+            // 6. 统计信息按钮
+            statsBtn.addEventListener('click', () => {
+                statsPanel.classList.toggle('active');
+                statsBtn.classList.toggle('active', statsPanel.classList.contains('active'));
+            });
+            
+            // 7. 旋转按钮
+            rotateBtn.addEventListener('click', () => {
+                rotation = (rotation + 90) % 360;
+                
+                // 移除所有旋转类
+                videoPlayer.classList.remove('rotate-90', 'rotate-180', 'rotate-270');
+                playerContainer.classList.remove('rotated');
+                
+                // 根据旋转角度添加相应类
+                if (rotation === 90) {
+                    videoPlayer.classList.add('rotate-90');
+                    playerContainer.classList.add('rotated');
+                } else if (rotation === 180) {
+                    videoPlayer.classList.add('rotate-180');
+                } else if (rotation === 270) {
+                    videoPlayer.classList.add('rotate-270');
+                    playerContainer.classList.add('rotated');
+                }
+            });
+            
+            // 8. 截图按钮
+            screenshotBtn.addEventListener('click', () => {
+                // 创建临时canvas处理旋转
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = videoPlayer.videoWidth;
+                tempCanvas.height = videoPlayer.videoHeight;
+                const tempCtx = tempCanvas.getContext('2d');
+                
+                // 根据旋转角度调整绘制
+                if (rotation === 0) {
+                    tempCtx.drawImage(videoPlayer, 0, 0, tempCanvas.width, tempCanvas.height);
+                } else if (rotation === 90) {
+                    tempCanvas.width = videoPlayer.videoHeight;
+                    tempCanvas.height = videoPlayer.videoWidth;
+                    tempCtx.translate(tempCanvas.width, 0);
+                    tempCtx.rotate(Math.PI / 2);
+                    tempCtx.drawImage(videoPlayer, 0, 0, tempCanvas.height, tempCanvas.width);
+                } else if (rotation === 180) {
+                    tempCtx.translate(tempCanvas.width, tempCanvas.height);
+                    tempCtx.rotate(Math.PI);
+                    tempCtx.drawImage(videoPlayer, 0, 0, tempCanvas.width, tempCanvas.height);
+                } else if (rotation === 270) {
+                    tempCanvas.width = videoPlayer.videoHeight;
+                    tempCanvas.height = videoPlayer.videoWidth;
+                    tempCtx.translate(0, tempCanvas.height);
+                    tempCtx.rotate(-Math.PI / 2);
+                    tempCtx.drawImage(videoPlayer, 0, 0, tempCanvas.height, tempCanvas.width);
+                }
+                
+                // 创建下载链接
+                const link = document.createElement('a');
+                link.download = `screenshot-${new Date().getTime()}.png`;
+                link.href = tempCanvas.toDataURL('image/png');
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            });
+            
+            // 9. 循环模式按钮
+            loopBtn.addEventListener('click', () => {
+                loopModeState = (loopModeState + 1) % 3;
+                
+                switch(loopModeState) {
+                    case 0:
+                        loopMode.textContent = "无循环";
+                        loopBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i>';
+                        break;
+                    case 1:
+                        loopMode.textContent = "单循环";
+                        loopBtn.innerHTML = '<i class="fas fa-sync"></i>';
+                        break;
+                    case 2:
+                        loopMode.textContent = "列表循环";
+                        loopBtn.innerHTML = '<i class="fas fa-list"></i>';
+                        break;
+                }
+                
+                videoPlayer.loop = (loopModeState === 1);
+            });
+            
+            // 10. 触摸锁功能
+            touchLockBtn.addEventListener('click', () => {
+                isTouchLocked = !isTouchLocked;
+                touchLockBtn.classList.toggle('active', isTouchLocked);
+                touchLockBtn.innerHTML = isTouchLocked ? '<i class="fas fa-lock-open"></i>' : '<i class="fas fa-lock"></i>';
+            });
+            
+            // 11. 侧边栏切换
+            toggleSidebarBtn.addEventListener('click', () => {
+                sidebarVisible = !sidebarVisible;
+                
+                if (sidebarVisible) {
+                    sidebar.style.display = 'flex';
+                    toggleSidebarBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
+                    playerArea.classList.remove('expanded');
+                } else {
+                    sidebar.style.display = 'none';
+                    toggleSidebarBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+                    if (window.matchMedia("(max-width: 1200px)").matches) {
+                        playerArea.classList.add('expanded');
                     }
                 }
             });
-        });
-        
-        // 测试自定义代理按钮
-        testCustomProxyBtn.addEventListener('click', async () => {
-            const customProxy = customProxyInput.value.trim();
-            if (!customProxy) {
-                proxyStatusText.textContent = '请输入自定义代理URL模板';
-                proxyStatusText.className = "proxy-status-text proxy-failure";
-                return;
-            }
             
-            // 保存自定义代理
-            localStorage.setItem('customProxy', customProxy);
-            
-            // 使用代理索引5表示自定义代理
-            proxyIndex = 5;
-            
-            // 测试自定义代理
-            await testProxyService(5);
-            
-            // 如果测试成功，激活自定义代理选项
-            if (proxyStatusText.className.includes('proxy-success')) {
-                document.querySelectorAll('.proxy-option').forEach(el => {
-                    el.classList.remove('active');
-                });
-                
-                // 更新状态显示
-                statsProxy.textContent = '使用代理 (自定义代理)';
-                proxyStatus.innerHTML = '<i class="fas fa-globe"></i> 使用CORS代理 (自定义代理)';
-                proxyStatus.style.display = 'block';
-                
-                // 代理按钮高亮
-                proxyBtn.classList.add('active');
-            }
-        });
-
-        // 初始化代理选项（默认选择代理服务1）
-        document.querySelector('.proxy-option[data-proxy="1"]').classList.add('active');
-
-        // 测试视频播放功能
-        testPlayBtn.addEventListener('click', () => {
-            const url = testVideoUrl.value.trim();
-            if (url) {
-                // 构造一个临时的entry对象
-                const entry = {
-                    name: '测试视频',
-                    url: url,
-                    category: '测试',
-                    index: 0
-                };
-                playMedia(entry, '测试');
-            }
-        });
-        
-        // 初始化
-        window.addEventListener('load', () => {
-            detectBrowserCapabilities();
-            loadChannels();
-            renderPlayHistory();
-            
-            // 设置代理状态（默认开启代理服务1）
-            statsProxy.textContent = '使用代理 (服务1)';
-            proxyStatus.innerHTML = '<i class="fas fa-globe"></i> 使用CORS代理 (服务1)';
-            proxyStatus.style.display = 'block';
-            proxyBtn.classList.add('active');
-            
-            videoPlayer.addEventListener('enterpictureinpicture', () => {
-                isInPIPMode = true;
-                pipIndicator.style.display = 'block';
-            });
-            
-            videoPlayer.addEventListener('leavepictureinpicture', () => {
-                isInPIPMode = false;
-                pipIndicator.style.display = 'none';
-            });
-            
-            videoPlayer.addEventListener('ended', () => {
-                if (loopModeState === 1) {
-                    videoPlayer.currentTime = 0;
-                    videoPlayer.play();
-                } else if (loopModeState === 2) {
-                    playNext();
+            // 12. 主题切换
+            themeToggle.addEventListener('click', () => {
+                document.body.classList.toggle('dark-mode');
+                const icon = themeToggle.querySelector('i');
+                if (document.body.classList.contains('dark-mode')) {
+                    icon.classList.remove('fa-moon');
+                    icon.classList.add('fa-sun');
+                } else {
+                    icon.classList.remove('fa-sun');
+                    icon.classList.add('fa-moon');
                 }
             });
             
-            setInterval(() => {
-                if (!videoPlayer.paused && playbackProtocol !== '') {
-                    const buffer = Math.floor(Math.random() * 20) + 80;
-                    const speed = (Math.random() * 2 + 1).toFixed(1);
-                    statsBuffer.textContent = `${buffer}%`;
-                    statsSpeed.textContent = `${speed} MB/s`;
-                }
-            }, 2000);
-            
-            playerControlVisible = true;
-            
-            document.addEventListener('click', (e) => {
-                if (!errorPanel.contains(e.target)) {
-                    errorPanel.style.display = 'none';
-                }
-                if (!historyPanel.contains(e.target) && !e.target.closest('#history-btn')) {
-                    historyPanel.classList.remove('active');
-                }
-                if (!proxyPanel.contains(e.target) && !e.target.closest('#proxy-btn')) {
-                    proxyPanel.classList.remove('active');
-                }
-            });
-        });
-        
-        // 按钮功能
-        // 1. 倍速播放功能
-        document.querySelectorAll('#speed-dropdown .dropdown-item').forEach(item => {
-            item.addEventListener('click', () => {
-                document.querySelectorAll('#speed-dropdown .dropdown-item').forEach(el => {
-                    el.classList.remove('active');
-                });
-                item.classList.add('active');
-                const speed = parseFloat(item.dataset.speed);
-                videoPlayer.playbackRate = speed;
-            });
-        });
-        
-        // 2. 清晰度选择功能
-        document.querySelectorAll('#quality-dropdown .dropdown-item').forEach(item => {
-            item.addEventListener('click', () => {
-                document.querySelectorAll('#quality-dropdown .dropdown-item').forEach(el => {
-                    el.classList.remove('active');
-                });
-                item.classList.add('active');
-                // 更新清晰度按钮文字
-                qualityText.textContent = item.textContent;
-            });
-        });
-        
-        // 3. 画中画按钮
-        pipBtn.addEventListener('click', () => {
-            if (document.pictureInPictureElement) {
-                document.exitPictureInPicture();
-            } else if (document.pictureInPictureEnabled) {
-                videoPlayer.requestPictureInPicture().catch(e => console.error('画中画失败:', e));
-            }
-        });
-        
-        // 4. 全屏按钮
-        fullscreenBtn.addEventListener('click', () => {
-            if (!isFullscreen) {
-                playerContainer.classList.add('fullscreen');
-                isFullscreen = true;
-                fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i>';
-            } else {
-                playerContainer.classList.remove('fullscreen');
-                isFullscreen = false;
-                fullscreenBtn.innerHTML = '<i class="fas fa-expand-arrows-alt"></i>';
-            }
-        });
-        
-        // 5. 弹幕按钮
-        danmakuBtn.addEventListener('click', () => {
-            danmakuEnabled = !danmakuEnabled;
-            danmakuBtn.classList.toggle('active', danmakuEnabled);
-        });
-        
-        // 6. 统计信息按钮
-        statsBtn.addEventListener('click', () => {
-            statsPanel.classList.toggle('active');
-            statsBtn.classList.toggle('active', statsPanel.classList.contains('active'));
-        });
-        
-        // 7. 旋转按钮
-        rotateBtn.addEventListener('click', () => {
-            rotation = (rotation + 90) % 360;
-            
-            // 移除所有旋转类
-            videoPlayer.classList.remove('rotate-90', 'rotate-180', 'rotate-270');
-            playerContainer.classList.remove('rotated');
-            
-            // 根据旋转角度添加相应类
-            if (rotation === 90) {
-                videoPlayer.classList.add('rotate-90');
-                playerContainer.classList.add('rotated');
-            } else if (rotation === 180) {
-                videoPlayer.classList.add('rotate-180');
-            } else if (rotation === 270) {
-                videoPlayer.classList.add('rotate-270');
-                playerContainer.classList.add('rotated');
-            }
-        });
-        
-        // 8. 截图按钮
-        screenshotBtn.addEventListener('click', () => {
-            // 创建临时canvas处理旋转
-            const tempCanvas = document.createElement('canvas');
-            tempCanvas.width = videoPlayer.videoWidth;
-            tempCanvas.height = videoPlayer.videoHeight;
-            const tempCtx = tempCanvas.getContext('2d');
-            
-            // 根据旋转角度调整绘制
-            if (rotation === 0) {
-                tempCtx.drawImage(videoPlayer, 0, 0, tempCanvas.width, tempCanvas.height);
-            } else if (rotation === 90) {
-                tempCanvas.width = videoPlayer.videoHeight;
-                tempCanvas.height = videoPlayer.videoWidth;
-                tempCtx.translate(tempCanvas.width, 0);
-                tempCtx.rotate(Math.PI / 2);
-                tempCtx.drawImage(videoPlayer, 0, 0, tempCanvas.height, tempCanvas.width);
-            } else if (rotation === 180) {
-                tempCtx.translate(tempCanvas.width, tempCanvas.height);
-                tempCtx.rotate(Math.PI);
-                tempCtx.drawImage(videoPlayer, 0, 0, tempCanvas.width, tempCanvas.height);
-            } else if (rotation === 270) {
-                tempCanvas.width = videoPlayer.videoHeight;
-                tempCanvas.height = videoPlayer.videoWidth;
-                tempCtx.translate(0, tempCanvas.height);
-                tempCtx.rotate(-Math.PI / 2);
-                tempCtx.drawImage(videoPlayer, 0, 0, tempCanvas.height, tempCanvas.width);
-            }
-            
-            // 创建下载链接
-            const link = document.createElement('a');
-            link.download = `screenshot-${new Date().getTime()}.png`;
-            link.href = tempCanvas.toDataURL('image/png');
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        });
-        
-        // 9. 循环模式按钮
-        loopBtn.addEventListener('click', () => {
-            loopModeState = (loopModeState + 1) % 3;
-            
-            switch(loopModeState) {
-                case 0:
-                    loopMode.textContent = "无循环";
-                    loopBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i>';
-                    break;
-                case 1:
-                    loopMode.textContent = "单循环";
-                    loopBtn.innerHTML = '<i class="fas fa-sync"></i>';
-                    break;
-                case 2:
-                    loopMode.textContent = "列表循环";
-                    loopBtn.innerHTML = '<i class="fas fa-list"></i>';
-                    break;
-            }
-            
-            videoPlayer.loop = (loopModeState === 1);
-        });
-        
-        // 10. 触摸锁功能
-        touchLockBtn.addEventListener('click', () => {
-            isTouchLocked = !isTouchLocked;
-            touchLockBtn.classList.toggle('active', isTouchLocked);
-            touchLockBtn.innerHTML = isTouchLocked ? '<i class="fas fa-lock-open"></i>' : '<i class="fas fa-lock"></i>';
-        });
-        
-        // 11. 侧边栏切换
-        toggleSidebarBtn.addEventListener('click', () => {
-            sidebarVisible = !sidebarVisible;
-            
-            if (sidebarVisible) {
-                sidebar.style.display = 'flex';
-                toggleSidebarBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
-                playerArea.classList.remove('expanded');
-            } else {
-                sidebar.style.display = 'none';
-                toggleSidebarBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
-                if (window.matchMedia("(max-width: 1200px)").matches) {
-                    playerArea.classList.add('expanded');
-                }
-            }
-        });
-        
-        // 12. 主题切换
-        themeToggle.addEventListener('click', () => {
-            document.body.classList.toggle('dark-mode');
-            const icon = themeToggle.querySelector('i');
-            if (document.body.classList.contains('dark-mode')) {
-                icon.classList.remove('fa-moon');
-                icon.classList.add('fa-sun');
-            } else {
-                icon.classList.remove('fa-sun');
-                icon.classList.add('fa-moon');
-            }
-        });
-        
-        // 下拉菜单显示/隐藏
-        document.querySelectorAll('.dropdown').forEach(dropdown => {
-            dropdown.addEventListener('click', (e) => {
-                e.stopPropagation();
-                dropdown.classList.toggle('active');
-            });
-        });
-        
-        // 点击页面其他区域关闭下拉菜单
-        document.addEventListener('click', () => {
+            // 下拉菜单显示/隐藏
             document.querySelectorAll('.dropdown').forEach(dropdown => {
-                dropdown.classList.remove('active');
+                dropdown.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    dropdown.classList.toggle('active');
+                });
             });
-        });
-        
-    </script>
+            
+            // 点击页面其他区域关闭下拉菜单
+            document.addEventListener('click', () => {
+                document.querySelectorAll('.dropdown').forEach(dropdown => {
+                    dropdown.classList.remove('active');
+                });
+            });
+        </script>
 </body>
 </html>
