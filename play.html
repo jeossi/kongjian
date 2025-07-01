@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/hls.js@1.0.4"></script>
     <script src="https://cdn.jsdelivr.net/npm/flv.js@1.6.2/dist/flv.min.js"></script>
-     <style>
+    <style>
         :root {
             --primary: #4361ee;
             --primary-light: #eef2ff;
@@ -198,17 +198,17 @@
             box-shadow: 0 8px 25px var(--shadow);
             padding: 15px;
             margin-top: 10px;
-            z-index: 100;
+            z-index: 1000; /* 提高层级 */
             display: none;
             border: 1px solid var(--border);
-            max-height: 300px; /* 设置最大高度 */
-           overflow-y: auto;  /* 添加垂直滚动条 */
-           flex-direction: column; /* 垂直排列 */
+            max-height: 300px;
+            overflow-y: auto;
+            flex-direction: column;
         }
         .history-list {
-         flex: 1; /* 历史列表占据剩余空间 */
-         overflow-y: auto; /* 添加滚动条 */
-         max-height: 220px; /* 设置最大高度 */
+         flex: 1;
+         overflow-y: auto;
+         max-height: 220px;
         }
 
       .history-panel.active {
@@ -237,8 +237,8 @@
             cursor: pointer;
             color: var(--primary);
             font-weight: 500;
-            flex-shrink: 0; /* 防止清除按钮被压缩 */
-            margin-top: auto; /* 清除按钮保持在底部 */
+            flex-shrink: 0;
+            margin-top: auto;
         }
         
         .clear-history:hover {
@@ -350,7 +350,7 @@
             box-shadow: 0 8px 25px var(--shadow);
             padding: 15px;
             margin-top: 10px;
-            z-index: 100;
+            z-index: 1000; /* 提高层级 */
             display: none;
             border: 1px solid var(--border);
         }
@@ -1459,7 +1459,7 @@
             box-shadow: 0 8px 25px var(--shadow);
             padding: 15px;
             margin-top: 10px;
-            z-index: 100;
+            z-index: 1000; /* 提高层级 */
             display: none;
             border: 1px solid var(--border);
         }
@@ -1660,21 +1660,21 @@
             margin-top: 5px;
         }
         
-        /* 新增缓存加载进度条 */
-        .cache-progress {
-            height: 5px;
-            background: rgba(67, 97, 238, 0.2);
-            border-radius: 3px;
-            margin-top: 10px;
-            overflow: hidden;
+        /* 新增面板关闭按钮 */
+        .panel-close-btn {
+            position: absolute;
+            top: -15px;
+            right: 10px;
+            background: none;
+            border: none;
+            color: var(--dark-gray);
+            font-size: 30px;
+            cursor: pointer;
+            z-index: 10;
         }
         
-        .cache-progress-bar {
-            height: 100%;
-            width: 0%;
-            background: var(--primary);
-            border-radius: 3px;
-            transition: width 0.3s ease;
+        .panel-close-btn:hover {
+            color: var(--accent);
         }
     </style>
 </head>
@@ -1695,6 +1695,7 @@
                         <i class="fas fa-history"></i>
                     </button>
                     <div class="history-panel" id="history-panel">
+                        <button class="panel-close-btn" id="close-history-btn">&times;</button>
                         <div class="no-history">暂无播放记录</div>
                         <div class="clear-history" id="clear-history">清除历史记录</div>
                     </div>
@@ -1713,18 +1714,18 @@
                 </div>
             </div>
             <div class="cache-panel" id="cache-panel">
+                <button class="panel-close-btn" id="close-cache-btn">&times;</button>
                 <div class="cache-item">
                     <span>线路数据缓存</span>
                     <button id="clear-cache-btn">清除</button>
                 </div>
-                <div class="cache-progress">
-                    <div class="cache-progress-bar" id="cache-progress-bar"></div>
-                </div>
                 <div class="cache-info" id="cache-info"></div>
             </div>
             <div class="proxy-panel" id="proxy-panel">
+                <button class="panel-close-btn" id="close-proxy-btn">&times;</button>
                 <div class="proxy-option" data-proxy="1">代理服务 1 (智能决策)</div>
-                <div class="proxy-option" data-proxy="3">代理服务 2 (备用)</div>
+				<div class="proxy-option" data-proxy="2">代理服务 2 (智能决策)</div>
+                <div class="proxy-option" data-proxy="3">代理服务 3 (备用)</div>
                 <div class="proxy-option" data-proxy="0">关闭代理服务</div>
                 
                 <div class="custom-proxy-container">
@@ -1763,8 +1764,6 @@
                     <div class="touch-lock" id="touch-lock">
                         <i class="fas fa-lock"></i>
                     </div>
-                    
-                    <div class="danmaku-container" id="danmaku-container"></div>
                     
                     <div class="stats-panel" id="stats-panel">
                         <div class="stats-title">
@@ -1837,75 +1836,26 @@
                                 <i class="fas fa-step-forward"></i>
                             </button>
                             
-                            <div class="volume-container">
+                            <div class="progress-container">
+                                <div class="progress-bar">
+                                    <div class="progress" id="progress-bar"></div>
+                                </div>
+                                <div class="time-display" id="time-display">00:00 / 00:00</div>
+                            </div>
+                            
+                            <div class="volume-control">
                                 <button class="control-btn" id="volume-btn">
                                     <i class="fas fa-volume-up"></i>
                                 </button>
-                                <div class="volume-slider" id="volume-slider">
-                                    <div class="volume-level" id="volume-level"></div>
-                                </div>
+                                <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="1">
                             </div>
-                            <div class="time-display" id="time-display">00:00 / 00:00</div>
-                        </div>
-                        
-                        <div class="progress-container">
-                            <div class="progress-bar">
-                                <div class="progress" id="progress-bar"></div>
-                            </div>
-                        </div>
-                        
-                        <div class="control-group">
-                            <div class="dropdown" id="speed-dropdown">
-                                <button class="control-btn">
-                                    <i class="fas fa-running"></i>
-                                </button>
-                                <div class="dropdown-content">
-                                    <div class="dropdown-item" data-speed="0.5">0.5x</div>
-                                    <div class="dropdown-item" data-speed="0.75">0.75x</div>
-                                    <div class="dropdown-item active" data-speed="1">正常</div>
-                                    <div class="dropdown-item" data-speed="1.25">1.25x</div>
-                                    <div class="dropdown-item" data-speed="1.5">1.5x</div>
-                                    <div class="dropdown-item" data-speed="2">2x</div>
-                                </div>
-                            </div>
-                            
-                            <div class="dropdown" id="quality-dropdown">
-                                <button class="control-btn">
-                                    <i class="fas fa-binoculars"></i>
-                                    <span class="quality-text">自动</span>
-                                </button>
-                                <div class="dropdown-content">
-                                    <div class="dropdown-item active" data-quality="auto">自动</div>
-                                    <div class="dropdown-item" data-quality="1080">1080P</div>
-                                    <div class="dropdown-item" data-quality="720">720P</div>
-                                    <div class="dropdown-item" data-quality="480">480P</div>
-                                    <div class="dropdown-item" data-quality="360">360P</div>
-                                </div>
-                            </div>
-                            
-                            <button class="control-btn rotate-btn" id="rotate-btn">
-                                <i class="fas fa-retweet rotate-icon"></i>
-                            </button>
-                            
-                            <button class="control-btn screenshot-btn" id="screenshot-btn">
-                                <i class="fas fa-camera"></i>
-                            </button>
-                            
-                            <button class="control-btn loop-btn" id="loop-btn">
-                                <i class="fas fas fa-list"></i>
-                                <span class="loop-mode" id="loop-mode">循环</span>
-                            </button>
                             
                             <button class="control-btn" id="pip-btn">
-                                <i class="fas fa-expand"></i>
+                                <i class="fas fa-picture-in-picture"></i>
                             </button>
                             
                             <button class="control-btn" id="fullscreen-btn">
-                                <i class="fas fa-expand-arrows-alt"></i>
-                            </button>
-                            
-                            <button class="control-btn active" id="danmaku-btn">
-                                <i class="fas fa-comment-alt"></i>
+                                <i class="fas fa-expand"></i>
                             </button>
                             
                             <button class="control-btn" id="stats-btn">
@@ -2034,13 +1984,10 @@
         const playPauseBtn = document.getElementById('play-pause-btn');
         const volumeBtn = document.getElementById('volume-btn');
         const volumeSlider = document.getElementById('volume-slider');
-        const volumeLevel = document.getElementById('volume-level');
         const pipBtn = document.getElementById('pip-btn');
         const fullscreenBtn = document.getElementById('fullscreen-btn');
-        const danmakuBtn = document.getElementById('danmaku-btn');
         const statsBtn = document.getElementById('stats-btn');
         const statsPanel = document.getElementById('stats-panel');
-        const danmakuContainer = document.getElementById('danmaku-container');
         const progressBar = document.getElementById('progress-bar');
         const miniProgressBar = document.getElementById('mini-progress-bar');
         const timeDisplay = document.getElementById('time-display');
@@ -2057,7 +2004,6 @@
         const statsResolution = document.getElementById('stats-resolution');
         const statsBitrate = document.getElementById('stats-bitrate');
         const rotateBtn = document.getElementById('rotate-btn');
-        const screenshotBtn = document.getElementById('screenshot-btn');
         const loopBtn = document.getElementById('loop-btn');
         const loopMode = document.getElementById('loop-mode');
         const toggleSidebarBtn = document.getElementById('toggle-sidebar-btn');
@@ -2073,12 +2019,8 @@
         const searchPanel = document.getElementById('search-panel');
         const closeSearchBtn = document.getElementById('close-search-btn');
         const searchResultsContainer = document.getElementById('search-results-container');
-        const qualityDropdown = document.getElementById('quality-dropdown');
-        const qualityText = qualityDropdown.querySelector('.quality-text');
         const prevBtn = document.getElementById('prev-btn');
         const nextBtn = document.getElementById('next-btn');
-        const countdownDisplay = document.getElementById('countdown-display');
-        const countdownElement = document.getElementById('countdown');
         const audioInfo = document.getElementById('audio-info');
         const audioCategory = document.getElementById('audio-category');
         const audioPlayingName = document.getElementById('audio-playing-name');
@@ -2107,7 +2049,9 @@
         const testCustomProxyBtn = document.getElementById('test-custom-proxy-btn');
         const testVideoUrl = document.getElementById('test-video-url');
         const testPlayBtn = document.getElementById('test-play-btn');
-        const cacheProgressBar = document.getElementById('cache-progress-bar');
+        const closeHistoryBtn = document.getElementById('close-history-btn');
+        const closeCacheBtn = document.getElementById('close-cache-btn');
+        const closeProxyBtn = document.getElementById('close-proxy-btn');
         
         // DOM 元素
         const channelList = document.getElementById('channel-list');
@@ -2119,7 +2063,6 @@
         let currentChannelName = "";
         let currentCategory = null;
         let currentEntryIndex = -1;
-        let danmakuEnabled = true;
         let channelsData = [];
         let isInPIPMode = false;
         let isFullscreen = false;
@@ -2150,7 +2093,8 @@
         const PROXY_SERVICES = {
             0: "", // 不使用代理
             1: "https://ajeossi.dpdns.org/",
-            2: "https://api.codetabs.com/v1/proxy?quest=",
+			2: "https://jeotv.dpdns.org/",
+            3: "https://api.codetabs.com/v1/proxy?quest=",
         };
         
         // 播放历史
@@ -2321,23 +2265,9 @@
             playNext();
         });
         
-        // 音量按钮
-        volumeBtn.addEventListener('click', () => {
-            if (videoPlayer.muted) {
-                videoPlayer.muted = false;
-                volumeBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
-            } else {
-                videoPlayer.muted = true;
-                volumeBtn.innerHTML = '<i class="fas fa-volume-mute"></i>';
-            }
-        });
-        
         // 音量滑块
-        volumeSlider.addEventListener('click', (e) => {
-            const rect = e.target.getBoundingClientRect();
-            const percent = (e.clientX - rect.left) / rect.width;
-            videoPlayer.volume = percent;
-            volumeLevel.style.width = `${percent * 100}%`;
+        volumeSlider.addEventListener('input', (e) => {
+            videoPlayer.volume = e.target.value;
         });
         
         // 更新播放进度
@@ -2573,10 +2503,6 @@
                 channelWarning.style.display = 'block';
                 statsCache.textContent = '加载失败';
             }
-        }
-        // 更新缓存进度
-        function updateCacheProgress(percent) {
-            cacheProgressBar.style.width = `${percent}%`;
         }
         
         // 更新缓存状态显示
@@ -3649,6 +3575,19 @@
             }
         });
         
+        // 面板关闭按钮功能
+        closeHistoryBtn.addEventListener('click', () => {
+            historyPanel.classList.remove('active');
+        });
+        
+        closeCacheBtn.addEventListener('click', () => {
+            document.getElementById('cache-panel').classList.remove('active');
+        });
+        
+        closeProxyBtn.addEventListener('click', () => {
+            proxyPanel.classList.remove('active');
+        });
+        
         // 初始化
         window.addEventListener('load', () => {
             detectBrowserCapabilities();
@@ -3701,6 +3640,9 @@
                 if (!proxyPanel.contains(e.target) && !e.target.closest('#proxy-btn')) {
                     proxyPanel.classList.remove('active');
                 }
+                if (!document.getElementById('cache-panel').contains(e.target) && !e.target.closest('#cache-btn')) {
+                    document.getElementById('cache-panel').classList.remove('active');
+                }
             });
         });
         
@@ -3717,19 +3659,7 @@
             });
         });
         
-        // 2. 清晰度选择功能
-        document.querySelectorAll('#quality-dropdown .dropdown-item').forEach(item => {
-            item.addEventListener('click', () => {
-                document.querySelectorAll('#quality-dropdown .dropdown-item').forEach(el => {
-                    el.classList.remove('active');
-                });
-                item.classList.add('active');
-                // 更新清晰度按钮文字
-                qualityText.textContent = item.textContent;
-            });
-        });
-        
-        // 3. 画中画按钮
+        // 2. 画中画按钮
         pipBtn.addEventListener('click', () => {
             if (document.pictureInPictureElement) {
                 document.exitPictureInPicture();
@@ -3738,7 +3668,7 @@
             }
         });
         
-        // 4. 全屏按钮
+        // 3. 全屏按钮
         fullscreenBtn.addEventListener('click', () => {
             if (!isFullscreen) {
                 playerContainer.classList.add('fullscreen');
@@ -3747,23 +3677,17 @@
             } else {
                 playerContainer.classList.remove('fullscreen');
                 isFullscreen = false;
-                fullscreenBtn.innerHTML = '<i class="fas fa-expand-arrows-alt"></i>';
+                fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
             }
         });
         
-        // 5. 弹幕按钮
-        danmakuBtn.addEventListener('click', () => {
-            danmakuEnabled = !danmakuEnabled;
-            danmakuBtn.classList.toggle('active', danmakuEnabled);
-        });
-        
-        // 6. 统计信息按钮
+        // 4. 统计信息按钮
         statsBtn.addEventListener('click', () => {
             statsPanel.classList.toggle('active');
             statsBtn.classList.toggle('active', statsPanel.classList.contains('active'));
         });
         
-        // 7. 旋转按钮
+        // 5. 旋转按钮
         rotateBtn.addEventListener('click', () => {
             rotation = (rotation + 90) % 360;
             
@@ -3783,45 +3707,7 @@
             }
         });
         
-        // 8. 截图按钮
-        screenshotBtn.addEventListener('click', () => {
-            // 创建临时canvas处理旋转
-            const tempCanvas = document.createElement('canvas');
-            tempCanvas.width = videoPlayer.videoWidth;
-            tempCanvas.height = videoPlayer.videoHeight;
-            const tempCtx = tempCanvas.getContext('2d');
-            
-            // 根据旋转角度调整绘制
-            if (rotation === 0) {
-                tempCtx.drawImage(videoPlayer, 0, 0, tempCanvas.width, tempCanvas.height);
-            } else if (rotation === 90) {
-                tempCanvas.width = videoPlayer.videoHeight;
-                tempCanvas.height = videoPlayer.videoWidth;
-                tempCtx.translate(tempCanvas.width, 0);
-                tempCtx.rotate(Math.PI / 2);
-                tempCtx.drawImage(videoPlayer, 0, 0, tempCanvas.height, tempCanvas.width);
-            } else if (rotation === 180) {
-                tempCtx.translate(tempCanvas.width, tempCanvas.height);
-                tempCtx.rotate(Math.PI);
-                tempCtx.drawImage(videoPlayer, 0, 0, tempCanvas.width, tempCanvas.height);
-            } else if (rotation === 270) {
-                tempCanvas.width = videoPlayer.videoHeight;
-                tempCanvas.height = videoPlayer.videoWidth;
-                tempCtx.translate(0, tempCanvas.height);
-                tempCtx.rotate(-Math.PI / 2);
-                tempCtx.drawImage(videoPlayer, 0, 0, tempCanvas.height, tempCanvas.width);
-            }
-            
-            // 创建下载链接
-            const link = document.createElement('a');
-            link.download = `screenshot-${new Date().getTime()}.png`;
-            link.href = tempCanvas.toDataURL('image/png');
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        });
-        
-        // 9. 循环模式按钮
+        // 6. 循环模式按钮
         loopBtn.addEventListener('click', () => {
             loopModeState = (loopModeState + 1) % 3;
             
@@ -3843,14 +3729,14 @@
             videoPlayer.loop = (loopModeState === 1);
         });
         
-        // 10. 触摸锁功能
+        // 7. 触摸锁功能
         touchLockBtn.addEventListener('click', () => {
             isTouchLocked = !isTouchLocked;
             touchLockBtn.classList.toggle('active', isTouchLocked);
             touchLockBtn.innerHTML = isTouchLocked ? '<i class="fas fa-lock-open"></i>' : '<i class="fas fa-lock"></i>';
         });
         
-        // 11. 侧边栏切换
+        // 8. 侧边栏切换
         toggleSidebarBtn.addEventListener('click', () => {
             sidebarVisible = !sidebarVisible;
             
@@ -3867,7 +3753,7 @@
             }
         });
         
-        // 12. 主题切换
+        // 9. 主题切换
         themeToggle.addEventListener('click', () => {
             document.body.classList.toggle('dark-mode');
             const icon = themeToggle.querySelector('i');
