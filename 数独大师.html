@@ -2264,7 +2264,7 @@
             solutionData = await solutionResponse.json();
         } else if (currentDatabase === 'backup') {
             // 修改后的收藏数独加载逻辑，与自用数独保持一致
-            const response = await fetchWithTimeout('https://d.kstore.dev/download/8043/sd/SCsuduku.json', { timeout: 5000 });
+            const response = await fetchWithTimeout('./SCsuduku.json', { timeout: 5000 });
             if (!response.ok) {
                 throw new Error('收藏数独请求失败');
             }
@@ -2280,7 +2280,7 @@
             boardData = puzzlesToUse[randomIndex];
             solutionData = { solution: boardData.solution };
         } else if (currentDatabase === 'local') {
-            const response = await fetchWithTimeout('https://d.kstore.dev/download/8043/sd/suduku.json', { timeout: 5000 });
+            const response = await fetchWithTimeout('./BDsuduku.json', { timeout: 5000 });
             if (!response.ok) {
                 throw new Error('自用数独请求失败');
             }
