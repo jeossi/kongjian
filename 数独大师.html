@@ -2264,7 +2264,7 @@
             solutionData = await solutionResponse.json();
         } else if (currentDatabase === 'backup') {
             // 修改后的收藏数独加载逻辑，与自用数独保持一致
-            const response = await fetchWithTimeout('./SCsuduku.json', { timeout: 5000 });
+            const response = await fetchWithTimeout('./SCduku.json', { timeout: 5000 });
             if (!response.ok) {
                 throw new Error('收藏数独请求失败');
             }
