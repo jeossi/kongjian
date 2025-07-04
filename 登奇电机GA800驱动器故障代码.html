@@ -1,0 +1,1392 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>登奇电机GA800驱动器故障代码手册</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    body {
+      background: linear-gradient(135deg, #e0f7fa 0%, #f5f7fa 100%);
+      color: #2c3e50;
+      line-height: 1.6;
+      padding: 20px;
+      min-height: 100vh;
+    }
+    
+    .container {
+      max-width: 1400px;
+      margin: 30px auto;
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 10px 35px rgba(0, 0, 0, 0.15);
+      overflow: hidden;
+      position: relative;
+      border: 1px solid #e0e6ed;
+    }
+    
+    header {
+      background: linear-gradient(120deg, #1a3a6c, #2c5282);
+      color: white;
+      padding: 35px 40px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .header-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><rect width="100" height="100" fill="rgba(255,255,255,0.05)" /><path d="M0,0 Q50,20 100,0 T200,100" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="0.5"/></svg>');
+      opacity: 0.7;
+    }
+    
+    h1 {
+      font-size: 2.8rem;
+      margin-bottom: 10px;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      position: relative;
+      z-index: 2;
+      letter-spacing: 1px;
+    }
+    
+    .subtitle {
+      font-size: 1.2rem;
+      opacity: 0.9;
+      max-width: 700px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 2;
+    }
+    
+    h2 {
+      font-size: 2.2rem;
+      color: #1a3a6c;
+      margin: 30px 0 20px;
+      padding-bottom: 15px;
+      border-bottom: 3px solid #2c5282;
+      position: relative;
+      padding-left: 20px;
+    }
+    
+    h2::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 10px;
+      height: 70%;
+      width: 6px;
+      background: #e53e3e;
+      border-radius: 3px;
+    }
+    
+    .content {
+      padding: 0 30px 30px;
+    }
+    
+    .filters {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin: 25px 0;
+      flex-wrap: wrap;
+    }
+    
+    .filter-btn {
+      padding: 10px 25px;
+      border-radius: 30px;
+      border: 1px solid #2c5282;
+      background: white;
+      color: #2c5282;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-weight: 500;
+    }
+    
+    .filter-btn:hover, .filter-btn.active {
+      background: #2c5282;
+      color: white;
+    }
+    
+    .stats {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      margin: 20px 0;
+      flex-wrap: wrap;
+    }
+    
+    .stat-card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+      min-width: 180px;
+      border: 1px solid #e2e8f0;
+      transition: transform 0.3s ease;
+    }
+    
+    .stat-card:hover {
+      transform: translateY(-5px);
+    }
+    
+    .stat-card i {
+      font-size: 2.5rem;
+      color: #2c5282;
+      margin-bottom: 15px;
+    }
+    
+    .stat-card .number {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #1a3a6c;
+    }
+    
+    .stat-card .label {
+      color: #718096;
+      font-size: 0.95rem;
+      margin-top: 5px;
+    }
+    
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 30px 0 40px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid #e2e8f0;
+    }
+    
+    th {
+      background: linear-gradient(to bottom, #2c5282, #1a3a6c);
+      color: white;
+      font-weight: 600;
+      text-align: left;
+      position: sticky;
+      top: 0;
+      font-size: 1.05rem;
+      padding: 16px 15px;
+    }
+    
+    td {
+      border: 1px solid #e2e8f0;
+      padding: 14px 15px;
+      text-align: left;
+      vertical-align: top;
+      font-size: 0.95rem;
+    }
+    
+    tr:nth-child(even) {
+      background-color: #f8fafc;
+    }
+    
+    tr:hover {
+      background-color: #ebf8ff;
+      transition: background-color 0.2s;
+    }
+    
+    .cause-cell, .solution-cell {
+      padding: 0;
+    }
+    
+    .cause-grid, .solution-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 8px;
+      padding: 8px;
+    }
+    
+    .cause-item, .solution-item {
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 12px;
+      background: white;
+      font-size: 0.92rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    
+    .cause-item::before {
+      content: "•";
+      color: #e53e3e;
+      font-size: 1.2em;
+      flex-shrink: 0;
+    }
+    
+    .solution-item::before {
+      content: "✓";
+      color: #38a169;
+      font-weight: bold;
+      flex-shrink: 0;
+    }
+    
+    .warning {
+      font-weight: 600;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      display: inline-block;
+      text-align: center;
+    }
+    
+    .warning-yes {
+      background-color: #fffaf0;
+      color: #c05621;
+      border: 1px solid #f6ad55;
+    }
+    
+    .warning-no {
+      background-color: #f0fff4;
+      color: #2f855a;
+      border: 1px solid #68d391;
+    }
+    
+    .note {
+      background: #fffaf0;
+      border-left: 4px solid #dd6b20;
+      padding: 25px;
+      margin: 40px 0 30px;
+      border-radius: 0 12px 12px 0;
+      font-size: 1.05rem;
+      position: relative;
+    }
+    
+    .note::before {
+      content: "!";
+      position: absolute;
+      left: -15px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: #dd6b20;
+      color: white;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+    }
+    
+    .note strong {
+      color: #c05621;
+      font-size: 1.1rem;
+    }
+    
+    footer {
+      background: #1a202c;
+      color: #a0aec0;
+      padding: 35px 20px 25px;
+      margin-top: 20px;
+      position: relative;
+      text-align: center;
+    }
+    
+    .copyright {
+      color: #e2e8f0;
+      font-size: 1.1rem;
+      margin-bottom: 10px;
+    }
+    
+    .contact {
+      margin-top: 15px;
+      font-size: 0.95rem;
+    }
+    
+    .contact a {
+      color: #63b3ed;
+      text-decoration: none;
+      margin: 0 10px;
+    }
+    
+    .contact a:hover {
+      text-decoration: underline;
+    }
+    
+    .back-to-top {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      width: 50px;
+      height: 50px;
+      background: #2c5282;
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+      z-index: 100;
+      opacity: 0;
+      transition: opacity 0.3s, transform 0.3s;
+    }
+    
+    .back-to-top.visible {
+      opacity: 1;
+    }
+    
+    .back-to-top:hover {
+      transform: translateY(-5px);
+      background: #1a3a6c;
+    }
+    
+    @media (max-width: 1100px) {
+      .cause-grid, .solution-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 2.2rem;
+      }
+      
+      h2 {
+        font-size: 1.8rem;
+      }
+      
+      .content {
+        padding: 0 15px 20px;
+      }
+      
+      .stat-card {
+        min-width: 140px;
+        padding: 15px;
+      }
+      
+      .stat-card .number {
+        font-size: 1.7rem;
+      }
+      
+      .filters {
+        gap: 10px;
+      }
+      
+      .filter-btn {
+        padding: 8px 15px;
+        font-size: 0.9rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="header-overlay"></div>
+      <h1>登奇电机GA800驱动器故障代码手册</h1>
+      <p class="subtitle">全面诊断指南 - 45种故障代码的详细说明与解决方案</p>
+    </header>
+    
+    <div class="content">
+      <div class="stats">
+        <div class="stat-card">
+          <i class="fas fa-bolt"></i>
+          <div class="number">45</div>
+          <div class="label">故障代码类型</div>
+        </div>
+        <div class="stat-card">
+          <i class="fas fa-tools"></i>
+          <div class="number">32</div>
+          <div class="label">可自行处理</div>
+        </div>
+        <div class="stat-card">
+          <i class="fas fa-headset"></i>
+          <div class="number">13</div>
+          <div class="label">需技术支持</div>
+        </div>
+        <div class="stat-card">
+          <i class="fas fa-exclamation-triangle"></i>
+          <div class="number">18</div>
+          <div class="label">会触发告警</div>
+        </div>
+      </div>
+      
+      <h2>第七章 故障诊断及异常处理</h2>
+      
+      <table>
+        <thead>
+          <tr>
+            <th width="5%">代码</th>
+            <th width="8%">故障显示</th>
+            <th width="12%">故障解释</th>
+            <th width="30%">原因</th>
+            <th width="30%">对策</th>
+            <th width="10%">告警状态</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- 故障条目1 -->
+          <tr>
+            <td>1</td>
+            <td>oC1</td>
+            <td>加速过流保护</td>
+            <td class="cause-cell">
+              <div class="cause-grid">
+                <div class="cause-item">V/F控制时转矩提升值太大</div>
+                <div class="cause-item">起动频率太大</div>
+                <div class="cause-item">加速时间太短</div>
+                <div class="cause-item">电机参数设置不当</div>
+                <div class="cause-item">输出短路（相间短路和输出接地短路）</div>
+                <div class="cause-item">负载过重</div>
+                <div class="cause-item">V/F控制时V/F曲线不合适</div>
+                <div class="cause-item">对旋转中电机实施再启动</div>
+              </div>
+            </td>
+            <td class="solution-cell">
+              <div class="solution-grid">
+                <div class="solution-item">减小转矩提升值</div>
+                <div class="solution-item">降低起动频率值</div>
+                <div class="solution-item">延长加速时间</div>
+                <div class="solution-item">按按钮电机参数辨识</div>
+                <div class="solution-item">检查电机接线和输出对地阻抗</div>
+                <div class="solution-item">减轻负载</div>
+                <div class="solution-item">正确设置V/F曲线</div>
+                <div class="solution-item">减小电流限定值或采用转速跟踪方式起动</div>
+              </div>
+            </td>
+            <td><span class="warning warning-no">无告警</span></td>
+          </tr>
+          
+          <!-- 故障条目2 -->
+          <tr>
+            <td>2</td>
+            <td>oC2</td>
+            <td>恒速过流保护</td>
+            <td class="cause-cell">
+              <div class="cause-grid">
+                <div class="cause-item">输出短路（相间短路和输出接地短路）</div>
+                <div class="cause-item">负载过重</div>
+                <div class="cause-item">伺服驱动功率等级太小</div>
+                <div class="cause-item">电网输入电压偏低</div>
+              </div>
+            </td>
+            <td class="solution-cell">
+              <div class="solution-grid">
+                <div class="solution-item">检查电机接线和输出对地阻抗</div>
+                <div class="solution-item">减轻负载</div>
+                <div class="solution-item">选择合适的伺服驱动功率</div>
+                <div class="solution-item">检查电网电压</div>
+              </div>
+            </td>
+            <td><span class="warning warning-no">无告警</span></td>
+          </tr>
+          
+          <!-- 故障条目3 -->
+          <tr>
+            <td>3</td>
+            <td>oC3</td>
+            <td>减速过流保护</td>
+            <td class="cause-cell">
+              <div class="cause-grid">
+                <div class="cause-item">输出短路（相间短路和输出接地短路）</div>
+                <div class="cause-item">负载的惯性太大</div>
+                <div class="cause-item">减速时间太短</div>
+                <div class="cause-item">电网输入电压偏低</div>
+              </div>
+            </td>
+            <td class="solution-cell">
+              <div class="solution-grid">
+                <div class="solution-item">检查电机接线和输出对地阻抗</div>
+                <div class="solution-item">使用能耗制动</div>
+                <div class="solution-item">延长减速时间</div>
+                <div class="solution-item">检查电网电压</div>
+              </div>
+            </td>
+            <td><span class="warning warning-no">无告警</span></td>
+          </tr>
+          
+          <!-- 故障条目4 -->
+          <tr>
+            <td>4</td>
+            <td>ov1</td>
+            <td>加速过压保护</td>
+            <td class="cause-cell">
+              <div class="cause-grid">
+                <div class="cause-item">负载的惯性太大</div>
+                <div class="cause-item">输入电压异常</div>
+                <div class="cause-item">输出短路（相间短路和输出接地短路）</div>
+              </div>
+            </td>
+            <td class="solution-cell">
+              <div class="solution-grid">
+                <div class="solution-item">使用能耗制动</div>
+                <div class="solution-item">检查电网电压</div>
+                <div class="solution-item">检查电机接线和输出对地阻抗</div>
+              </div>
+            </td>
+            <td><span class="warning warning-no">无告警</span></td>
+          </tr>
+          
+          <!-- 故障条目5 -->
+          <tr>
+            <td>5</td>
+            <td>ov2</td>
+            <td>恒速过压保护</td>
+            <td class="cause-cell">
+              <div class="cause-grid">
+                <div class="cause-item">负载波动太大</div>
+                <div class="cause-item">输入电压异常</div>
+                <div class="cause-item">输出短路（相间短路和输出接地短路）</div>
+                <div class="cause-item">矢量控制运行时调节器参数设置不当</div>
+              </div>
+            </td>
+            <td class="solution-cell">
+              <div class="solution-grid">
+                <div class="solution-item">检查负载</div>
+                <div class="solution-item">检查电网电压</div>
+                <div class="solution-item">检查电机接线和输出对地阻抗</div>
+                <div class="solution-item">正确设置调节器参数</div>
+              </div>
+            </td>
+            <td><span class="warning warning-no">无告警</span></td>
+          </tr>
+          
+          <!-- 故障条目6 -->
+          <tr>
+            <td>6</td>
+            <td>ov3</td>
+            <td>减速过压保护</td>
+            <td class="cause-cell">
+              <div class="cause-grid">
+                <div class="cause-item">负载的惯性太大</div>
+                <div class="cause-item">输入电压异常</div>
+                <div class="cause-item">输出短路（相间短路和输出接地短路）</div>
+                <div class="cause-item">矢量控制运行时调节器参数设置不当</div>
+                <div class="cause-item">减速时间太短</div>
+              </div>
+            </td>
+            <td class="solution-cell">
+              <div class="solution-grid">
+                <div class="solution-item">使用能耗制动</div>
+                <div class="solution-item">检查电网电压</div>
+                <div class="solution-item">检查电机接线和输出对地阻抗</div>
+                <div class="solution-item">正确设置调节器参数</div>
+                <div class="solution-item">延长减速时间</div>
+              </div>
+            </td>
+            <td><span class="warning warning-no">无告警</span></td>
+          </tr>
+          
+          <!-- 故障条目7 -->
+          <tr>
+            <td>7</td>
+            <td>FAL</td>
+            <td>逆变侧模块保护</td>
+            <td class="cause-cell">
+              <div class="cause-grid">
+                <div class="cause-item">输出短路（相间短路和输出接地短路）</div>
+                <div class="cause-item">风扇损坏或风道堵塞</div>
+                <div class="cause-item">逆变模块互通</div>
+                <div class="cause-item">开关电源损坏</div>
+                <div class="cause-item">控制板异常</div>
+                <div class="cause-item">环境温度过高</div>
+                <div class="cause-item">控制板连接松动</div>
+                <div class="cause-item">过压过流的因素</div>
+              </div>
+            </td>
+            <td class="solution-cell">
+              <div class="solution-grid">
+                <div class="solution-item">检查电机接线和输出对地阻抗</div>
+                <div class="solution-item">疏通风道或更换风扇</div>
+                <div class="solution-item">寻求服务</div>
+                <div class="solution-item">寻求服务</div>
+                <div class="solution-item">寻求服务</div>
+                <div class="solution-item">降低环境温度</div>
+                <div class="solution-item">控制板连接线重新拔插</div>
+                <div class="solution-item">按压过压过流的处理方式处理</div>
+              </div>
+            </td>
+            <td><span class="warning warning-no">无告警</span></td>
+          </tr>
+          
+          <!-- 故障条目8 -->
+          <tr>
+            <td>8</td>
+            <td>tUN</td>
+            <td>参数辨识失败保护</td>
+            <td class="cause-cell">
+              <div class="cause-grid">
+                <div class="cause-item">电机接线不良</div>
+                <div class="cause-item">电机在旋转中起动辨识</div>
+                <div class="cause-item">电机参数设置偏差太大</div>
+              </div>
+            </td>
+            <td class="solution-cell">
+              <div class="solution-grid">
+                <div class="solution-item">检查电机接线</div>
+                <div class="solution-item">在静止中进行电机参数辨识</div>
+                <div class="solution-item">按按钮电机绕组正确设置</div>
+              </div>
+            </td>
+            <td><span class="warning warning-no">无告警</span></td>
+          </tr>
+          
+          <!-- 故障条目9 -->
+          <tr>
+            <td>9</td>
+            <td>oL1</td>
+            <td>伺服驱动器过载保护</td>
+            <td class="cause-cell">
+              <div class="cause-grid">
+                <div class="cause-item">V/F控制时转矩提升值太大</div>
+                <div class="cause-item">起动频率太大</div>
+                <div class="cause-item">加减速时间太短</div>
+                <div class="cause-item">电机参数设置不当</div>
+                <div class="cause-item">输出短路（相间短路和输出接地短路）</div>
+                <div class="cause-item">负载过重</div>
+                <div class="cause-item">V/F控制时V/F曲线不合适</div>
+                <div class="cause-item">对旋转中电机实施再启动</div>
+              </div>
+            </td>
+            <td class="solution-cell">
+              <div class="solution-grid">
+                <div class="solution-item">减小转矩提升值</div>
+                <div class="solution-item">降低起动频率值</div>
+                <div class="solution-item">延长加减速时间</div>
+                <div class="solution-item">按按钮电机绕组正确设置</div>
+                <div class="solution-item">检查电机接线和输出对地阻抗</div>
+                <div class="solution-item">减轻负载</div>
+                <div class="solution-item">正确设置V/F曲线</div>
+                <div class="solution-item">减小电流限定值或采用转速跟踪方式起动</div>
+              </div>
+            </td>
+            <td><span class="warning warning-yes">告警</span></td>
+          </tr>
+          
+          <!-- 故障条目10 -->
+          <tr>
+            <td>10</td>
+            <td>oL2</td>
+            <td>电机过载保护</td>
+            <td class="cause-cell">
+              <div class="cause-grid">
+                <div class="cause-item">V/F控制时转矩提升值太大</div>
+                <div class="cause-item">V/F控制时V/F曲线不合适</div>
+                <div class="cause-item">电机参数设置不当</div>
+                <div class="cause-item">电机过载保护时间设置不当</div>
+                <div class="cause-item">电机转矩负载突变过大</div>
+                <div class="cause-item">普通电机长期低速重负载运行</div>
+              </div>
+            </td>
+            <td class="solution-cell">
+              <div class="solution-grid">
+                <div class="solution-item">减小转矩提升值</div>
+                <div class="solution-item">正确设置V/F曲线</div>
+                <div class="solution-item">按按钮电机绕组正确设置</div>
+                <div class="solution-item">正确合理设置电机过载保护时间</div>
+                <div class="solution-item">检查电机转矩原因或检查负载情况</div>
+                <div class="solution-item">选择变频电机</div>
+              </div>
+            </td>
+            <td><span class="warning warning-yes">告警</span></td>
+          </tr>
+          
+          <!-- 故障条目11 -->
+          <tr>
+            <td>11</td>
+            <td>CtC</td>
+            <td>电流检测电路故障</td>
+            <td class="cause-cell">
+              <div class="cause-grid">
+                <div class="cause-item">控制极连接异常</div>
+                <div class="cause-item">开关电源损坏</div>
+                <div class="cause-item">霍尔器件损坏</div>
+                <div class="cause-item">输出对地漏电流太大</div>
+              </div>
+            </td>
+            <td class="solution-cell">
+              <div class="solution-grid">
+                <div class="solution-item">寻求服务</div>
+                <div class="solution-item">寻求服务</div>
+                <div class="solution-item">寻求服务</div>
+                <div class="solution-item">寻求服务</div>
+              </div>
+            </td>
+            <td><span class="warning warning-yes">告警</span></td>
+          </tr>
+          
+          <!-- 故障条目12 -->
+          <tr>
+            <td>12</td>
+            <td>GdP</td>
+            <td>输出侧对地短路保护</td>
+            <td class="cause-cell">
+              <div class="cause-grid">
+                <div class="cause-item">输出接线对地短路</div>
+                <div class="cause-item">电机绝缘异常</div>
+                <div class="cause-item">逆变模块异常</div>
+                <div class="cause-item">输出对地漏电流太大</div>
+              </div>
+            </td>
+            <td class="solution-cell">
+              <div class="solution-grid">
+                <div class="solution-item">检查电机接线和输出对地阻抗</div>
+                <div class="solution-item">检查电机</div>
+                <div class="solution-item">寻求服务</div>
+                <div class="solution-item">寻求服务</div>
+              </div>
+            </td>
+            <td><span class="warning warning-no">无告警</span></td>
+          </tr>
+          
+          <!-- 故障条目13 -->
+          <tr>
+            <td>13</td>
+            <td>ISF</td>
+            <td>输入电源异常</td>
+            <td class="cause-cell">
+              <div class="cause-grid">
+                <div class="cause-item">输入电源电压严重三相不平衡</div>
+                <div class="cause-item">母线电容异常</div>
+                <div class="cause-item">电源输入接线异常</div>
+              </div>
+            </td>
+            <td class="solution-cell">
+              <div class="solution-grid">
+                <div class="solution-item">检查输入电网电压</div>
+                <div class="solution-item">寻求服务</div>
+                <div class="solution-item">检查电源输入接线</div>
+              </div>
+            </td>
+            <td><span class="warning warning-yes">告警</span></td>
+          </tr>
+          
+          <!-- 故障条目14 -->
+          <tr>
+            <td>14</td>
+            <td>oPL</td>
+            <td>输出侧缺相</td>
+            <td class="cause-cell">
+              <div class="cause-grid">
+                <div class="cause-item">电机线连接异常</div>
+              </div>
+            </td>
+            <td class="solution-cell">
+              <div class="solution-grid">
+                <div class="solution-item">检查电机连线</div>
+              </div>
+            </td>
+            <td><span class="warning warning-yes">告警</span></td>
+          </tr>
+          
+          <!-- 故障条目15 -->
+          <tr>
+            <td>15</td>
+            <td>oL3</td>
+            <td>逆变模块过载保护</td>
+            <td class="cause-cell">
+              <div class="cause-grid">
+                <div class="cause-item">过流因素</div>
+                <div class="cause-item">输入电源异常</div>
+                <div class="cause-item">电机输出异常</div>
+                <div class="cause-item">逆变模块异常</div>
+              </div>
+            </td>
+            <td class="solution-cell">
+              <div class="solution-grid">
+                <div class="solution-item">按照过流的处理方式处理</div>
+                <div class="solution-item">检查输入电网电压</div>
+                <div class="solution-item">检查电机或电机接线</div>
+                <div class="solution-item">寻求服务</div>
+              </div>
+            </td>
+            <td><span class="warning warning-no">无告警</span></td>
+          </tr>
+          
+          <!-- 故障条目16 -->
+          <tr>
+            <td>16</td>
+            <td>oH1</td>
+            <td>散热器过热保护</td>
+            <td class="cause-cell">
+              <div class="cause-grid">
+                <div class="cause-item">环境温度太高</div>
+                <div class="cause-item">风扇损坏</div>
+                <div class="cause-item">风道堵塞</div>
+                <div class="cause-item">温度传感器异常</div>
+                <div class="cause-item">逆变模块异常</div>
+              </div>
+            </td>
+            <td class="solution-cell">
+              <div class="solution-grid">
+                <div class="solution-item">降低环境温度</div>
+                <div class="solution-item">更换风扇</div>
+                <div class="solution-item">疏通风道</div>
+                <div class="solution-item">寻求服务</div>
+                <div class="solution-item">寻求服务</div>
+              </div>
+            </td>
+            <td><span class="warning warning-yes">告警</span></td>
+          </tr>
+          
+          <!-- 故障条目17 -->
+          <tr>
+            <td>17</td>
+            <td>oH2</td>
+            <td>电机(PTC)过热保护</td>
+            <td class="cause-cell">
+              <div class="cause-grid">
+                <div class="cause-item">环境温度过高</div>
+                <div class="cause-item">电机过热保护点设置不当</div>
+                <div class="cause-item">检测电路损坏</div>
+              </div>
+            </td>
+            <td class="solution-cell">
+              <div class="solution-grid">
+                <div class="solution-item">降低环境温度</div>
+                <div class="solution-item">正确设置电机过热保护点</div>
+                <div class="solution-item">寻求服务</div>
+              </div>
+            </td>
+            <td><span class="warning warning-yes">告警</span></td>
+          </tr>
+          
+          <!-- 故障条目18 -->
+          <tr>
+            <td>18</td>
+            <td>oH3</td>
+            <td>模块温度断线保护</td>
+            <td class="cause-cell">
+              <div class="cause-grid">
+                <div class="cause-item">模块检测电路损坏</div>
+                <div class="cause-item">热敏电阻损坏</div>
+                <div class="cause-item">环境温度太低</div>
+              </div>
+            </td>
+            <td class="solution-cell">
+              <div class="solution-grid">
+                <div class="solution-item">寻求服务</div>
+                <div class="solution-item">寻求服务</div>
+                <div class="solution-item">升高环境温度</div>
+              </div>
+            </td>
+            <td><span class="warning warning-yes">告警</span></td>
+          </tr>
+          
+          <!-- 故障条目19 -->
+          <tr>
+            <td>19</td>
+            <td>CLL</td>
+            <td>编码器断线保护</td>
+            <td class="cause-cell">
+              <div class="cause-grid">
+                <div class="cause-item">编码器无信号或缺信号</div>
+                <div class="cause-item">编码器连接线断开</div>
+                <div class="cause-item">编码器连接线错误</div>
+              </div>
+            </td>
+            <td class="solution-cell">
+              <div class="solution-grid">
+                <div class="solution-item">检查编码器是否损坏或编码器电源有无异常</div>
+                <div class="solution-item">重新连接编码器线</div>
+                <div class="solution-item">重新连接编码器线</div>
+              </div>
+            </td>
+            <td><span class="warning warning-yes">告警</span></td>
+          </tr>
+          
+          <!-- 故障条目20 -->
+          <tr>
+            <td>20</td>
+            <td>EC1</td>
+            <td>扩展卡1连接异常</td>
+            <td class="cause-cell">
+              <div class="cause-grid">
+                <div class="cause-item">扩展卡1本身异常</div>
+                <div class="cause-item">扩展卡1连接松动或不良控制板本身异常</div>
+              </div>
+            </td>
+            <td class="solution-cell">
+              <div class="solution-grid">
+                <div class="solution-item">寻求服务</div>
+                <div class="solution-item">重新插拔</div>
+              </div>
+            </td>
+            <td><span class="warning warning-no">无告警</span></td>
+          </tr>
+          
+          <!-- 故障条目21 -->
+          <tr>
+            <td>21</td>
+            <td>EC2</td>
+            <td>扩展卡2连接异常</td>
+            <td class="cause-cell">
+              <div class="cause-grid">
+                <div class="cause-item">扩展卡1本身异常</div>
+                <div class="cause-item">扩展卡1连接松动或不良控制板本身异常</div>
+                <div class="cause-item">驱动板异常</div>
+              </div>
+            </td>
+            <td class="solution-cell">
+              <div class="solution-grid">
+                <div class="solution-item">寻求服务</div>
+                <div class="solution-item">重新插拔</div>
+                <div class="solution-item">寻求服务</div>
+              </div>
+            </td>
+            <td><span class="warning warning-no">无告警</span></td>
+          </tr>
+          
+          <!-- 故障条目22 -->
+          <tr>
+            <td>22</td>
+            <td>dLC</td>
+            <td>驱动线连接异常</td>
+            <td class="cause-cell">
+              <div class="cause-grid">
+                <div class="cause-item">驱动线连接松动或不良控制板异常</div>
+              </div>
+            </td>
+            <td class="solution-cell">
+              <div class="solution-grid">
+                <div class="solution-item">全掉电后重新插拔</div>
+              </div>
+            </td>
+            <td><span class="warning warning-no">无告警</span></td>
+          </tr>
+          
+          <!-- 故障条目23 -->
+          <tr>
+            <td>23</td>
+            <td>TEr</td>
+            <td>模拟端子功能互斥保护</td>
+            <td class="cause-cell">
+              <div class="cause-grid">
+                <div class="cause-item">模拟输入端子的功能设为一致</div>
+              </div>
+            </td>
+            <td class="solution-cell">
+              <div class="solution-grid">
+                <div class="solution-item">不要把模拟输入功能设为一致</div>
+              </div>
+            </td>
+            <td><span class="warning warning-no">无告警</span></td>
+          </tr>
+          
+          <!-- 故障条目24 -->
+          <tr>
+            <td>24</td>
+            <td>PEr</td>
+            <td>外部设备故障</td>
+            <td class="cause-cell">
+              <div class="cause-grid">
+                <div class="cause-item">外部故障端子有效</div>
+                <div class="cause-item">失速状态持续太长</div>
+              </div>
+            </td>
+            <td class="solution-cell">
+              <div class="solution-grid">
+                <div class="solution-item">检查外部故障端子的状态</div>
+                <div class="solution-item">检查负载是否异常</div>
+              </div>
+            </td>
+            <td><span class="warning warning-no">无告警</span></td>
+          </tr>
+          
+          <!-- 故障条目28 -->
+          <tr>
+            <td>28</td>
+            <td>SUE</td>
+            <td>运行时电源异常</td>
+            <td class="cause-cell">
+              <div class="cause-grid">
+                <div class="cause-item">运行中电网电压输入波动太大或掉电</div>
+              </div>
+            </td>
+            <td class="solution-cell">
+              <div class="solution-grid">
+                <div class="solution-item">检查输入电网电压</div>
+              </div>
+            </td>
+            <td><span class="warning warning-no">无告警</span></td>
+          </tr>
+          
+          <!-- 故障条目29 -->
+          <tr>
+            <td>29</td>
+            <td>EPr</td>
+            <td>EEPROM读写故障</td>
+            <td class="cause-cell">
+              <div class="cause-grid">
+                <div class="cause-item">控制板上参数读写发生了异常</div>
+              </div>
+            </td>
+            <td class="solution-cell">
+              <div class="solution-grid">
+                <div class="solution-item">寻求服务</div>
+              </div>
+            </td>
+            <td><span class="warning warning-yes">告警</span></td>
+          </tr>
+          
+          <!-- 故障条目30 -->
+          <tr>
+            <td>30</td>
+            <td>CCL</td>
+            <td>接触器吸合故障</td>
+            <td class="cause-cell">
+              <div class="cause-grid">
+                <div class="cause-item">接触器本身损坏</div>
+                <div class="cause-item">控制板上接触器反馈电路异常</div>
+                <div class="cause-item">缓冲电阻损害</div>
+                <div class="cause-item">电网输入电压异常</div>
+                <div class="cause-item">开关电源异常</div>
+              </div>
+            </td>
+            <td class="solution-cell">
+              <div class="solution-grid">
+                <div class="solution-item">寻求服务</div>
+                <div class="solution-item">寻求服务</div>
+                <div class="solution-item">寻求服务</div>
+                <div class="solution-item">检查输入电网电压</div>
+                <div class="solution-item">寻求服务</div>
+              </div>
+            </td>
+            <td><span class="warning warning-yes">告警</span></td>
+          </tr>
+          
+          <!-- 故障条目31 -->
+          <tr>
+            <td>31</td>
+            <td>TrC</td>
+            <td>端口通讯异常</td>
+            <td class="cause-cell">
+              <div class="cause-grid">
+                <div class="cause-item">通讯波特率设置不当</div>
+              </div>
+            </td>
+            <td class="solution-cell">
+              <div class="solution-grid">
+                <div class="solution-item">正确设置</div>
+              </div>
+            </td>
+            <td><span class="warning warning-yes">告警</span></td>
+          </tr>
+          
+          <!-- 故障条目32 -->
+          <tr>
+            <td>32</td>
+            <td>PdC</td>
+            <td>键盘通讯错误</td>
+            <td class="cause-cell">
+              <div class="cause-grid">
+                <div class="cause-item">操作面板连接线断开</div>
+                <div class="cause-item">现场干扰太大</div>
+              </div>
+            </td>
+            <td class="solution-cell">
+              <div class="solution-grid">
+                <div class="solution-item">重新连接</div>
+                <div class="solution-item">检查现场周边设备情况或寻求服务</div>
+              </div>
+            </td>
+            <td><span class="warning warning-yes">告警</span></td>
+          </tr>
+          
+          <!-- 故障条目33 -->
+          <tr>
+            <td>33</td>
+            <td>CPy</td>
+            <td>键盘参数拷贝故障</td>
+            <td class="cause-cell">
+              <div class="cause-grid">
+                <div class="cause-item">参数上传或下载异常</div>
+                <div class="cause-item">操作面板上无参数直接进行下载</div>
+              </div>
+            </td>
+            <td class="solution-cell">
+              <div class="solution-grid">
+                <div class="solution-item">寻求服务</div>
+                <div class="solution-item">寻求服务</div>
+              </div>
+            </td>
+            <td><span class="warning warning-no">无告警</span></td>
+          </tr>
+          
+          <!-- 故障条目35 -->
+          <tr>
+            <td>35</td>
+            <td>SFt</td>
+            <td>软件版本不一致故障</td>
+            <td class="cause-cell">
+              <div class="cause-grid">
+                <div class="cause-item">操作面板和控制板版本不一致</div>
+              </div>
+            </td>
+            <td class="solution-cell">
+              <div class="solution-grid">
+                <div class="solution-item">寻求服务</div>
+              </div>
+            </td>
+            <td><span class="warning warning-no">无告警</span></td>
+          </tr>
+          
+          <!-- 故障条目36 -->
+          <tr>
+            <td>36</td>
+            <td>CPU</td>
+            <td>系统CPU干扰故障</td>
+            <td class="cause-cell">
+              <div class="cause-grid">
+                <div class="cause-item">现场干扰太大</div>
+                <div class="cause-item">控制板异常</div>
+              </div>
+            </td>
+            <td class="solution-cell">
+              <div class="solution-grid">
+                <div class="solution-item">检查现场周边设备情况或寻求服务</div>
+                <div class="solution-item">寻求服务</div>
+              </div>
+            </td>
+            <td><span class="warning warning-no">无告警</span></td>
+          </tr>
+          
+          <!-- 故障条目37 -->
+          <tr>
+            <td>37</td>
+            <td>oCr</td>
+            <td>OCREF基保护</td>
+            <td class="cause-cell">
+              <div class="cause-grid">
+                <div class="cause-item">开关电源损坏</div>
+                <div class="cause-item">控制板损坏</div>
+              </div>
+            </td>
+            <td class="solution-cell">
+              <div class="solution-grid">
+                <div class="solution-item">寻求服务</div>
+                <div class="solution-item">寻求服务</div>
+              </div>
+            </td>
+            <td><span class="warning warning-no">无告警</span></td>
+          </tr>
+          
+          <!-- 故障条目38 -->
+          <tr>
+            <td>38</td>
+            <td>SP1</td>
+            <td>电源DV超限保护</td>
+            <td class="cause-cell">
+              <div class="cause-grid">
+                <div class="cause-item">开关电源损坏</div>
+                <div class="cause-item">控制板损坏</div>
+              </div>
+            </td>
+            <td class="solution-cell">
+              <div class="solution-grid">
+                <div class="solution-item">寻求服务</div>
+                <div class="solution-item">寻求服务</div>
+              </div>
+            </td>
+            <td><span class="warning warning-no">无告警</span></td>
+          </tr>
+          
+          <!-- 故障条目39 -->
+          <tr>
+            <td>39</td>
+            <td>SP2</td>
+            <td>电源10V超限保护</td>
+            <td class="cause-cell">
+              <div class="cause-grid">
+                <div class="cause-item">开关电源损坏</div>
+                <div class="cause-item">控制板损坏</div>
+              </div>
+            </td>
+            <td class="solution-cell">
+              <div class="solution-grid">
+                <div class="solution-item">寻求服务</div>
+                <div class="solution-item">寻求服务</div>
+              </div>
+            </td>
+            <td><span class="warning warning-no">无告警</span></td>
+          </tr>
+          
+          <!-- 故障条目40 -->
+          <tr>
+            <td>40</td>
+            <td>AIP</td>
+            <td>AI输入超限保护</td>
+            <td class="cause-cell">
+              <div class="cause-grid">
+                <div class="cause-item">控制板损坏</div>
+                <div class="cause-item">AI输入太高或太低</div>
+              </div>
+            </td>
+            <td class="solution-cell">
+              <div class="solution-grid">
+                <div class="solution-item">寻求服务</div>
+                <div class="solution-item">AI的输入范围设置在正确范围</div>
+              </div>
+            </td>
+            <td><span class="warning warning-no">无告警</span></td>
+          </tr>
+          
+          <!-- 故障条目41 -->
+          <tr>
+            <td>41</td>
+            <td>LoU</td>
+            <td>母线软件欠压保护或控制电源欠压保护</td>
+            <td class="cause-cell">
+              <div class="cause-grid">
+                <div class="cause-item">输入电压异常</div>
+                <div class="cause-item">开关电源异常</div>
+              </div>
+            </td>
+            <td class="solution-cell">
+              <div class="solution-grid">
+                <div class="solution-item">检查输入电网电压</div>
+                <div class="solution-item">寻求服务</div>
+              </div>
+            </td>
+            <td><span class="warning warning-no">无告警</span></td>
+          </tr>
+          
+          <!-- 故障条目42 -->
+          <tr>
+            <td>42</td>
+            <td>oSP</td>
+            <td>过速度故障</td>
+            <td class="cause-cell">
+              <div class="cause-grid">
+                <div class="cause-item">过速度值设置设定值大小负载波动太大</div>
+              </div>
+            </td>
+            <td class="solution-cell">
+              <div class="solution-grid">
+                <div class="solution-item">正确设置过速度值稳定负载</div>
+              </div>
+            </td>
+            <td><span class="warning warning-yes">告警</span></td>
+          </tr>
+          
+          <!-- 故障条目43 -->
+          <tr>
+            <td>43</td>
+            <td>SPL</td>
+            <td>速度偏差过大故障</td>
+            <td class="cause-cell">
+              <div class="cause-grid">
+                <div class="cause-item">电机速度与设定转速偏差设定值太小</div>
+                <div class="cause-item">负载波动太大</div>
+                <div class="cause-item">矢量控制的控制参数设置不合理</div>
+              </div>
+            </td>
+            <td class="solution-cell">
+              <div class="solution-grid">
+                <div class="solution-item">正确设置速度偏差点</div>
+                <div class="solution-item">稳定负载</div>
+                <div class="solution-item">正确设置</div>
+              </div>
+            </td>
+            <td><span class="warning warning-yes">告警</span></td>
+          </tr>
+          
+          <!-- 故障条目44 -->
+          <tr>
+            <td>44</td>
+            <td>oPo</td>
+            <td>位置超限</td>
+            <td class="cause-cell">
+              <div class="cause-grid">
+                <div class="cause-item">位置控制参数设置不合理</div>
+                <div class="cause-item">位置超限值设置太小</div>
+                <div class="cause-item">矢量控制的控制参数设置不合理</div>
+              </div>
+            </td>
+            <td class="solution-cell">
+              <div class="solution-grid">
+                <div class="solution-item">正确设置</div>
+                <div class="solution-item">正确设置位置超限点</div>
+                <div class="solution-item">正确设置</div>
+              </div>
+            </td>
+            <td><span class="warning warning-yes">告警</span></td>
+          </tr>
+          
+          <!-- 故障条目45 -->
+          <tr>
+            <td>45</td>
+            <td>Plo</td>
+            <td>PID检测超限</td>
+            <td class="cause-cell">
+              <div class="cause-grid">
+                <div class="cause-item">PID反馈通道异常</div>
+                <div class="cause-item">PID参数设置不合理</div>
+              </div>
+            </td>
+            <td class="solution-cell">
+              <div class="solution-grid">
+                <div class="solution-item">检查反馈通道</div>
+                <div class="solution-item">正确设置</div>
+              </div>
+            </td>
+            <td><span class="warning warning-no">无告警</span></td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <div class="note">
+        <p><strong>重要提示：</strong>故障发生时，请先按照原因和对策进行确认和处理。如果故障无法排除，请勿自行上电操作，应及时联系供应商或专业技术人员进行处理。自行处理不当可能导致设备损坏或人身伤害。</p>
+      </div>
+    </div>
+    
+    <footer>
+      <div class="copyright">© 2025 登奇电机GA800驱动器故障代码</div>
+     
+      <div class="contact" style="margin-top: 10px; font-size: 0.9rem;">
+        登奇电机GA800驱动说明书 | 本手册内容由技术部晏工提供
+      </div>
+    </footer>
+  </div>
+  
+  <div class="back-to-top" id="backToTop">
+    <i class="fas fa-arrow-up"></i>
+  </div>
+
+  <script>
+    // 返回顶部按钮
+    const backToTopBtn = document.getElementById('backToTop');
+    
+    window.addEventListener('scroll', () => {
+      if (window.pageYOffset > 300) {
+        backToTopBtn.classList.add('visible');
+      } else {
+        backToTopBtn.classList.remove('visible');
+      }
+    });
+    
+    backToTopBtn.addEventListener('click', () => {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    });
+    
+    // 筛选按钮交互
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    
+    filterBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        // 移除所有active类
+        filterBtns.forEach(b => b.classList.remove('active'));
+        // 为当前按钮添加active类
+        btn.classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>珠海长陆TR700称重校秤操作说明及故障代码</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2c6bc0;
+            --secondary: #3498db;
+            --accent: #ff6b6b;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --success: #28a745;
+            --warning: #ffc107;
+            --danger: #dc3545;
+            --gray: #6c757d;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            background: linear-gradient(120deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 30px 20px;
+            border-radius: 12px 12px 0 0;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            margin-bottom: 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        header::before {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+            transform: rotate(30deg);
+        }
+        
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            position: relative;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+        }
+        
+        .doc-content {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+        
+        .section {
+            padding: 30px;
+            border-bottom: 1px solid #eaeaea;
+        }
+        
+        .section:last-child {
+            border-bottom: none;
+        }
+        
+        .section-title {
+            color: var(--primary);
+            font-size: 1.8rem;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--secondary);
+            display: flex;
+            align-items: center;
+        }
+        
+        .section-title i {
+            margin-right: 15px;
+            background: var(--secondary);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        
+        .subsection {
+            margin-bottom: 30px;
+        }
+        
+        .subsection-title {
+            color: var(--secondary);
+            font-size: 1.4rem;
+            margin: 25px 0 15px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .subsection-title i {
+            margin-right: 10px;
+            color: var(--accent);
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        th {
+            background: linear-gradient(to bottom, var(--primary), #1a4f8c);
+            color: white;
+            text-align: left;
+            padding: 16px;
+            font-weight: 600;
+        }
+        
+        td {
+            padding: 14px 16px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        tr:hover {
+            background-color: #f0f7ff;
+        }
+        
+        .note {
+            background: #fff8e6;
+            border-left: 4px solid var(--warning);
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .note-title {
+            font-weight: 600;
+            color: #e6a700;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .note-title i {
+            margin-right: 8px;
+        }
+        
+        .steps {
+            counter-reset: step-counter;
+            margin: 25px 0;
+            padding-left: 20px;
+        }
+        
+        .step {
+            position: relative;
+            margin-bottom: 20px;
+            padding-left: 60px;
+        }
+        
+        .step::before {
+            counter-increment: step-counter;
+            content: counter(step-counter);
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 40px;
+            height: 40px;
+            background: var(--secondary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .key {
+            display: inline-flex;
+            align-items: center;
+            background: linear-gradient(to bottom, #f1f1f1, #e1e1e1);
+            border: 1px solid #d0d0d0;
+            border-radius: 4px;
+            padding: 5px 12px;
+            margin: 0 5px;
+            font-family: monospace;
+            font-weight: bold;
+            box-shadow: 0 2px 3px rgba(0,0,0,0.1);
+            min-width: 80px;
+            justify-content: center;
+        }
+        
+        .key i {
+            margin-right: 5px;
+            font-size: 0.9em;
+        }
+        
+        .param {
+            display: inline-block;
+            background: #e8f4ff;
+            border: 1px solid #bbdeff;
+            border-radius: 4px;
+            padding: 2px 8px;
+            font-family: monospace;
+            margin: 0 3px;
+        }
+        
+        .error-badge {
+            display: inline-block;
+            background: var(--danger);
+            color: white;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            margin-right: 8px;
+            font-weight: 600;
+        }
+        
+        .code-block {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            overflow-x: auto;
+            font-family: monospace;
+            line-height: 1.8;
+        }
+        
+        .code-title {
+            color: #bdc3c7;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .code-title i {
+            margin-right: 10px;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 30px;
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+        
+        .footer a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+        
+        .footer a:hover {
+            text-decoration: underline;
+        }
+        
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .button-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .button-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+        }
+        
+        .button-card .key {
+            margin: 0 auto 15px;
+            display: block;
+            width: 100px;
+        }
+        
+        .button-card h4 {
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+        
+        @media (max-width: 768px) {
+            .section {
+                padding: 20px 15px;
+            }
+            
+            header h1 {
+                font-size: 2rem;
+            }
+            
+            .section-title {
+                font-size: 1.5rem;
+            }
+            
+            .subsection-title {
+                font-size: 1.2rem;
+            }
+            
+            th, td {
+                padding: 12px 10px;
+                font-size: 0.9rem;
+            }
+            
+            .step {
+                padding-left: 50px;
+            }
+            
+            .step::before {
+                width: 35px;
+                height: 35px;
+            }
+            
+            .button-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .original-layout {
+            background: #f9f9f9;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .original-layout h3 {
+            color: var(--primary);
+            margin-bottom: 15px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+        }
+        
+        .highlight {
+            background-color: #fffacd;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+
+        /* 新增图标旋转样式 */
+        .fa-level-up-alt.rotate-270 {
+            transform: rotate(270deg);
+            display: inline-block;
+        }
+        
+        .fa-level-down-alt.rotate-90 {
+            transform: rotate(90deg);
+            display: inline-block;
+        }
+        
+        /* 确保图标旋转后不影响布局 */
+        .key i {
+            display: inline-block;
+            transition: transform 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>珠海长陆 TR700 称重校秤操作说明及故障代码</h1>
+            <p>称重校秤操作指南</p>
+        </header>
+        
+        <div class="doc-content">
+            <!-- 基本操作部分 -->
+            <div class="section">
+                <h2 class="section-title"><i class="fas fa-keyboard"></i>一、基本操作</h2>
+                
+                <div class="original-layout">
+                    <h3>面板按键功能说明</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>面板按键</th>
+                                <th>功能说明</th>
+                                <th>详细说明</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="key"><i class="fas fa-level-up-alt rotate-270"></i> MENU</span></td>
+                                <td>菜单</td>
+                                <td>
+                                    1）在称重状态下，进入菜单键<br>
+                                    2）在菜单设置里，退出键<br>
+                                    3）在子菜单项里，不保存参数进入下一子菜单项
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><span class="key"><i class="fas fa-long-arrow-alt-left"></i> GR/NT</span></td>
+                                <td>毛重/净重</td>
+                                <td>
+                                    1）在称重状态下，毛重或净重转换<br>
+                                    2）在输入数据时左移键 <i class="fas fa-long-arrow-alt-left"></i>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><span class="key"><i class="fas fa-long-arrow-alt-up"></i> TARE</span></td>
+                                <td>去皮</td>
+                                <td>
+                                    1）在称重状态下，去皮键（去皮范围：最大量程的百分之八十）<br>
+                                    2）在菜单设置选择上一菜单项 <i class="fas fa-long-arrow-alt-up"></i><br>
+                                    3）在输入数据时数据递增键 <i class="fas fa-long-arrow-alt-up"></i>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><span class="key"><i class="fas fa-long-arrow-alt-down"></i> FUNC</span></td>
+                                <td>功能</td>
+                                <td>
+                                    1）在菜单设置选择下一菜单项 <i class="fas fa-long-arrow-alt-down"></i><br>
+                                    2）在输入数据时为递减键 <i class="fas fa-long-arrow-alt-down"></i>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><span class="key"><i class="fas fa-level-down-alt rotate-90"></i> ZERO</span></td>
+                                <td>清零</td>
+                                <td>
+                                    1）在称重状态下，清零键<br>
+                                    2）在菜单设置里，确认键<br>
+                                    3）在子菜单项里，保存参数进入下一子菜单项
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="original-layout">
+                    <h3>功能设定步骤</h3>
+                    <div class="steps">
+                        <div class="step">
+                            在称重显示下，按 <span class="key"><i class="fas fa-level-up-alt rotate-270"></i> MENU</span> 通过 <span class="key"><i class="fas fa-long-arrow-alt-left"></i> GR/NT</span> 
+                                <span class="key"><i class="fas fa-long-arrow-alt-up"></i> TARE</span> 
+                                <span class="key"><i class="fas fa-long-arrow-alt-down"></i> FUNC</span> 插入密码，按 <span class="key"><i class="fas fa-level-down-alt rotate-90"></i> ZERO</span> 确认密码进入菜单，按 </span><span class="key"><i class="fas fa-long-arrow-alt-up"></i> TARE</span><span class="key"><i class="fas fa-long-arrow-alt-down"></i> FunC</span> 选择"Func"，按 <span class="key"><i class="fas fa-level-down-alt rotate-90"></i> ZERO</span> 进入功能参数设定
+                        </div>
+                        <div class="step">
+                            通过 <span class="key"><i class="fas fa-long-arrow-alt-up"></i> TARE</span> 
+                                <span class="key"><i class="fas fa-long-arrow-alt-down"></i> FUNC</span> 选择相应的参数
+                        </div>
+                        <div class="step">
+                            按 <span class="key"><i class="fas fa-level-down-alt rotate-90"></i> ZERO</span> 进入参数修改，通过 <span class="key"><i class="fas fa-long-arrow-alt-up"></i> TARE</span> 
+                                <span class="key"><i class="fas fa-long-arrow-alt-down"></i> FUNC</span> 修改参数
+                        </div>
+                        <div class="step">
+                            按 <span class="key"><i class="fas fa-level-down-alt rotate-90"></i> ZERO</span> 保存此参数，或者按 <span class="key"><i class="fas fa-level-up-alt rotate-270"></i> MENU</span> 不保存此参数，退回到上一级菜单
+                        </div>
+                        <div class="step">
+                            循环执行第二步到第四步，直到修改完所需参数，按 <span class="key"><i class="fas fa-level-up-alt rotate-270"></i> MENU</span> 退出到"FunC"，此时参数保存到内存中
+                        </div>
+                        <div class="step">
+                            按 <span class="key"><i class="fas fa-level-up-alt rotate-270"></i> MENU</span> 退出到正常显示接口
+                        </div>
+                    </div>
+                    <div class="code-block">
+                        <div class="code-title"><i class="fas fa-code"></i>显示</div>
+                        F00---0
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 校称部分 -->
+            <div class="section">
+                <h2 class="section-title"><i class="fas fa-balance-scale"></i>二、校秤</h2>
+                
+                <div class="note">
+                    <div class="note-title"><i class="fas fa-exclamation-circle"></i>注意事项</div>
+                    <ul>
+                        <li>标定时不允许进行零位跟踪即 <span class="param">F1</span> 设为 0，而且标定前须要预先半小时开机，使传感器、仪表等称重单元达到热稳定</li>
+                        <li>在标定时，只有当称体稳定时，即重量检测指示灯 motion ⚫灭，才能接受标定。当 motion 🟡灯很长时间没有熄灭，请检查 <span class="param">F2</span> 参数设置</li>
+                        <li>若是输入的参数不正确，则会显示对应错误提示约 2 秒钟后自动回到需要重新输入参数处</li>
+                    </ul>
+                </div>
+                
+                <div class="original-layout">
+                    <h3>校称步骤</h3>
+                    <div class="steps">
+                        <div class="step">
+                            在称重状态下，进入一级菜单，选择 <span class="param">CAL</span>，输入默认密码 <span class="param">00001</span>，进入标定菜单，选择 <span class="param">CAL1</span>，按 <span class="key"><i class="fas fa-level-down-alt rotate-90"></i> ZERO</span> 确定，显示 <span class="param">C1.dECi</span>，进入小数点设定，选择 <span class="param">1</span>（1 位小数）
+                        </div>
+                        <div class="step">
+                            按 <span class="key"><i class="fas fa-level-down-alt rotate-90"></i> ZERO</span> 确定，显示 <span class="param">C1.d</span>，设置分度值，选择 <span class="param">1</span>
+                        </div>
+                        <div class="step">
+                            按 <span class="key"><i class="fas fa-level-down-alt rotate-90"></i> ZERO</span> 确定，显示 <span class="param">C1.MAX</span>，按 <span class="key"><i class="fas fa-level-down-alt rotate-90"></i> ZERO</span> 确定，设置最大量程，铅粉设置 <span class="param">2000.0</span>，水和酸设置 <span class="param">300.0</span>
+                        </div>
+                        <div class="step">
+                            按 <span class="key"><i class="fas fa-level-down-alt rotate-90"></i> ZERO</span> 确定，显示 <span class="param">C1.Zero</span>，按 <span class="key"><i class="fas fa-level-down-alt rotate-90"></i> ZERO</span> 进入零点标定，待称体稳定，此时显示 <span class="param">000000</span> 且全部闪烁
+                        </div>
+                        <div class="step">
+                            按 <span class="key"><i class="fas fa-level-down-alt rotate-90"></i> ZERO</span> 确定，显示......且全部闪烁，之后显示 <span class="param">C1.SPAn</span>，按 <span class="key"><i class="fas fa-level-down-alt rotate-90"></i> ZERO</span> 进入重量标定，输入重量值，待称体稳定后再按 <span class="key"><i class="fas fa-level-down-alt rotate-90"></i> ZERO</span> 确定，完成标定
+                        </div>
+                    </div>
+                    
+                    <div class="note">
+                        <div class="note-title"><i class="fas fa-info-circle"></i>重要提示</div>
+                        砝码的重量应当与最大称量值相同或稍轻
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 模拟量部分 -->
+            <div class="section">
+                <h2 class="section-title"><i class="fas fa-bolt"></i>三、模拟量</h2>
+                
+                <div class="original-layout">
+                    <div class="steps">
+                        <div class="step">
+                            在称重显示下，按 <span class="key"><i class="fas fa-level-up-alt rotate-270"></i> MENU</span> 通过 <span class="key"><i class="fas fa-long-arrow-alt-left"></i> GR/NT</span><span class="key"><i class="fas fa-long-arrow-alt-up"></i> TARE</span> 
+                                <span class="key"><i class="fas fa-long-arrow-alt-down"></i> FUNC</span> 输入密码，按 <span class="key"><i class="fas fa-level-down-alt rotate-90"></i> ZERO</span> 确认密码进入菜单，按 <span class="key"><i class="fas fa-long-arrow-alt-up"></i> TARE</span> <span class="key"><i class="fas fa-long-arrow-alt-down"></i> FUNC</span>进入
+                        选择 <span class="param">CAL</span>，按 <span class="key"><i class="fas fa-level-down-alt rotate-90"></i> ZERO</span> 显示 <span class="param">CAL1</span>，按 <span class="key"><i class="fas fa-long-arrow-alt-up"></i> TARE</span> 
+                                <span class="key"><i class="fas fa-long-arrow-alt-down"></i> FUNC</span> 选择 <span class="param">Ao-i/Ao-v</span>，按 <span class="key"><i class="fas fa-level-down-alt rotate-90"></i> ZERO</span> 进入第二步
+                        </div>
+                    </div>
+                    
+                    <div class="subsection">
+                        <h3 class="subsection-title"><i class="fas fa-plug"></i>模拟量输出类型</h3>
+                        <ul>
+                            <li><span class="param">Ao-i</span>：模拟量输出是电流型，0-20mA 或者 4-20mA 输出</li>
+                            <li><span class="param">Ao-v</span>：模拟量输出是电压型，0-5V 或者 0-10V 输出</li>
+                        </ul>
+                    </div>
+                    <div class="step">
+                    <div class="steps">
+					通过 <span class="key"><i class="fas fa-long-arrow-alt-up"></i> TARE</span> 
+                                <span class="key"><i class="fas fa-long-arrow-alt-down"></i> FUNC</span> 选择 <span class="param">CAo.ZEr</span>，<span class="param">CAo.SPA</span>，按 <span class="key"><i class="fas fa-level-down-alt rotate-90"></i> ZERO</span> 进入参数值修改，修改完按 <span class="key"><i class="fas fa-level-down-alt rotate-90"></i> ZERO</span> 保存参数并退出
+                        </div>
+                    </div>
+                    
+                    <div class="subsection">
+                        <h3 class="subsection-title"><i class="fas fa-sliders-h"></i>参数说明</h3>
+                        <ul>
+                            <li><span class="param">CAo.ZEr</span>：零点对应的重量值（正负数都可）。0-20mA 的 0mA/4-20mA 的 4mA/0V 对应的重量值</li>
+                            <li><span class="param">CAo.SPA</span>：满点对应的重量值（正负数都可）。20mA/5V/10V 对应的重量值</li>
+                        </ul>
+                    </div>
+                    
+                </div>
+            </div>
+            
+            <!-- 参数列表部分 -->
+            <div class="section">
+                <h2 class="section-title"><i class="fas fa-list"></i>四、参数列表</h2>
+                
+                <div class="original-layout">
+                    <div class="code-block">
+                        <div class="code-title"><i class="fas fa-cog"></i>系统参数</div>
+                        F00---0<br>
+                        CAL1---C1.DECi---1<br>
+                        CAL1---C1.d---1<br>
+                        CAL1---C1.MAX---铅粉 2000.0（水和酸 300.0）<br>
+                        CAL1---C1.ZEro<br>
+                        CAL1---C1.SPAn<br>
+                        CAL---CAL1---Ao-i---CAo.SPA---铅粉 20000（水和酸 3000）
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 错误代码部分 -->
+            <div class="section">
+                <h2 class="section-title"><i class="fas fa-bug"></i>五、错误代码</h2>
+                
+                <div class="original-layout">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>错误代码</th>
+                                <th>说明</th>
+                                <th>解决方法</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="error-badge">DISP-L</span></td>
+                                <td>输入信号&lt;0.05mV或为负信号时:可能接线错误、松动、四线制没有短接EX+和SEN+，或者没有短接EX-和SEN-等</td>
+                                <td>重新调整传感器的接线或者在EX+和SIG+之间增加一个准确度为1%的50k~500K电阻</td>
+                            </tr>
+                            <tr>
+                                <td><span class="error-badge">DISP-H</span></td>
+                                <td>输入信号&gt;31mV时:可能接线错误、松动、四线制没有短接EX+和SEN+或者没有短接EX-和SEN-等</td>
+                                <td>重新调整传感器的接线或者在EX+和SIG+之间增加一个准确度为1%的50k~500K电阻</td>
+                            </tr>
+                            <tr>
+                                <td><span class="error-badge">Error0</span></td>
+                                <td>可能接线错误，或者ad转换部分有问题</td>
+                                <td>重新调整传感器接线或更换仪表</td>
+                            </tr>
+                            <tr>
+                                <td><span class="error-badge">Error1</span></td>
+                                <td>"最大量程/最小刻度"无法整除，显示分辨率大于50000或者显示分辨率小于300，或者最大量程小于100，或者最大量程大于900000，或者是上次灵敏度/这次修改后的分度小于0.3uV/d</td>
+                                <td>调整最大量程、分度间距或者更换传感器或降低标定精度</td>
+                            </tr>
+                            <tr>
+                                <td><span class="error-badge">Error2</span></td>
+                                <td>零点电压过大，大于15mV</td>
+                                <td>应在EX+和SIG-之间增加一个准确度为1%的50k~500K电阻，或减轻自重</td>
+                            </tr>
+                            <tr>
+                                <td><span class="error-badge">Error3</span></td>
+                                <td>零点电压过低，低于0.05mV</td>
+                                <td>应在EX+和SIG+之间增加一个准确度为1%的50k~500K电阻</td>
+                            </tr>
+                            <tr>
+                                <td><span class="error-badge">Error4</span></td>
+                                <td>输入的重量值大于最大量程值</td>
+                                <td>重新输入重量值或者最大量程</td>
+                            </tr>
+                            <tr>
+                                <td><span class="error-badge">Error5</span></td>
+                                <td>传感器输入的灵敏度过低，小于0.3uV/d或者输入的重量值为0</td>
+                                <td>更换传感器或降低标定精度</td>
+                            </tr>
+                            <tr>
+                                <td><span class="error-badge">Error6</span></td>
+                                <td>重量标定的毫伏值电压小于零点标定的毫伏值电压，标定时产生的错误操作，或接线错误</td>
+                                <td>重新接线或重新对秤标定</td>
+                            </tr>
+                            <tr>
+                                <td><span class="error-badge">Error7</span></td>
+                                <td>传感器的输入大于信号最大输入范围31mV</td>
+                                <td>调整传感器的接线或更换传感器</td>
+                            </tr>
+                            <tr>
+                                <td><span class="error-badge">Error8</span></td>
+                                <td>重量标定时输入的重量值小于100个分度</td>
+                                <td>重新输入重量值</td>
+                            </tr>
+                            <tr>
+                                <td><span class="error-badge">Error9</span></td>
+                                <td>重量标定"输入的重量值/最小刻度"无法整除</td>
+                                <td>重新输入重量值</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- 恢复出厂设置部分 -->
+            <div class="section">
+                <h2 class="section-title"><i class="fas fa-undo"></i>六、恢复出厂设置</h2>
+                
+                <div class="original-layout">
+                    <div class="steps">
+                        <div class="step">
+                            显示 <span class="param">rESU</span>，按 <span class="key"><i class="fas fa-level-down-alt rotate-90"></i> ZERO</span> 进入参数恢复出厂设定
+                        </div>
+                        <div class="step">
+                            选择所需要恢复出厂设定值的参数选项，输入正确的系统密码即可把相应的参数恢复出厂设定值
+                        </div>
+                    </div>
+                    
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>选项</th>
+                                <th>说明</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="param">rE-Func</span></td>
+                                <td>功能设定恢复出厂设定</td>
+                            </tr>
+                            <tr>
+                                <td><span class="param">rE-SEtP</span></td>
+                                <td>高低限参数恢复出厂设定</td>
+                            </tr>
+                            <tr>
+                                <td><span class="param">rE-CAL</span></td>
+                                <td>标定参数恢复出厂设定</td>
+                            </tr>
+                            <tr>
+                                <td><span class="param">rE-CoM/CAn/nEt</span></td>
+                                <td>通讯参数恢复出厂设定（有通讯扩展板才会出现此菜单项）</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>© TR700数字式重量变送器使用说明书 | 本手册内容由技术部晏工提供创建2024.12.14</p>
+            <p>原始文档版本号：V02.34/2018.11</p>
+        </div>
+    </div>
+</body>
+</html>
