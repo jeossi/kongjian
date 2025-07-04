@@ -398,6 +398,14 @@
             display: inline-block;
             transition: transform 0.3s ease;
         }
+        
+        /* 新增步骤标题样式 */
+        .step-title {
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 5px;
+            display: block;
+        }
     </style>
 </head>
 <body>
@@ -493,13 +501,9 @@
                             循环执行第二步到第四步，直到修改完所需参数，按 <span class="key"><i class="fas fa-level-up-alt rotate-270"></i> MENU</span> 退出到"FunC"，此时参数保存到内存中
                         </div>
                         <div class="step">
-                            按 <span class="key"><i class="fas fa-level-up-alt rotate-270"></i> MENU</span> 退出到正常显示接口
+                            按 <span class="key"><i class="fas fa-level-up-alt rotate-270"></i> MENU</span> 退出到正常显示接口 “F00---0”
                         </div>
-                    </div>
-                    <div class="code-block">
-                        <div class="code-title"><i class="fas fa-code"></i>显示</div>
-                        F00---0
-                    </div>
+                    </div>               
                 </div>
             </div>
             
@@ -520,18 +524,27 @@
                     <h3>校称步骤</h3>
                     <div class="steps">
                         <div class="step">
-                            在称重状态下，进入一级菜单，选择 <span class="param">CAL</span>，输入默认密码 <span class="param">00001</span>，进入标定菜单，选择 <span class="param">CAL1</span>，按 <span class="key"><i class="fas fa-level-down-alt rotate-90"></i> ZERO</span> 确定，显示 <span class="param">C1.dECi</span>，进入小数点设定，选择 <span class="param">1</span>（1 位小数）
+                            <span class="step-title">步骤1：进入标定菜单</span>
+                            在称重状态下，进入一级菜单，选择 <span class="param">CAL</span>，输入默认密码 <span class="param">00001</span>，进入标定菜单，选择 <span class="param">CAL1</span>
                         </div>
                         <div class="step">
+                            <span class="step-title">步骤2：设置小数点</span>
+                            按 <span class="key"><i class="fas fa-level-down-alt rotate-90"></i> ZERO</span> 确定，显示 <span class="param">C1.dECi</span>，进入小数点设定，选择 <span class="param">1</span>（1 位小数）
+                        </div>
+                        <div class="step">
+                            <span class="step-title">步骤3：设置分度值</span>
                             按 <span class="key"><i class="fas fa-level-down-alt rotate-90"></i> ZERO</span> 确定，显示 <span class="param">C1.d</span>，设置分度值，选择 <span class="param">1</span>
                         </div>
                         <div class="step">
+                            <span class="step-title">步骤4：设置最大量程</span>
                             按 <span class="key"><i class="fas fa-level-down-alt rotate-90"></i> ZERO</span> 确定，显示 <span class="param">C1.MAX</span>，按 <span class="key"><i class="fas fa-level-down-alt rotate-90"></i> ZERO</span> 确定，设置最大量程，铅粉设置 <span class="param">2000.0</span>，水和酸设置 <span class="param">300.0</span>
                         </div>
                         <div class="step">
+                            <span class="step-title">步骤5：零点标定</span>
                             按 <span class="key"><i class="fas fa-level-down-alt rotate-90"></i> ZERO</span> 确定，显示 <span class="param">C1.Zero</span>，按 <span class="key"><i class="fas fa-level-down-alt rotate-90"></i> ZERO</span> 进入零点标定，待称体稳定，此时显示 <span class="param">000000</span> 且全部闪烁
                         </div>
                         <div class="step">
+                            <span class="step-title">步骤6：重量标定</span>
                             按 <span class="key"><i class="fas fa-level-down-alt rotate-90"></i> ZERO</span> 确定，显示......且全部闪烁，之后显示 <span class="param">C1.SPAn</span>，按 <span class="key"><i class="fas fa-level-down-alt rotate-90"></i> ZERO</span> 进入重量标定，输入重量值，待称体稳定后再按 <span class="key"><i class="fas fa-level-down-alt rotate-90"></i> ZERO</span> 确定，完成标定
                         </div>
                     </div>
