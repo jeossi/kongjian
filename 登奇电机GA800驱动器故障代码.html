@@ -150,7 +150,7 @@
     
     .stats {
       display: grid;
-      grid-template-columns: repeat(4, 1fr); /* 关键修改：强制4列布局 */
+      grid-template-columns: repeat(4, 1fr);
       gap: 15px;
       margin: 20px 0;
     }
@@ -193,6 +193,28 @@
       border-radius: 10px;
       box-shadow: 0 2px 12px rgba(0,0,0,0.05);
       border: 1px solid #e2e8f0;
+      position: relative;
+    }
+    
+    /* 水平滚动提示 */
+    .scroll-hint {
+      position: absolute;
+      right: 10px;
+      bottom: 10px;
+      background: rgba(26, 58, 108, 0.7);
+      color: white;
+      border-radius: 15px;
+      padding: 3px 10px;
+      font-size: 0.8rem;
+      z-index: 10;
+      display: none;
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0% { opacity: 0.7; }
+      50% { opacity: 1; }
+      100% { opacity: 0.7; }
     }
     
     table {
@@ -200,6 +222,14 @@
       width: 100%;
       min-width: 1000px;
     }
+    
+    /* 固定前5列的宽度 */
+    th:nth-child(1), td:nth-child(1) { width: 5%; min-width: 40px; }
+    th:nth-child(2), td:nth-child(2) { width: 5%; min-width: 60px; }
+    th:nth-child(3), td:nth-child(3) { width: 8%; min-width: 100px; }
+    th:nth-child(4), td:nth-child(4) { width: 35%; min-width: 280px; }
+    th:nth-child(5), td:nth-child(5) { width: 35%; min-width: 280px; }
+    th:nth-child(6), td:nth-child(6) { width: 12%; min-width: 100px; }
     
     th {
       background: linear-gradient(to bottom, #2c5282, #1a3a6c);
@@ -235,7 +265,7 @@
     
     .cause-grid, .solution-grid {
       display: grid;
-      grid-template-columns: 1fr; /* 关键修改：只使用一列 */
+      grid-template-columns: 1fr;
       gap: 5px;
       padding: 5px;
     }
@@ -249,7 +279,7 @@
       display: flex;
       align-items: flex-start;
       gap: 8px;
-	  line-height: 1.2; /* 减小行高 */
+      line-height: 1.2;
     }
     
     .cause-item::before {
@@ -370,7 +400,7 @@
     /* 移动端样式 */
     @media (max-width: 1100px) {
       .cause-grid, .solution-grid {
-        grid-template-columns: 1fr; /* 关键修改：只使用一列 */
+        grid-template-columns: 1fr;
       }
     }
     
@@ -413,6 +443,31 @@
         left: -12px;
         width: 25px;
         height: 25px;
+      }
+      
+      /* 移动端表格优化 */
+      .table-responsive {
+        position: relative;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      
+      .scroll-hint {
+        display: block;
+      }
+      
+      table {
+        min-width: 800px;
+      }
+      
+      th, td {
+        font-size: 0.85rem;
+        padding: 10px 12px;
+      }
+      
+      .cause-item, .solution-item {
+        font-size: 0.8rem;
+        padding: 6px;
       }
     }
     
@@ -477,6 +532,20 @@
       .search-box button {
         padding: 0 15px;
       }
+      
+      /* 更小屏幕优化 */
+      table {
+        min-width: 700px;
+      }
+      
+      th, td {
+        font-size: 0.8rem;
+        padding: 8px 10px;
+      }
+      
+      .cause-item, .solution-item {
+        font-size: 0.75rem;
+      }
     }
   </style>
 </head>
@@ -526,15 +595,16 @@
       <h2>第七章 故障诊断及异常处理</h2>
       
       <div class="table-responsive">
+        <div class="scroll-hint">← 左右滑动查看完整表格 →</div>
         <table>
           <thead>
             <tr>
-              <th width="1%">代码</th>
-              <th width="3%">故障显示</th>
-              <th width="5%">故障解释</th>
-              <th width="41%">原因</th>
-              <th width="41%">对策</th>
-              <th width="5%">告警状态</th>
+              <th>代码</th>
+              <th>故障显示</th>
+              <th>故障解释</th>
+              <th>原因</th>
+              <th>对策</th>
+              <th>告警状态</th>
             </tr>
           </thead>
           <tbody>
