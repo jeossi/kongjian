@@ -8,6 +8,10 @@ let channelsData = [];
 let currentEntries = [];
 let currentChannelCategories = {};
 
+// 全局播放状态
+let currentPlaylist = [];
+let currentIndex = -1;
+
 // DOM 元素
 let channelList;
 let categoryGrid;
@@ -281,6 +285,10 @@ function renderEntries(entries) {
             // 高亮当前选中的条目
             entryItem.classList.add('active');
             
+            // 更新当前播放列表和索引
+            currentPlaylist = entries;
+            currentIndex = index;
+            
             // 播放选中的媒体
             playSelectedMedia(entry.url);
         });
@@ -296,7 +304,50 @@ function playSelectedMedia(url) {
     
     // 触发播放按钮点击事件
     document.getElementById('url_btn').click();
+    
+    // 延迟确保播放器初始化后重新绑定事件
+    setTimeout(setupAutoPlay, 500);
+}
+
+// 视频结束事件处理
+function handleVideoEnd() {
+    if (currentPlaylist.length > 0 && currentIndex >= 0) {
+        const nextIndex = (currentIndex + 1) % currentPlaylist.length;
+        const nextEntry = currentPlaylist[nextIndex];
+        
+        if (nextEntry) {
+            // 更新UI
+            document.querySelectorAll('.entry-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // 找到并激活下一个条目
+            const nextItem = [...document.querySelectorAll('.entry-item')]
+                .find(item => item.dataset.url === nextEntry.url);
+            
+            if (nextItem) {
+                nextItem.classList.add('active');
+                playSelectedMedia(nextEntry.url);
+                currentIndex = nextIndex;
+            }
+        }
+    }
+}
+
+// 自动播放下一首
+function setupAutoPlay() {
+    const videoPlayer = document.getElementById('video_player');
+    
+    if (videoPlayer) {
+        // 移除旧监听器避免重复绑定
+        videoPlayer.removeEventListener('ended', handleVideoEnd);
+        // 添加新监听器
+        videoPlayer.addEventListener('ended', handleVideoEnd);
+    }
 }
 
 // 初始化播放列表
-document.addEventListener('DOMContentLoaded', initPlaylist);
+document.addEventListener('DOMContentLoaded', () => {
+    initPlaylist();
+    setTimeout(setupAutoPlay, 1000); // 等待1秒确保播放器加载
+})
