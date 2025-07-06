@@ -1,0 +1,394 @@
+/* 基础样式 */
+body {
+    color: #FFFFFF;
+    line-height: 1.8;
+    background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
+    background-size: 400% 400%;
+    animation: gradientBG 15s ease infinite;
+    margin: 0;
+    padding: 20px;
+    min-height: 100vh;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+@keyframes gradientBG {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+#main_box {
+    width: 100%;
+    max-width: 1200px;
+    margin: auto;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+#logo_box {
+    padding: 10px 0; /* 减少顶部底部内边距 */
+    color: #0e90d2;
+    text-align: center;
+    font-size: 24px; /* 减小字体大小 */
+    font-weight: 800;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+#input_box {
+    position: relative;
+    width: calc(100% - 4px);
+    height: 40px; /* 减小高度 */
+    margin-bottom: 15px; /* 减小底部外边距 */
+    border: 2px solid rgba(14, 144, 210, 0.8);
+    border-radius: 8px;
+    display: flex;
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+#url_box {
+    width: 85%;
+    padding: 8px 12px; /* 减小内边距 */
+    border: 0;
+    outline: none;
+    font-size: 16px; /* 减小字体大小 */
+    background: transparent;
+    color: #333;
+}
+
+#url_btn {
+    width: 15%;
+    min-width: 50px; /* 减小最小宽度 */
+    background-color: rgba(14, 144, 210, 0.9);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s;
+}
+
+#url_btn:hover {
+    background-color: rgba(14, 144, 210, 1);
+}
+
+#btn_logo {
+    width: 18px; /* 减小图标大小 */
+    height: 18px;
+    fill: #ffffff;
+}
+
+#play_history {
+    position: absolute;
+    top: 42px; /* 调整位置 */
+    left: 0;
+    width: 85%;
+    z-index: 9999;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    background: #fff;
+    color: #333;
+    text-align: left;
+    display: none;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+#play_history .history_header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px; /* 减小内边距 */
+    background: #f5f5f5;
+    border-bottom: 1px solid #eee;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    font-size: 14px; /* 减小字体大小 */
+}
+
+#play_history .history_title {
+    font-weight: bold;
+    color: #333;
+}
+
+#play_history .history_clear {
+    cursor: pointer;
+    color: #ff0000;
+    font-weight: bold;
+    padding: 2px 8px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+    font-size: 14px; /* 减小字体大小 */
+}
+
+#play_history .history_clear:hover {
+    background-color: #ffebee;
+}
+
+#play_history .history_items {
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+#play_history .history_item {
+    padding: 8px 12px; /* 减小内边距 */
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 14px; /* 减小字体大小 */
+}
+
+#play_history .history_item:last-child {
+    border-bottom: none;
+}
+
+#play_history .history_item:hover {
+    background: #f0f8ff;
+    color: #0e90d2;
+}
+
+/* 主内容区域 */
+.main-content {
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* 减小间隙 */
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+@media (min-width: 992px) {
+    .main-content {
+        flex-direction: row;
+    }
+}
+
+/* 视频区域 */
+#video_box {
+    flex: 1;
+	width: 100%;
+    background: #000;
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+    min-height: 350px; /* 减小最小高度 */
+    box-shadow: 0 5px 5px rgba(0,0,0,0.3);
+}
+
+#video_player {
+    width: 100%;
+    height: auto;
+    min-height: 350px; /* 减小最小高度 */
+    display: block;
+    background: #000;
+}
+
+/* 侧边栏样式 */
+.sidebar {
+    width: 100%;
+    background: rgba(30, 30, 46, 0.9);
+    border-radius: 10px;
+    padding: 12px; /* 减小内边距 */
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+@media (min-width: 992px) {
+    .sidebar {
+        width: 300px; /* 减小宽度 */
+    }
+}
+
+.sidebar-header {
+    padding-bottom: 10px; /* 减小内边距 */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    margin-bottom: 10px; /* 减小外边距 */
+}
+
+.sidebar-title {
+    font-size: 18px; /* 减小字体大小 */
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #4cc9f0;
+}
+
+.sidebar-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.sidebar-section {
+    margin-bottom: 3px; /* 减小外边距 */
+	margin-top: 0; /* 减少顶部外边距 */
+}
+
+.section-title {
+    font-size: 15px; /* 减小字体大小 */
+	margin-top: 5px; /* 减少上边距 */
+    margin-bottom: 5px; /* 减小外边距 */
+    display: flex;
+    align-items: center;
+    gap: 6px; /* 减小间隙 */
+    color: #a8c7fa;
+}
+
+/* 滚动区域 */
+.channels-scroll, .category-scroll {
+    max-height: 100px; /* 减小最大高度 */
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+    margin-bottom: 10px; /* 减小外边距 */
+    padding: 8px; /* 减小内边距 */
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+}
+
+/* 列表样式 */
+.channel-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: inline-flex;
+    flex-wrap: nowrap;
+    gap: 8px; /* 减小间隙 */
+}
+
+.channel-item {
+    padding: 6px 12px; /* 减小内边距 */
+    background: rgba(67, 97, 238, 0.3);
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-size: 13px; /* 减小字体大小 */
+}
+
+.channel-item:hover, .channel-item.active {
+    background: rgba(67, 97, 238, 0.8);
+    transform: translateY(-2px);
+}
+
+.category-grid {
+    display: inline-flex;
+    flex-wrap: nowrap;
+    gap: 8px; /* 减小间隙 */
+    white-space: nowrap;
+}
+
+.category-item-container {
+    padding: 6px 12px; /* 减小内边距 */
+    background: rgba(114, 9, 183, 0.3);
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-size: 13px; /* 减小字体大小 */
+}
+
+.category-item-container:hover, .category-item-container.active {
+    background: rgba(114, 9, 183, 0.8);
+    transform: translateY(-2px);
+}
+
+.entries-container {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    max-height: 300px; /* 添加最大高度限制 */
+}
+
+.entries-grid {
+    flex: 1;
+    overflow-y: auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); /* 减小最小宽度 */
+    gap: 5px; /* 减小间隙 */
+    padding: 5px; /* 减小内边距 */
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+}
+
+.entry-item {
+    padding: 6px; /* 减小内边距 */
+    background: rgba(247, 37, 133, 0.3);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-align: center;
+    min-height: 30px; /* 减小最小高度 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.entry-item:hover {
+    background: rgba(247, 37, 133, 0.6);
+    transform: translateY(-3px);
+}
+
+.entry-item.active {
+    background: rgba(247, 37, 133, 0.8);
+    box-shadow: 0 0 0 2px #fff;
+}
+
+.entry-name {
+    font-size: 13px; /* 减小字体大小 */
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+/* 加载状态 */
+.loading {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* 减小间隙 */
+    padding: 12px; /* 减小内边距 */
+    color: rgba(255, 255, 255, 0.8);
+    justify-content: center;
+    font-size: 14px; /* 减小字体大小 */
+}
+
+.loading-spinner {
+    width: 20px; /* 减小尺寸 */
+    height: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top: 2px solid #4cc9f0;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* 滚动条美化 */
+::-webkit-scrollbar {
+    width: 6px; /* 减小滚动条宽度 */
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(67, 97, 238, 0.6);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(67, 97, 238, 0.8);
+}
