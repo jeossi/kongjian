@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no" />
+		<meta name="referrer" content="never" />
+		<title>Ajeossi媒体库</title>
+		<link rel="icon" type="image/x-icon" href="img/favicon.ico" />
+		<link rel="stylesheet" type="text/css" href="./css/main.css" />
+		<link rel="stylesheet" type="text/css" href="./css/message.css" />
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+		<script src="./js/jquery.js"></script>
+		<script src="./js/jQuery-Extensions-touchJS.js"></script>
+		<script src="./js/videoControl.js"></script>
+		<script src="./js/hls.min.js"></script>
+		<script src="./js/flv.min.js"></script>
+		<script src="./js/vlist.js"></script>
+		<script src="./js/main.js"></script>
+	</head>
+	<body>
+		<div id="main_box">
+			<div id="logo_box">🎬Ajeossi 媒体库</div>
+			<div id="input_box">
+				<input type="text" id="url_box" autocomplete="off" list="play_history" placeholder="请输入视频播放地址(支持m3u8、flv、mp4等)"/>
+				<div id="url_btn" class="btn_extra_css_0">
+					<svg id="btn_logo">
+						<polygon points="1,0 19,10 1,20" />
+					</svg>
+				</div>
+				<div id="play_history">
+                    <div class="history_header">
+                        <div class="history_title">播放历史</div>
+                        <div class="history_clear">X</div>
+                    </div>
+                    <div class="history_items"></div>
+                </div>
+			</div>
+			
+			<div class="main-content">
+				<div id="video_box">
+					<video id="video_player" controls preload="auto" autoplay loop>
+                      您的浏览器不支持 HTML5 video 标签
+                    </video>
+				</div>
+				
+				<div class="sidebar" id="sidebar">
+					<div class="sidebar-header">
+						<div class="sidebar-title">
+							<i class="fas fa-list"></i> 播放列表
+						</div>
+					</div>
+					
+					<div class="sidebar-content">
+						<div class="sidebar-section">
+							<h3 class="section-title">
+								<i class="fas fa-satellite"></i> 线路选择
+							</h3>
+							<div class="channels-scroll">
+								<ul class="channel-list" id="channel-list">
+									<li class="loading">
+										<div class="loading-spinner"></div>
+										<span>加载线路中...</span>
+									</li>
+								</ul>
+							</div>
+						</div>
+						
+						<div class="sidebar-section">
+							<h3 class="section-title">
+								<i class="fas fa-tags"></i> 分类
+							</h3>
+							<div class="category-scroll">
+								<div class="category-grid" id="category-grid">
+									<div class="loading">
+										<div class="loading-spinner"></div>
+										<span>加载分类中...</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						
+						<div class="sidebar-section">
+							<h3 class="section-title">
+								<i class="fas fa-play-circle"></i> 播放列表
+							</h3>
+							<div class="entries-container">
+								<div class="entries-grid" id="entries-grid">
+									<div class="loading">
+										<div class="loading-spinner"></div>
+										<span>加载内容中...</span>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</body>
+</html>
