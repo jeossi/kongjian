@@ -23,24 +23,24 @@ body {
     margin: auto;
     background: rgba(0, 0, 0, 0.7);
     border-radius: 15px;
-    padding: 20px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    padding: 8px;
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.5);
 }
 
 #logo_box {
-    padding: 10px 0; /* 减少顶部底部内边距 */
+    padding: 10px 0;
     color: #0e90d2;
     text-align: center;
-    font-size: 24px; /* 减小字体大小 */
+    font-size: 24px;
     font-weight: 800;
     text-shadow: 0 2px 4px rgba(0,0,0,0.3);
 }
 
 #input_box {
     position: relative;
-    width: calc(100% - 4px);
-    height: 40px; /* 减小高度 */
-    margin-bottom: 15px; /* 减小底部外边距 */
+    width: calc(100% - 40px);
+    height: 30px;
+    margin-bottom: 15px;
     border: 2px solid rgba(14, 144, 210, 0.8);
     border-radius: 8px;
     display: flex;
@@ -50,17 +50,17 @@ body {
 
 #url_box {
     width: 85%;
-    padding: 8px 12px; /* 减小内边距 */
+    padding: 8px 12px;
     border: 0;
     outline: none;
-    font-size: 16px; /* 减小字体大小 */
+    font-size: 14px;
     background: transparent;
     color: #333;
 }
 
 #url_btn {
     width: 15%;
-    min-width: 50px; /* 减小最小宽度 */
+    min-width: 30px;
     background-color: rgba(14, 144, 210, 0.9);
     cursor: pointer;
     display: flex;
@@ -74,16 +74,16 @@ body {
 }
 
 #btn_logo {
-    width: 18px; /* 减小图标大小 */
+    width: 18px;
     height: 18px;
     fill: #ffffff;
 }
 
 #play_history {
     position: absolute;
-    top: 42px; /* 调整位置 */
+    top: 42px;
     left: 0;
-    width: 85%;
+    width: 100%;
     z-index: 9999;
     box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
     border-radius: 8px;
@@ -99,13 +99,13 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 8px 12px; /* 减小内边距 */
+    padding: 8px 12px;
     background: #f5f5f5;
     border-bottom: 1px solid #eee;
     position: sticky;
     top: 0;
     z-index: 1;
-    font-size: 14px; /* 减小字体大小 */
+    font-size: 14px;
 }
 
 #play_history .history_title {
@@ -120,7 +120,7 @@ body {
     padding: 2px 8px;
     border-radius: 4px;
     transition: background-color 0.2s;
-    font-size: 14px; /* 减小字体大小 */
+    font-size: 14px;
 }
 
 #play_history .history_clear:hover {
@@ -133,11 +133,11 @@ body {
 }
 
 #play_history .history_item {
-    padding: 8px 12px; /* 减小内边距 */
+    padding: 5px 12px;
     border-bottom: 1px solid #eee;
     cursor: pointer;
     transition: all 0.2s;
-    font-size: 14px; /* 减小字体大小 */
+    font-size: 14px;
 }
 
 #play_history .history_item:last-child {
@@ -153,8 +153,8 @@ body {
 .main-content {
     display: flex;
     flex-direction: column;
-    gap: 15px; /* 减小间隙 */
-    border-radius: 10px;
+    gap: 5px;
+    border-radius: 5px;
     overflow: hidden;
 }
 
@@ -164,24 +164,27 @@ body {
     }
 }
 
-/* 视频区域 */
+/* 视频区域 - 关键修复 */
 #video_box {
     flex: 1;
-	width: 100%;
+    width: 100%;
     background: #000;
-    border-radius: 10px;
+    border-radius: 5px;
     overflow: hidden;
     position: relative;
-    min-height: 350px; /* 减小最小高度 */
     box-shadow: 0 5px 5px rgba(0,0,0,0.3);
+    
+    /* 保持16:9宽高比 */
+    aspect-ratio: 16/9;
 }
 
 #video_player {
     width: 100%;
-    height: auto;
-    min-height: 350px; /* 减小最小高度 */
+    height: 100%;
     display: block;
     background: #000;
+    object-fit: cover; /* 保持比例，可能有黑边 */
+	object-position: center;
 }
 
 /* 侧边栏样式 */
@@ -189,7 +192,7 @@ body {
     width: 100%;
     background: rgba(30, 30, 46, 0.9);
     border-radius: 10px;
-    padding: 12px; /* 减小内边距 */
+    padding: 6px;
     color: #fff;
     display: flex;
     flex-direction: column;
@@ -198,18 +201,62 @@ body {
 
 @media (min-width: 992px) {
     .sidebar {
-        width: 300px; /* 减小宽度 */
+        width: 300px;
+    }
+}
+
+/* 移动设备优化 - 关键修复 */
+@media (max-width: 991px) {
+    body {
+        padding: 5px; /* 减少整体内边距 */
+    }
+    
+    #main_box {
+        padding: 15px; /* 减少内边距 */
+    }
+    
+    .main-content {
+        gap: 10px; /* 减少间隙 */
+    }
+    
+    #video_box {
+        margin-bottom: 0; /* 移除底部外边距 */
+    }
+    
+    .sidebar {
+        width: 100%;
+        padding: 8px; /* 减少内边距 */
+        margin-top: 0; /* 移除顶部外边距 */
+    }
+    
+    .sidebar-section {
+        margin-bottom: 5px;
+    }
+    
+    .section-title {
+        font-size: 14px;
+        margin: 3px 0;
+    }
+    
+    .channel-item, .category-item-container, .entry-item {
+        padding: 4px 8px;
+        font-size: 12px;
+    }
+    
+    .entries-grid {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 4px;
     }
 }
 
 .sidebar-header {
-    padding-bottom: 10px; /* 减小内边距 */
+    padding-bottom: 10px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-    margin-bottom: 10px; /* 减小外边距 */
+    margin-bottom: 10px;
 }
 
 .sidebar-title {
-    font-size: 18px; /* 减小字体大小 */
+    font-size: 18px;
     font-weight: bold;
     display: flex;
     align-items: center;
@@ -225,28 +272,28 @@ body {
 }
 
 .sidebar-section {
-    margin-bottom: 3px; /* 减小外边距 */
-	margin-top: 0; /* 减少顶部外边距 */
+    margin-bottom: 3px;
+    margin-top: 0;
 }
 
 .section-title {
-    font-size: 15px; /* 减小字体大小 */
-	margin-top: 5px; /* 减少上边距 */
-    margin-bottom: 5px; /* 减小外边距 */
+    font-size: 15px;
+    margin-top: 5px;
+    margin-bottom: 5px;
     display: flex;
     align-items: center;
-    gap: 6px; /* 减小间隙 */
+    gap: 6px;
     color: #a8c7fa;
 }
 
 /* 滚动区域 */
 .channels-scroll, .category-scroll {
-    max-height: 100px; /* 减小最大高度 */
+    max-height: 100px;
     overflow-x: auto;
     overflow-y: hidden;
     white-space: nowrap;
-    margin-bottom: 10px; /* 减小外边距 */
-    padding: 8px; /* 减小内边距 */
+    margin-bottom: 10px;
+    padding: 8px;
     background: rgba(0, 0, 0, 0.3);
     border-radius: 8px;
 }
@@ -258,16 +305,16 @@ body {
     margin: 0;
     display: inline-flex;
     flex-wrap: nowrap;
-    gap: 8px; /* 减小间隙 */
+    gap: 8px;
 }
 
 .channel-item {
-    padding: 6px 12px; /* 减小内边距 */
+    padding: 6px 12px;
     background: rgba(67, 97, 238, 0.3);
     border-radius: 20px;
     cursor: pointer;
     transition: all 0.3s;
-    font-size: 13px; /* 减小字体大小 */
+    font-size: 13px;
 }
 
 .channel-item:hover, .channel-item.active {
@@ -278,17 +325,17 @@ body {
 .category-grid {
     display: inline-flex;
     flex-wrap: nowrap;
-    gap: 8px; /* 减小间隙 */
+    gap: 8px;
     white-space: nowrap;
 }
 
 .category-item-container {
-    padding: 6px 12px; /* 减小内边距 */
+    padding: 6px 12px;
     background: rgba(114, 9, 183, 0.3);
     border-radius: 20px;
     cursor: pointer;
     transition: all 0.3s;
-    font-size: 13px; /* 减小字体大小 */
+    font-size: 13px;
 }
 
 .category-item-container:hover, .category-item-container.active {
@@ -301,28 +348,28 @@ body {
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    max-height: 300px; /* 添加最大高度限制 */
+    max-height: 300px;
 }
 
 .entries-grid {
     flex: 1;
     overflow-y: auto;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); /* 减小最小宽度 */
-    gap: 5px; /* 减小间隙 */
-    padding: 5px; /* 减小内边距 */
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 5px;
+    padding: 5px;
     background: rgba(0, 0, 0, 0.3);
     border-radius: 8px;
 }
 
 .entry-item {
-    padding: 6px; /* 减小内边距 */
+    padding: 6px;
     background: rgba(247, 37, 133, 0.3);
     border-radius: 8px;
     cursor: pointer;
     transition: all 0.3s;
     text-align: center;
-    min-height: 30px; /* 减小最小高度 */
+    min-height: 30px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -339,7 +386,7 @@ body {
 }
 
 .entry-name {
-    font-size: 13px; /* 减小字体大小 */
+    font-size: 13px;
     font-weight: 500;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -352,15 +399,15 @@ body {
 .loading {
     display: flex;
     align-items: center;
-    gap: 10px; /* 减小间隙 */
-    padding: 12px; /* 减小内边距 */
+    gap: 10px;
+    padding: 12px;
     color: rgba(255, 255, 255, 0.8);
     justify-content: center;
-    font-size: 14px; /* 减小字体大小 */
+    font-size: 14px;
 }
 
 .loading-spinner {
-    width: 20px; /* 减小尺寸 */
+    width: 20px;
     height: 20px;
     border: 2px solid rgba(255, 255, 255, 0.3);
     border-top: 2px solid #4cc9f0;
@@ -375,7 +422,7 @@ body {
 
 /* 滚动条美化 */
 ::-webkit-scrollbar {
-    width: 6px; /* 减小滚动条宽度 */
+    width: 6px;
     height: 6px;
 }
 
