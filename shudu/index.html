@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数独大师</title>
+    <!-- 引用外部图标库 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- 引用外部 CSS 样式文件 -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="header">
+        <h1>数独大师</h1>
+    </div>
+    
+    <div class="game-container">
+        <div class="game-info">
+            <div class="database-selector">
+                <button class="database-btn active" id="database-btn">
+                    <span id="database-name">推荐数独</span>
+                    <span class="dropdown-content" id="database-dropdown">
+                        <a href="#" id="recommended-database">推荐数独</a>
+                        <a href="#" id="local-database">自用数独</a>
+                        <a href="#" id="backup-database">收藏数独</a>
+                    </span>
+                </button>
+            </div>
+            
+            <div class="difficulty-selector">
+                <button class="difficulty-btn active" data-difficulty="easy">简单</button>
+                <button class="difficulty-btn" data-difficulty="medium">中等</button>
+                <button class="difficulty-btn" data-difficulty="hard">困难</button>
+                <button class="difficulty-btn" data-difficulty="random">随机</button>
+            </div>
+        </div>
+        
+        <div class="info-container">
+            <div class="message" id="message">选择数独及难度模式开始你的挑战！</div>
+            <div class="timer">
+                <i class="fas fa-clock"></i> <span id="time">00:00</span>
+            </div>
+        </div>
+        
+        <div class="sudoku-container" id="sudoku-board">
+            <!-- 数独格子将通过JS生成 -->
+        </div>        
+        <div class="controls">
+            <button class="control-btn undo-btn" id="undo-btn">
+                <i class="fas fa-undo"></i>撤回
+                <span class="undo-badge">0</span>
+            </button>
+            <button class="control-btn trash-btn" id="trash-btn">
+                <i class="fas fa-eraser"></i> 删除
+            </button>
+            <button class="control-btn notes-btn" id="notes-btn">
+                <i class="fas fa-pencil-alt"></i> 笔记
+                <span class="notes-badge">关</span>
+            </button>
+            <button class="control-btn hint-btn" id="hint-btn">
+                <i class="fas fa-lightbulb"></i> 提示
+                <span class="hint-badge">10</span>
+            </button>
+            <button class="control-btn clear-btn" id="clear-btn">
+                <i class="fas fa-trash-alt"></i> 清除
+            </button>
+        </div>
+        
+        <div class="number-pad" id="number-pad">
+            <!-- 数字按钮将通过JS生成 -->
+        </div>
+        <div class="copyright">
+            © 2025 数独大师 - Ajeossi版权所有
+        </div>
+    </div>
+    
+    <!-- 烟花效果容器 -->
+    <div class="fireworks-container" id="fireworks-container"></div>
+    
+    <!-- 自定义鼠标光标 -->
+    <div class="custom-cursor" id="custom-cursor">1</div>
+    
+    <!-- 引用外部JS库 (用于数据压缩) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.0.4/pako.min.js"></script>
+    <!-- 引用外部游戏逻辑JS文件 -->
+    <script src="script.js"></script>
+</body>
+</html>
