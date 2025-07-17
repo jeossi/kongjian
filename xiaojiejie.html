@@ -2,7 +2,7 @@
 <html lang="zh-Hans">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>随机小姐姐视频 - 你的快乐源泉</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -11,6 +11,7 @@
             padding: 0;
             box-sizing: border-box;
             font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            -webkit-tap-highlight-color: transparent;
         }
         
         body {
@@ -20,6 +21,7 @@
             padding: 20px;
             position: relative;
             overflow-x: hidden;
+            touch-action: pan-y;
         }
         
         body:before {
@@ -99,6 +101,7 @@
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
             position: relative;
             background: #000;
+            touch-action: none;
         }
         
         #video {
@@ -107,6 +110,7 @@
             display: block;
             background: #000;
             outline: none;
+            transition: transform 0.3s ease;
         }
         
         .controls {
@@ -318,6 +322,75 @@
             border-top: 1px solid rgba(255, 255, 255, 0.1);
         }
         
+        /* 滑动提示 */
+        .swipe-hint {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            z-index: 5;
+            opacity: 0.7;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+        
+        .swipe-hint-content {
+            display: inline-flex;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+        
+        .swipe-hint i {
+            margin: 0 8px;
+            font-size: 1.2rem;
+        }
+        
+        .swipe-hint.hidden {
+            opacity: 0;
+        }
+        
+        /* 滑动动画效果 */
+        .slide-left {
+            animation: slideLeft 0.4s ease-out;
+        }
+        
+        .slide-right {
+            animation: slideRight 0.4s ease-out;
+        }
+        
+        @keyframes slideLeft {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(0); }
+        }
+        
+        @keyframes slideRight {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(0); }
+        }
+        
+        /* 触摸指示器 */
+        .touch-indicator {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: rgba(255, 122, 162, 0.3);
+            transform: translate(-50%, -50%);
+            z-index: 100;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s, transform 0.2s;
+        }
+        
+        .touch-indicator.active {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+        
         @media (max-width: 768px) {
             h1 {
                 font-size: 2.2rem;
@@ -336,6 +409,10 @@
                 width: 100%;
                 max-width: 300px;
             }
+            
+            .swipe-hint {
+                display: block;
+            }
         }
         
         @media (max-width: 480px) {
@@ -349,6 +426,11 @@
             
             .tip-box p {
                 font-size: 1rem;
+            }
+            
+            .swipe-hint-content {
+                font-size: 0.8rem;
+                padding: 6px 12px;
             }
         }
     </style>
@@ -365,11 +447,18 @@
         </header>
         
         <div class="player-container">
-            <div class="video-wrapper">
+            <div class="video-wrapper" id="video-wrapper">
                 <div class="loading-overlay" id="loading-overlay">
                     <div class="loader"></div>
                 </div>
                 <video id="video" poster="https://images.unsplash.com/photo-1551029506-0807df4e2031?q=80&w=800" controls autoplay></video>
+                <div class="swipe-hint" id="swipe-hint">
+                    <div class="swipe-hint-content">
+                        <i class="fas fa-arrow-left"></i>
+                        左右滑动切换视频
+                        <i class="fas fa-arrow-right"></i>
+                    </div>
+                </div>
             </div>
             
             <div class="controls">
@@ -379,7 +468,7 @@
                     <option value="https://api.e1e1.top/xjj/j.php">小姐姐</option>
                     <option value="https://api.e1e1.top/xgg/g.php">小哥哥</option>
                     <option value="https://api.e1e1.top/tianmei/tm.php">可爱甜妹</option>
-                    <option value="https://api.e1e1.top/wd/wd.php"selected>慢摇热舞</option>
+                    <option value="https://api.e1e1.top/wd/wd.php" selected>慢摇热舞</option>
                     <option value="https://api.e1e1.top/meitui/mt.php">丝袜美腿</option>
                     <option value="https://api.e1e1.top/shuang/s.php">爽感御姐</option>
 					<option value="http://v.nrzj.vip/video.php">老女人.ZL</option>
@@ -462,6 +551,9 @@
         </footer>
     </div>
     
+    <!-- 触摸指示器元素 -->
+    <div class="touch-indicator" id="touch-indicator"></div>
+    
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const video = document.getElementById("video");
@@ -469,8 +561,15 @@
             const nextVideoBtn = document.getElementById("next-video-btn");
             const continuousPlayToggle = document.getElementById("continuous-play-toggle");
             const loadingOverlay = document.getElementById("loading-overlay");
+            const videoWrapper = document.getElementById("video-wrapper");
+            const swipeHint = document.getElementById("swipe-hint");
+            const touchIndicator = document.getElementById("touch-indicator");
             
             let continuousPlay = true;
+            let touchStartX = 0;
+            let touchStartY = 0;
+            let touchStartTime = 0;
+            let isSwiping = false;
             
             // 显示加载动画
             function showLoading() {
@@ -483,31 +582,42 @@
             }
             
             // 加载随机视频
-            function loadRandomVideo() {
+            function loadRandomVideo(direction = 'right') {
                 showLoading();
                 
-                const selectedApiSource = apiSelect.value;
-                const timestamp = new Date().getTime();
+                // 添加滑动动画
+                video.classList.add(direction === 'right' ? 'slide-left' : 'slide-right');
                 
-                // 设置视频源，添加时间戳防止缓存
-                video.src = `${selectedApiSource}?t=${timestamp}`;
-                
-                // 加载视频
-                video.load();
-                
-                // 监听视频加载完成事件
-                video.onloadeddata = function() {
-                    hideLoading();
-                    if (continuousPlay) {
-                        video.play().catch(e => console.log('自动播放受阻:', e));
-                    }
-                };
-                
-                // 监听错误事件
-                video.onerror = function() {
-                    hideLoading();
-                    alert('视频加载失败，请重试或切换数据源');
-                };
+                setTimeout(() => {
+                    const selectedApiSource = apiSelect.value;
+                    const timestamp = new Date().getTime();
+                    
+                    // 设置视频源，添加时间戳防止缓存
+                    video.src = `${selectedApiSource}?t=${timestamp}`;
+                    
+                    // 加载视频
+                    video.load();
+                    
+                    // 监听视频加载完成事件
+                    video.onloadeddata = function() {
+                        hideLoading();
+                        if (continuousPlay) {
+                            video.play().catch(e => console.log('自动播放受阻:', e));
+                        }
+                        // 移除动画类
+                        setTimeout(() => {
+                            video.classList.remove('slide-left', 'slide-right');
+                        }, 400);
+                    };
+                    
+                    // 监听错误事件
+                    video.onerror = function() {
+                        hideLoading();
+                        alert('视频加载失败，请重试或切换数据源');
+                        // 移除动画类
+                        video.classList.remove('slide-left', 'slide-right');
+                    };
+                }, 200);
             }
             
             // 切换数据源
@@ -527,20 +637,115 @@
                 }
             }
             
-            // 初始化事件监听
-            apiSelect.addEventListener("change", changeVideoSource);
-            nextVideoBtn.addEventListener("click", loadRandomVideo);
-            continuousPlayToggle.addEventListener("click", toggleContinuousPlay);
+            // 触摸开始
+            function handleTouchStart(e) {
+                if (!isMobileDevice()) return;
+                
+                touchStartX = e.touches[0].clientX;
+                touchStartY = e.touches[0].clientY;
+                touchStartTime = new Date().getTime();
+                
+                // 显示触摸指示器
+                touchIndicator.style.left = `${touchStartX}px`;
+                touchIndicator.style.top = `${touchStartY}px`;
+                touchIndicator.classList.add('active');
+                
+                isSwiping = true;
+            }
             
-            // 视频结束事件
-            video.addEventListener("ended", function() {
-                if (continuousPlay) {
-                    loadRandomVideo();
+            // 触摸移动
+            function handleTouchMove(e) {
+                if (!isSwiping) return;
+                
+                const touchX = e.touches[0].clientX;
+                const touchY = e.touches[0].clientY;
+                
+                // 更新触摸指示器位置
+                touchIndicator.style.left = `${touchX}px`;
+                touchIndicator.style.top = `${touchY}px`;
+                
+                // 防止页面滚动
+                const diffX = touchX - touchStartX;
+                const diffY = touchY - touchStartY;
+                
+                // 如果是水平滑动，阻止默认行为防止页面滚动
+                if (Math.abs(diffX) > Math.abs(diffY)) {
+                    e.preventDefault();
                 }
-            });
+            }
             
-            // 初始加载视频
-            loadRandomVideo();
+            // 触摸结束
+            function handleTouchEnd(e) {
+                if (!isSwiping) return;
+                
+                isSwiping = false;
+                const touchEndX = e.changedTouches[0].clientX;
+                const touchEndY = e.changedTouches[0].clientY;
+                const touchEndTime = new Date().getTime();
+                
+                // 隐藏触摸指示器
+                touchIndicator.classList.remove('active');
+                
+                const diffX = touchEndX - touchStartX;
+                const diffY = touchEndY - touchStartY;
+                const duration = touchEndTime - touchStartTime;
+                
+                // 计算滑动距离和时间
+                const absDiffX = Math.abs(diffX);
+                const absDiffY = Math.abs(diffY);
+                
+                // 如果滑动距离太小或时间太长，忽略
+                if (absDiffX < 50 || duration > 500) return;
+                
+                // 如果水平滑动距离大于垂直滑动距离，则认为是水平滑动
+                if (absDiffX > absDiffY) {
+                    // 向左滑动（diffX为负值）
+                    if (diffX < 0) {
+                        loadRandomVideo('right');
+                    } 
+                    // 向右滑动（diffX为正值）
+                    else {
+                        loadRandomVideo('left');
+                    }
+                }
+            }
+            
+            // 检测是否为移动设备
+            function isMobileDevice() {
+                return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            }
+            
+            // 初始化事件监听
+            function init() {
+                apiSelect.addEventListener("change", changeVideoSource);
+                nextVideoBtn.addEventListener("click", () => loadRandomVideo());
+                continuousPlayToggle.addEventListener("click", toggleContinuousPlay);
+                
+                // 视频结束事件
+                video.addEventListener("ended", function() {
+                    if (continuousPlay) {
+                        loadRandomVideo();
+                    }
+                });
+                
+                // 触摸事件
+                if (isMobileDevice()) {
+                    videoWrapper.addEventListener("touchstart", handleTouchStart);
+                    videoWrapper.addEventListener("touchmove", handleTouchMove);
+                    videoWrapper.addEventListener("touchend", handleTouchEnd);
+                    
+                    // 隐藏滑动提示
+                    setTimeout(() => {
+                        swipeHint.classList.add('hidden');
+                    }, 5000);
+                }
+                
+                // 初始加载视频
+                loadRandomVideo();
+            }
+            
+            // 启动初始化
+            init();
         });
     </script>
 </body>
