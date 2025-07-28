@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>多源音频播放器</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #5e35b1;
+            --secondary-color: #7e57c2;
+            --accent-color: #ff4081;
+            --dark-bg: #121212;
+            --card-bg: #1e1e1e;
+            --text-primary: #ffffff;
+            --text-secondary: #b3b3b3;
+            --progress-bg: #4a4a4a;
+            --progress-fill: var(--accent-color);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--dark-bg), #1a1a2e);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            text-align: center;
+            padding: 20px 0;
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(to right, var(--accent-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .tabs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            background: var(--card-bg);
+            padding: 12px 25px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .tab:hover {
+            background: rgba(126, 87, 194, 0.3);
+        }
+
+        .tab.active {
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            box-shadow: 0 4px 20px rgba(94, 53, 177, 0.5);
+        }
+
+        .tab i {
+            font-size: 1.2rem;
+        }
+
+        .app-container {
+            display: flex;
+            flex: 1;
+            gap: 30px;
+            flex-direction: column;
+        }
+
+        @media (min-width: 992px) {
+            .app-container {
+                flex-direction: row;
+            }
+        }
+
+        .player-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .player-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .cover-container {
+            position: relative;
+            width: 280px;
+            height: 280px;
+            margin: 0 auto 30px;
+        }
+
+        .cover-image {
+            width: 100%;
+            height: 100%;
+            border-radius: 16px;
+            object-fit: cover;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .audio-info {
+            width: 100%;
+            max-width: 600px;
+            margin-bottom: 20px;
+        }
+
+        .audio-title {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            color: var(--text-primary);
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .audio-meta {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 5px;
+        }
+
+        .audio-category {
+    display: inline-flex; /* 改为flex布局 */
+    align-items: center;  /* 垂直居中 */
+    gap: 6px;            /* 图标和文本间距 */
+    /* 原有样式保持不变 */
+    color: var(--accent-color);
+    font-size: 1rem;
+    font-weight: 500;
+    background: rgba(255, 64, 129, 0.1);
+    padding: 4px 12px;
+    border-radius: 20px;
+}
+
+        .audio-author {
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .controls {
+            width: 100%;
+            max-width: 600px;
+            margin-top: 10px;
+        }
+
+        /* 当前歌词显示区域 - 扩大到四行 */
+        .current-lyrics {
+    height: auto;       /* 自动高度 */
+    min-height: 7.6rem; /* 最小高度保持原有设计 */
+    overflow-y: auto;   /* 垂直滚动（如需） */
+    padding: 10px;      /* 增加内边距 */
+    line-height: 1.6;   /* 调整行高 */
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+}
+
+        .current-lyrics p {
+            margin: 0;
+            padding: 2px 0;
+            transition: all 0.3s ease;
+        }
+
+       .current-lyrics p.active {
+    color: #1E90FF;
+    font-weight: 600;
+    /* 添加过渡动画 */
+    transition: color 0.3s ease;
+    /* 背景高亮 */
+    background: rgba(30, 144, 255, 0.1);
+    padding: 2px 8px;
+    border-radius: 4px;
+}
+        .progress-container {
+            width: 100%;
+            height: 6px;
+            background: var(--progress-bg);
+            border-radius: 3px;
+            margin: 10px 0;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--progress-fill);
+            border-radius: 3px;
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+
+        .time-display {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-top: 5px;
+        }
+
+        .player-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin-top: 15px;
+        }
+
+        .control-btn {
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 1.5rem;
+            cursor: pointer;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .control-btn.play-pause {
+            width: 70px;
+            height: 70px;
+            background: var(--secondary-color);
+            box-shadow: 0 6px 20px rgba(126, 87, 194, 0.5);
+        }
+
+        .control-btn.play-pause:hover {
+            background: var(--primary-color);
+            transform: scale(1.05);
+        }
+
+        .volume-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 140px;
+			/* 新增右边距 */
+    margin-right: 30px; /* 增加40px右边距 */
+        }
+
+        .volume-slider {
+            flex: 1;
+            -webkit-appearance: none;
+            height: 5px;
+            background: var(--progress-bg);
+            border-radius: 5px;
+            outline: none;
+        }
+
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--text-primary);
+            cursor: pointer;
+        }
+
+        .timer-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 30px;
+            padding: 8px 15px;
+            transition: all 0.3s ease;
+        }
+
+        .timer-control:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .timer-control select {
+            background: transparent;
+            color: var(--text-primary);
+            border: none;
+            outline: none;
+            font-size: 0.95rem;
+            cursor: pointer;
+            width: 100px;
+            appearance: none;
+            padding: 5px 10px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .timer-control select option {
+            background: var(--card-bg);
+            color: var(--text-primary);
+        }
+
+        .timer-display {
+            font-size: 0.95rem;
+            min-width: 50px;
+            text-align: center;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255, 255, 255, 0.1);
+            border-top: 5px solid var(--accent-color);
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px 0;
+            margin-top: 20px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* 响应式调整 */
+        @media (max-width: 767px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .cover-container {
+                width: 200px;
+                height: 200px;
+            }
+            
+            .audio-title {
+                font-size: 1.4rem;
+            }
+            
+            .player-controls {
+                gap: 15px;
+                flex-wrap: wrap;
+            }
+            
+            .control-btn {
+                width: 45px;
+                height: 45px;
+                font-size: 1.2rem;
+            }
+            
+            .control-btn.play-pause {
+                width: 60px;
+                height: 60px;
+            }
+            
+            .tabs {
+                gap: 8px;
+            }
+            
+            .tab {
+                padding: 10px 15px;
+                font-size: 0.9rem;
+            }
+            
+            .timer-control {
+                padding: 6px 10px;
+            }
+            
+            .timer-control select {
+                width: 85px;
+                font-size: 0.85rem;
+            }
+			.volume-control {
+                width: 120px;
+				/* 移动端保持适当间距 */
+        margin-right: 30px;
+            }
+            .current-lyrics {
+                height: 6rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .tabs {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .tab {
+                width: 100%;
+                max-width: 280px;
+                justify-content: center;
+            }
+            
+            .player-controls {
+                gap: 10px;
+            }
+            
+            .volume-control {
+                width: 120px;
+				/* 移动端保持适当间距 */
+        margin-right: 15px; 
+            }
+            
+            .current-lyrics {
+                height: 5rem;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Ajeossi 多源播放器</h1>
+            <p class="subtitle">聚合多个音频源，畅听无限内容</p>
+        </header>
+        
+        <!-- 顶部选项卡导航 -->
+        <div class="tabs">
+            <div class="tab active" data-api="duanzi1">
+                <i class="fas fa-microphone-alt"></i>
+                <span>听段子1</span>
+            </div>
+            <div class="tab" data-api="duanzi2">
+                <i class="fas fa-laugh"></i>
+                <span>听段子2</span>
+            </div>
+            <div class="tab" data-api="gushi1">
+                <i class="fas fa-book-open"></i>
+                <span>听故事1</span>
+            </div>
+            <div class="tab" data-api="gushi2">
+                <i class="fas fa-book"></i>
+                <span>听故事2</span>
+            </div>
+            <div class="tab" data-api="wangyi">
+                <i class="fab fa-napster"></i>
+                <span>网易热歌</span>
+            </div>
+        </div>
+        
+        <div class="app-container">
+            <div class="player-section">
+                <div class="player-card">
+                    <div class="loading">
+                        <div class="loading-spinner"></div>
+                        <p>正在加载音频内容...</p>
+                    </div>
+                    
+                    <div class="cover-container">
+                        <img src="https://via.placeholder.com/300" alt="音频封面" class="cover-image" id="coverImage">
+                    </div>
+                    
+                    <div class="audio-info">
+                        <h2 class="audio-title" id="audioTitle">选择分类开始播放</h2>
+                        <div class="audio-meta">
+                            <div class="audio-category" id="audioCategory">未知分类</div>
+                            <div class="audio-author">
+                                <i class="fas fa-user"></i>
+                                <span id="audioAuthor">未知作者</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="controls">
+                        <!-- 当前歌词显示区域 - 扩大到四行 -->
+                        <div class="current-lyrics" id="currentLyrics">
+                            <p>歌词将在播放网易热歌时显示</p>
+                        </div>
+                        
+                        <div class="progress-container" id="progressContainer">
+                            <div class="progress-bar" id="progressBar"></div>
+                        </div>
+                        <div class="time-display">
+                            <span id="currentTime">0:00</span>
+                            <span id="duration">0:00</span>
+                        </div>
+                        
+                        <div class="player-controls">
+                            <div class="volume-control">
+                                <button class="control-btn" id="muteBtn">
+                                    <i class="fas fa-volume-up" id="volumeIcon"></i>
+                                </button>
+                                <input type="range" class="volume-slider" id="volumeSlider" min="0" max="1" step="0.01" value="0.7">
+                            </div>
+                            
+                            <button class="control-btn play-pause" id="playPauseBtn">
+                                <i class="fas fa-play" id="playIcon"></i>
+                            </button>
+                            
+                            <button class="control-btn" id="nextBtn">
+                                <i class="fas fa-step-forward"></i>
+                            </button>
+                            
+                            <div class="timer-control">
+                                <i class="fas fa-clock"></i>
+                                <select id="timerSelect">
+                                    <option value="0">关闭定时</option>
+                                    <option value="300">5分钟</option>
+                                    <option value="600">10分钟</option>
+                                    <option value="900">15分钟</option>
+                                    <option value="1200">20分钟</option>
+                                    <option value="1500">25分钟</option>
+                                    <option value="1800">30分钟</option>
+                                    <option value="3600">60分钟</option>
+                                    <option value="5400">90分钟</option>
+                                    <option value="7200">120分钟</option>
+                                    <option value="9000">150分钟</option>
+                                    <option value="10800">180分钟</option>
+                                </select>
+                                <div class="timer-display" id="timerDisplay">00:00</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>多源音频播放器 &copy; ajeossi 2025 | 支持多个音频源 | 响应式设计</p>
+        </footer>
+    </div>
+    
+    <script>
+        // API配置
+        const apiConfig = {
+            duanzi1: {
+                name: "听段子1",
+                url: "https://api.cenguigui.cn/api/music/ximalaya_duanzi.php",
+                type: "喜马拉雅"
+            },
+            duanzi2: {
+                name: "听段子2",
+                url: "https://www.hhlqilongzhu.cn/api/ximalaya/ximalaya_duanzi.php",
+                type: "喜马拉雅"
+            },
+            gushi1: {
+                name: "听故事1",
+                url: "https://www.hhlqilongzhu.cn/api/ximalaya/ximalaya_gushi.php",
+                type: "喜马拉雅"
+            },
+            gushi2: {
+                name: "听故事2",
+                url: "https://api.cenguigui.cn/api/music/ximalaya_gushi.php",
+                type: "喜马拉雅"
+            },
+            wangyi: {
+                name: "网易热歌",
+                url: "https://www.hhlqilongzhu.cn/api/wangyi_hot_review.php",
+                type: "网易云音乐",
+                lyricBaseUrl: "https://node.api.xfabe.com/api/wangyi/lyrics?id="
+            }
+        };
+
+        // DOM元素
+        const elements = {
+            coverImage: document.getElementById('coverImage'),
+            audioTitle: document.getElementById('audioTitle'),
+            audioAuthor: document.getElementById('audioAuthor'),
+            audioCategory: document.getElementById('audioCategory'),
+            currentApi: document.getElementById('currentApi'),
+            progressBar: document.getElementById('progressBar'),
+            progressContainer: document.getElementById('progressContainer'),
+            currentTime: document.getElementById('currentTime'),
+            duration: document.getElementById('duration'),
+            playPauseBtn: document.getElementById('playPauseBtn'),
+            playIcon: document.getElementById('playIcon'),
+            nextBtn: document.getElementById('nextBtn'),
+            volumeSlider: document.getElementById('volumeSlider'),
+            muteBtn: document.getElementById('muteBtn'),
+            volumeIcon: document.getElementById('volumeIcon'),
+            tabs: document.querySelectorAll('.tab'),
+            loading: document.querySelector('.loading'),
+            currentLyrics: document.getElementById('currentLyrics'),
+            timerSelect: document.getElementById('timerSelect'),
+            timerDisplay: document.getElementById('timerDisplay')
+        };
+
+        // 音频播放器
+        const audio = new Audio();
+        let currentApi = 'duanzi1';
+        let isPlaying = false;
+        let lyrics = [];
+        let currentLyricIndex = -1;
+        let isMuted = false;
+        let lastVolume = 0.7;
+        let timerInterval = null;
+        let timerDuration = 0;
+        let timerRemaining = 0;
+
+        // 格式化时间
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        }
+
+        // 格式化分钟时间
+        function formatMinutes(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        }
+
+        // 更新进度条
+        function updateProgress() {
+            const percent = (audio.currentTime / audio.duration) * 100;
+            elements.progressBar.style.width = `${percent}%`;
+            elements.currentTime.textContent = formatTime(audio.currentTime);
+            
+            // 更新歌词高亮
+            updateLyricsHighlight();
+        }
+
+        // 设置进度
+        function setProgress(e) {
+            const width = this.clientWidth;
+            const clickX = e.offsetX;
+            const duration = audio.duration;
+            audio.currentTime = (clickX / width) * duration;
+        }
+
+        // 解析LRC歌词
+        function parseLyrics(lrc) {
+            const lines = lrc.split('\n');
+            const result = [];
+            // 修复时间戳正则表达式，支持毫秒位为2-3位
+            const timeRegex = /\[(\d{2}):(\d{2})\.(\d{2,3})\]/;
+            
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i];
+                const match = timeRegex.exec(line);
+                
+                if (match) {
+                    const minutes = parseFloat(match[1]);
+                    const seconds = parseFloat(match[2]);
+                    // 处理毫秒位（支持2-3位）
+                    const milliseconds = parseFloat(match[3].length === 3 ? 
+                        match[3] : match[3] + '0') / 1000;
+                    const time = minutes * 60 + seconds + milliseconds;
+                    const text = line.replace(timeRegex, '').trim();
+                    
+                    if (text) {
+                        result.push({ time, text });
+                    }
+                }
+            }
+            
+            return result;
+        }
+
+        // 更新歌词高亮
+        function updateLyricsHighlight() {
+            if (lyrics.length === 0 || currentApi !== 'wangyi') return;
+            
+            const currentTime = audio.currentTime;
+            let newIndex = -1;
+            
+            // 查找当前时间对应的歌词行
+            for (let i = 0; i < lyrics.length; i++) {
+                if (currentTime >= lyrics[i].time) {
+                    newIndex = i;
+                } else {
+                    break;
+                }
+            }
+            
+            // 如果歌词行发生变化，更新高亮
+            if (newIndex !== currentLyricIndex) {
+                currentLyricIndex = newIndex;
+                
+                // 更新当前歌词显示区域（扩大到四行）
+                let lyricsHTML = '';
+                if (currentLyricIndex >= 0) {
+                    // 当前行
+                    lyricsHTML += `<p class="active">${lyrics[currentLyricIndex].text}</p>`;
+                    // 后三行（如果有）
+                    for (let i = 1; i <= 3; i++) {
+                        if (currentLyricIndex + i < lyrics.length) {
+                            lyricsHTML += `<p>${lyrics[currentLyricIndex + i].text}</p>`;
+                        }
+                    }
+                }
+                elements.currentLyrics.innerHTML = lyricsHTML;
+            }
+        }
+
+        // 获取歌词
+        async function fetchLyrics(songId) {
+            try {
+                const response = await fetch(`${apiConfig.wangyi.lyricBaseUrl}${songId}`);
+                if (!response.ok) throw new Error('歌词请求失败');
+                
+                const data = await response.json();
+                // 修复歌词提取路径
+                if (data.code === 200 && data.data && data.data.lyric) {
+                    return parseLyrics(data.data.lyric);
+                }
+                return [];
+            } catch (error) {
+                console.error('获取歌词失败:', error);
+                return [];
+            }
+        }
+
+        // 获取音频数据
+        async function fetchAudioData(apiKey) {
+            elements.loading.style.display = 'block';
+            
+            // 重置歌词
+            lyrics = [];
+            currentLyricIndex = -1;
+            elements.currentLyrics.innerHTML = '<p>歌词将在播放时显示</p>';
+            
+            try {
+                const response = await fetch(apiConfig[apiKey].url);
+                if (!response.ok) throw new Error(`API请求失败: ${response.status}`);
+                
+                const data = await response.json();
+                if (data.code !== 200) throw new Error(`API返回错误: ${data.msg}`);
+                
+                // 处理网易热歌的特殊情况
+                let lyricsData = [];
+                if (apiKey === 'wangyi') {
+                    // 提取歌曲ID
+                    const link = data.link || '';
+                    // 修复ID提取逻辑
+                    const match = link.match(/id=(\d+)/);
+                    const songId = match ? match[1] : null;
+                    
+                    if (songId) {
+                        lyricsData = await fetchLyrics(songId);
+                    }
+                }
+                
+                return {
+                    data,
+                    lyrics: lyricsData
+                };
+            } catch (error) {
+                console.error('获取音频数据失败:', error);
+                return null;
+            } finally {
+                elements.loading.style.display = 'none';
+            }
+        }
+
+        // 加载并播放音频
+        async function loadAndPlayAudio(apiKey) {
+            const result = await fetchAudioData(apiKey);
+            if (!result) return;
+            
+            const { data, lyrics: lyricsData } = result;
+            
+            // 更新UI
+            elements.coverImage.src = data.cover || data.img || 'https://via.placeholder.com/300';
+            elements.audioTitle.textContent = data.title || data.song || '未知标题';
+            
+            if (apiKey === 'wangyi') {
+                elements.audioAuthor.textContent = data.singer || '未知歌手';
+                elements.audioCategory.textContent = "网易热歌";
+                // 设置歌词数据
+                lyrics = lyricsData;
+            } else {
+                elements.audioAuthor.textContent = data.nickname || '未知作者';
+                elements.audioCategory.textContent = data.categoryName || '未知分类';
+                // 非网易源时清空歌词
+                lyrics = [];
+                elements.currentLyrics.innerHTML = '<p>当前分类无歌词</p>';
+            }
+            
+            // 设置音频源
+            audio.src = data.url;
+            audio.load();
+            
+            // 播放音频
+            setTimeout(() => {
+                audio.play().catch(e => {
+                    console.error('播放失败:', e);
+                });
+            }, 500);
+        }
+
+        // 切换分类
+        function switchCategory(apiKey) {
+            currentApi = apiKey;
+            
+            // 更新激活状态
+            elements.tabs.forEach(tab => {
+                tab.classList.remove('active');
+                if (tab.dataset.api === apiKey) {
+                    tab.classList.add('active');
+                }
+            });
+            
+            // 加载音频
+            loadAndPlayAudio(apiKey);
+        }
+
+        // 切换静音状态
+        function toggleMute() {
+            isMuted = !isMuted;
+            
+            if (isMuted) {
+                // 保存当前音量
+                lastVolume = audio.volume;
+                audio.volume = 0;
+                elements.volumeSlider.value = 0;
+                elements.volumeIcon.className = 'fas fa-volume-mute';
+            } else {
+                // 恢复音量
+                audio.volume = lastVolume;
+                elements.volumeSlider.value = lastVolume;
+                elements.volumeIcon.className = 'fas fa-volume-up';
+            }
+        }
+
+        // 启动定时器
+        function startTimer(duration) {
+            // 清除现有定时器
+            clearInterval(timerInterval);
+            
+            if (duration === 0) {
+                elements.timerDisplay.textContent = "00:00";
+                return;
+            }
+            
+            timerDuration = duration;
+            timerRemaining = duration;
+            elements.timerDisplay.textContent = formatMinutes(timerRemaining);
+            
+            // 启动定时器
+            timerInterval = setInterval(() => {
+                timerRemaining -= 1;
+                elements.timerDisplay.textContent = formatMinutes(timerRemaining);
+                
+                if (timerRemaining <= 0) {
+                    clearInterval(timerInterval);
+                    audio.pause();
+                }
+            }, 1000);
+        }
+
+        // 初始化事件监听
+        function initEventListeners() {
+            // 播放/暂停
+            elements.playPauseBtn.addEventListener('click', () => {
+                if (isPlaying) {
+                    audio.pause();
+                } else {
+                    audio.play();
+                }
+            });
+            
+            // 下一首
+            elements.nextBtn.addEventListener('click', () => {
+                loadAndPlayAudio(currentApi);
+            });
+            
+            // 进度条点击
+            elements.progressContainer.addEventListener('click', setProgress);
+            
+            // 音量控制
+            elements.volumeSlider.addEventListener('input', () => {
+                audio.volume = elements.volumeSlider.value;
+                
+                // 更新静音状态
+                if (audio.volume > 0) {
+                    isMuted = false;
+                    elements.volumeIcon.className = 'fas fa-volume-up';
+                } else {
+                    isMuted = true;
+                    elements.volumeIcon.className = 'fas fa-volume-mute';
+                }
+            });
+            
+            // 静音按钮
+            elements.muteBtn.addEventListener('click', toggleMute);
+            
+            // 分类切换
+            elements.tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    switchCategory(tab.dataset.api);
+                });
+            });
+            
+            // 定时器选择
+            elements.timerSelect.addEventListener('change', () => {
+                const duration = parseInt(elements.timerSelect.value);
+                startTimer(duration);
+            });
+            
+            // 音频事件监听
+            audio.addEventListener('timeupdate', updateProgress);
+            
+            audio.addEventListener('play', () => {
+                isPlaying = true;
+                elements.playIcon.classList.remove('fa-play');
+                elements.playIcon.classList.add('fa-pause');
+            });
+            
+            audio.addEventListener('pause', () => {
+                isPlaying = false;
+                elements.playIcon.classList.remove('fa-pause');
+                elements.playIcon.classList.add('fa-play');
+            });
+            
+            audio.addEventListener('loadedmetadata', () => {
+                elements.duration.textContent = formatTime(audio.duration);
+            });
+            
+            audio.addEventListener('ended', () => {
+                // 自动播放下一首
+                loadAndPlayAudio(currentApi);
+            });
+            
+            audio.addEventListener('error', () => {
+                console.error('音频播放错误');
+            });
+			
+        }
+
+        // 初始化应用
+        function initApp() {
+            initEventListeners();
+            switchCategory(currentApi); // 默认加载第一个分类
+        }
+
+        // 启动应用
+        window.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
