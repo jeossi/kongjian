@@ -585,6 +585,7 @@
             <div class="content-top">
                 <h2>请使用 Ctrl+D 收藏本页</h2>
                 <p class="subtitle">保存到浏览器收藏夹，随时访问资源</p>
+				
             </div>
             
             <div class="resource-list">
@@ -605,6 +606,12 @@
 									<div class="title">Chrome浏览器官网 <span class="new-feature">熄屏听音视频，可到手机自带市场下载</span></div>
                                 </div>
                             </a>
+							<a href="./API音频播放.html" target="_blank" class="link-item">
+                                <i class="fas fa-music"></i>
+                                <div class="link-text">
+                                    <div class="title">听段子故事音乐 <span class="new-feature">免费听喜马拉雅段子故事及网易热播音乐</span></div>
+                                </div>
+                              </a>
 							<a href="./zhumian.html" target="_blank" class="link-item">
                                 <i class="fas fa-music"></i>
                                 <div class="link-text">
@@ -1239,6 +1246,25 @@
                 }, 3000);
             });
         });
+		// 获取API数据并更新内容
+fetch('https://api.cenguigui.cn/api/djt/api/')
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 1) {
+            const subtitleElement = document.querySelector('.subtitle');
+            if (subtitleElement) {
+                subtitleElement.innerHTML = `
+                    <span style="color: blue;">
+                        每日一言：${data.data.content}<br>
+                        
+                    </span>
+                `;
+            }
+        }
+    })
+    .catch(error => {
+        console.error('获取数据失败:', error);
+    });
     </script>
 </body>
     <script type="text/javascript" src="https://myhkw.cn/player/js/jquery.min.js"></script>
