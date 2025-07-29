@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ajeo 音频播放器</title>
+    <title>Ajeo音频播放器</title>
 	<link rel="icon" href="Aje128.png" type="image/png" sizes="32x32">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -309,7 +309,7 @@
             align-items: center;
             gap: 8px;
             width: 90px;
-            margin-right: 30px;
+            margin-right: 50px;
         }
 
         .volume-slider {
@@ -429,8 +429,8 @@
             }
             
             .volume-control {
-                width: 90px;
-                margin-right: 15px;
+                width: 60px;
+                margin-right: 30px;
             }
             
             .current-lyrics {
@@ -445,8 +445,8 @@
             }
             
             .volume-control {
-                width: 80px;
-                margin-right: 10px;
+                width: 60px;
+                margin-right: 30px;
             }
             
             .current-lyrics {
@@ -464,7 +464,7 @@
 <body>
     <div class="container">
         <header>
-            <h1> Ajeo 🎧多源播放器</h1>
+            <h1> Ajeo多源播放器</h1>
             <p class="subtitle">聚合多个音频源，畅听无限内容</p>
         </header>
         
@@ -472,24 +472,25 @@
         <div class="tabs">
             <div class="tab active" data-api="duanzi1">
                 <i class="fas fa-microphone-alt"></i>
-                <span>听段子1</span>
-            </div>
-            <div class="tab" data-api="duanzi2">
-                <i class="fas fa-laugh"></i>
-                <span>听段子2</span>
-            </div>
+                <span>段子</span>
+            </div>           
             <div class="tab" data-api="gushi1">
                 <i class="fas fa-book-open"></i>
-                <span>听故事1</span>
+                <span>故事</span>
             </div>
-            <div class="tab" data-api="gushi2">
-                <i class="fas fa-book"></i>
-                <span>听故事2</span>
-            </div>
-            <div class="tab" data-api="wangyi">
+			<div class="tab" data-api="wangyi">
                 <i class="fab fa-napster"></i>
                 <span>网易热歌</span>
             </div>
+			 <div class="tab" data-api="duanzi2">
+                <i class="fas fa-laugh"></i>
+                <span>段子2</span>
+            </div>
+            <div class="tab" data-api="gushi2">
+                <i class="fas fa-book"></i>
+                <span>故事2</span>
+            </div>
+            
         </div>
         
         <div class="app-container">
