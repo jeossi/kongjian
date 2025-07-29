@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ajeo音频播放器</title>
-	<link rel="icon" href="Aje128.png" type="image/png" sizes="32x32">
+    <link rel="icon" href="Aje128.png" type="image/png" sizes="32x32">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -69,13 +69,14 @@
 
         .tabs {
             display: flex;
-            justify-content: center;
+            justify-content: flex-start;
             gap: 8px;
             margin-bottom: 20px;
             overflow-x: auto;
             white-space: nowrap;
-            padding-bottom: 5px;
+            padding: 5px 15px; /* 增加左右内边距 */
             -webkit-overflow-scrolling: touch;
+            scrollbar-width: thin;
         }
 
         .tabs::-webkit-scrollbar {
@@ -271,6 +272,7 @@
             align-items: center;
             gap: 15px;
             margin-top: 12px;
+            position: relative;
         }
 
         .control-btn {
@@ -308,8 +310,8 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            width: 90px;
-            margin-right: 50px;
+            width: 150px;
+			margin-right: 0;
         }
 
         .volume-slider {
@@ -404,7 +406,7 @@
         /* 响应式调整 */
         @media (max-width: 767px) {
             h1 {
-                font-size: 2rem;
+                font-size: 1.8rem;
             }
             
             .cover-container {
@@ -413,40 +415,68 @@
             }
             
             .player-controls {
-                gap: 12px;
+                gap: 8px;
                 flex-wrap: wrap;
+                justify-content: space-between;
             }
             
             .control-btn {
-                width: 45px;
-                height: 45px;
+                width: 42px;
+                height: 42px;
                 font-size: 1.2rem;
             }
             
             .control-btn.play-pause {
-                width: 60px;
-                height: 60px;
+                width: 55px;
+                height: 55px;
+                order: 2; /* 将播放按钮放在中间 */
             }
             
             .volume-control {
-                width: 60px;
-                margin-right: 30px;
+                width: 80px;
+                order: 1; /* 将音量控制放在左侧 */
+                margin-right: 0;
+            }
+            
+            #nextBtn {
+                order: 3; /* 将下一首按钮放在右侧 */
+            }
+            
+            .timer-control {
+                order: 4; /* 将定时器放在底部 */
+                width: 100%;
+                justify-content: center;
+                margin-top: 10px;
             }
             
             .current-lyrics {
                 min-height: 5.5rem;
                 font-size: 1.2rem;
             }
+            
+            /* 优化标签栏 */
+            .tabs {
+                gap: 6px;
+                padding: 5px 10px;
+            }
+            
+            .tab {
+                padding: 7px 13px;
+                font-size: 0.95rem;
+            }
         }
         
         @media (max-width: 480px) {
+            h1 {
+                font-size: 1.6rem;
+            }
+            
             .player-controls {
-                gap: 10px;
+                gap: 6px;
             }
             
             .volume-control {
-                width: 60px;
-                margin-right: 30px;
+                width: 70px;
             }
             
             .current-lyrics {
@@ -456,7 +486,12 @@
             
             .tab {
                 padding: 6px 12px;
-                font-size: 0.9rem;
+                font-size: 0.85rem;
+                gap: 5px;
+            }
+            
+            .tabs {
+                gap: 4px;
             }
         }
     </style>
@@ -478,11 +513,11 @@
                 <i class="fas fa-book-open"></i>
                 <span>故事</span>
             </div>
-			<div class="tab" data-api="wangyi">
+            <div class="tab" data-api="wangyi">
                 <i class="fab fa-napster"></i>
                 <span>网易热歌</span>
             </div>
-			 <div class="tab" data-api="duanzi2">
+            <div class="tab" data-api="duanzi2">
                 <i class="fas fa-laugh"></i>
                 <span>段子2</span>
             </div>
@@ -490,7 +525,6 @@
                 <i class="fas fa-book"></i>
                 <span>故事2</span>
             </div>
-            
         </div>
         
         <div class="app-container">
@@ -502,7 +536,7 @@
                     </div>
                     
                     <div class="cover-container">
-                        <img src="https://via.placeholder.com/300" alt="音频封面" class="cover-image" id="coverImage">
+                        <img src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80" alt="音频封面" class="cover-image" id="coverImage">
                     </div>
                     
                     <div class="audio-info">
@@ -517,7 +551,7 @@
                     </div>
                     
                     <div class="controls">
-                        <!-- 当前歌词显示区域 - 扩大到四行 -->
+                        <!-- 当前歌词显示区域 -->
                         <div class="current-lyrics" id="currentLyrics">
                             <p>歌词将在播放网易热歌时显示</p>
                         </div>
@@ -807,7 +841,7 @@
             const { data, lyrics: lyricsData } = result;
             
             // 更新UI
-            elements.coverImage.src = data.cover || data.img || 'https://via.placeholder.com/300';
+            elements.coverImage.src = data.cover || data.img || 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80';
             elements.audioTitle.textContent = data.title || data.song || '未知标题';
             
             if (apiKey === 'wangyi') {
