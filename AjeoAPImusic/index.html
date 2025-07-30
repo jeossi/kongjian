@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ajeo聚合音乐点播</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- 头部 -->
+        <header>
+            <div class="header-content">
+                <div class="logo-icon">
+                    <i class="fas fa-music"></i>
+                </div>
+                <div class="logo-text">Ajeo聚合音乐点播</div>
+            </div>
+        </header>
+        
+        <!-- 搜索区域 -->
+        <section class="search-section">
+            <div class="search-box">
+                <div class="search-container">
+                    <input type="text" class="search-input" placeholder="歌曲名、歌手、风格" id="searchInput">
+                    <button class="search-btn" id="searchBtn">
+                        <i class="fas fa-search"></i> 搜索
+                    </button>
+                </div>
+                <div class="hot-search-panel" id="hotSearchPanel">
+                    <div class="hot-search-title">热门搜索</div>
+                    <div class="hot-search-tags" id="hotTags"></div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 播放器区域 -->
+        <section class="player-section">
+            <div class="player-grid">
+                <!-- 专辑封面移到左侧 -->
+                <div class="album-cover" id="albumCover">
+                    <i class="fas fa-music"></i>
+                </div>
+                
+                <div class="song-info">
+                    <div class="song-header">
+                        <h1 class="song-title" id="songTitle">请选择一首歌曲</h1>
+                        <!-- 新增操作按钮 -->
+                        <div class="song-actions">
+                            <button class="action-btn" id="detailBtn" title="详情">
+                                <i class="fas fa-info-circle"></i>
+                            </button>
+                            <button class="action-btn" id="downloadLyricsBtn" title="下载歌词">
+                                <i class="fas fa-download"></i>
+                            </button>
+                            <button class="action-btn" id="downloadSongBtn" title="下载歌曲">
+                                <i class="fas fa-music"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="song-artist" id="songArtist">-</div>
+                </div>
+                
+                <div class="lyrics-container" id="lyricsContainer">
+                    <div class="lyrics-content" id="lyricsContent">歌词加载中...</div>
+                    <div class="expand-lyrics" id="expandLyrics">展开全部歌词</div>
+                </div>
+                
+                <div class="audio-player">
+                    <audio id="audioPlayer" controls style="display: none;"></audio>
+                    <div class="player-controls">
+                        <button class="player-btn" id="prevBtn">
+                            <i class="fas fa-step-backward"></i>
+                        </button>
+                        <button class="player-btn" id="playBtn">
+                            <i class="fas fa-play"></i>
+                        </button>
+                        <button class="player-btn" id="pauseBtn">
+                            <i class="fas fa-pause"></i>
+                        </button>
+                        <button class="player-btn" id="nextBtn">
+                            <i class="fas fa-step-forward"></i>
+                        </button>
+                        <button class="player-btn" id="loopBtn" title="循环播放">
+                            <i class="fas fa-redo"></i>
+                        </button>
+                        <div class="progress-container" id="progressContainer">
+                            <div class="progress-bar" id="progressBar"></div>
+                        </div>
+                        <!-- 新增音量控制 -->
+                        <button class="player-btn" id="muteBtn" title="静音">
+                            <i class="fas fa-volume-up"></i>
+                        </button>
+                        <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="1" title="音量">
+                    </div>
+                    <div class="time-info">
+                        <span id="currentTime">00:00</span>
+                        <span id="duration">00:00</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 搜索结果区域 -->
+        <section class="results-section">
+            <div class="results-header">
+                <h2 class="results-title">搜索结果</h2>
+            </div>
+            <div class="results-list" id="resultsList"></div>
+        </section>
+        
+        <!-- 页脚 -->
+        <footer>
+            <p>© 2023 Ajeo聚合音乐点播 | 本服务仅用于学习交流 | 数据来源于第三方API</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

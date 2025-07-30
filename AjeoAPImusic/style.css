@@ -1,0 +1,481 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background: linear-gradient(135deg, #f9fbff 0%, #e6f0ff 100%);
+    color: #333;
+    min-height: 100vh;
+    padding-bottom: 15px;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 15px;
+}
+
+/* 头部样式 - 去除固定定位 */
+header {
+    padding: 15px 0;
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.logo-icon {
+    width: 45px;
+    height: 45px;
+    background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 22px;
+    box-shadow: 0 4px 8px rgba(106, 17, 203, 0.2);
+}
+
+.logo-text {
+    font-size: 24px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* 搜索区域样式 */
+.search-section {
+    padding: 15px 0;
+}
+
+.search-box {
+    width: 100%;
+    position: relative;
+}
+
+.search-container {
+    display: flex;
+    border-radius: 50px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(37, 117, 252, 0.15);
+}
+
+.search-input {
+    flex: 1;
+    padding: 14px 20px;
+    border: none;
+    font-size: 15px;
+    transition: all 0.3s ease;
+}
+
+.search-input:focus {
+    outline: none;
+}
+
+.search-input::placeholder {
+    color: #aaa;
+}
+
+.search-btn {
+    padding: 0 30px;
+    background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+    color: white;
+    border: none;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.search-btn:hover {
+    background: linear-gradient(135deg, #5a0db5 0%, #1c68f0 100%);
+}
+
+.hot-search-panel {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    padding: 15px;
+    margin-top: 10px;
+    display: none;
+    position: absolute;
+    width: 100%;
+    z-index: 10;
+}
+
+.hot-search-title {
+    color: #6a11cb;
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    text-align: left;
+}
+
+.hot-search-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.hot-tag {
+    background: #f0f5ff;
+    color: #4a7dff;
+    padding: 6px 12px;
+    border-radius: 18px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.hot-tag:hover {
+    background: #4a7dff;
+    color: white;
+    transform: translateY(-2px);
+}
+
+/* 播放器样式 - 网格布局 */
+.player-section {
+    background: white;
+    border-radius: 18px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+    padding: 20px;
+    margin: 15px 0;
+}
+
+.player-grid {
+    display: grid;
+    grid-template-columns: 180px 1fr; /* 专辑封面放在左侧 */
+    grid-template-rows: auto 1fr auto;
+    grid-gap: 15px;
+}
+
+/* 专辑封面 */
+.album-cover {
+    grid-column: 1;
+    grid-row: 1 / span 2; /* 跨两行 */
+    width: 180px;
+    height: 180px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #e0e7ff 0%, #d1e0fd 100%);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6a11cb;
+    font-size: 45px;
+    box-shadow: 0 6px 18px rgba(106, 17, 203, 0.15);
+}
+
+.album-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* 歌曲信息 */
+.song-info {
+    grid-column: 2;
+    grid-row: 1;
+}
+
+.song-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 5px;
+}
+
+.song-title {
+    font-size: 24px;
+    margin-right: auto; /* 让标题占据剩余空间 */
+}
+
+.song-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.song-actions .action-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    background: #f0f5ff;
+    color: #4a7dff;
+    font-size: 14px;
+    border: none;
+    transition: all 0.2s ease;
+}
+
+.song-actions .action-btn:hover {
+    background: #4a7dff;
+    color: white;
+}
+
+.song-actions .action-btn:disabled {
+    background: #f0f0f0;
+    color: #aaa;
+    cursor: not-allowed;
+}
+
+.song-artist {
+    color: #666;
+    font-size: 16px;
+}
+
+/* 歌词容器 */
+.lyrics-container {
+    grid-column: 2;
+    grid-row: 2;
+    background: #f9faff;
+    border-radius: 12px;
+    padding: 18px;
+    max-height: 180px;
+    overflow: hidden;
+    transition: max-height 0.4s ease;
+    position: relative;
+    text-align: center;
+}
+
+.lyrics-container.expanded {
+    max-height: 400px;
+}
+
+.lyrics-content {
+    font-size: 16px;
+    line-height: 1.7;
+    color: #555;
+    white-space: pre-line;
+    text-align: center;
+}
+
+.expand-lyrics {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    text-align: center;
+    background: linear-gradient(to top, rgba(249, 250, 255, 0.9), transparent);
+    padding: 25px 0 8px;
+    cursor: pointer;
+    color: #6a11cb;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+/* 播放器控件 */
+.audio-player {
+    grid-column: 1 / span 2;
+    grid-row: 3;
+    width: 100%;
+    margin-top: 8px;
+}
+
+.player-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 8px;
+}
+
+.player-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    background: #f0f5ff;
+    color: #4a7dff;
+    font-size: 16px;
+    border: none;
+    transition: all 0.2s ease;
+}
+
+.player-btn:hover {
+    background: #4a7dff;
+    color: white;
+    transform: scale(1.05);
+}
+
+.progress-container {
+    flex: 1;
+    background: #eef3ff;
+    height: 5px;
+    border-radius: 3px;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #6a11cb 0%, #2575fc 100%);
+    width: 0%;
+    border-radius: 3px;
+    transition: width 0.1s linear;
+}
+
+/* 音量控制 */
+#volumeSlider {
+    width: 80px;
+    height: 5px;
+    background: #eef3ff;
+    outline: none;
+    -webkit-appearance: none;
+    border-radius: 3px;
+}
+
+#volumeSlider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #4a7dff;
+    cursor: pointer;
+}
+
+.time-info {
+    display: flex;
+    justify-content: space-between;
+    color: #777;
+    font-size: 13px;
+    margin-top: 3px;
+}
+
+/* 搜索结果样式 */
+.results-section {
+    background: white;
+    border-radius: 18px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+    padding: 20px;
+    margin-bottom: 15px;
+}
+
+.results-header {
+    margin-bottom: 12px;
+}
+
+.results-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #333;
+}
+
+.results-list {
+    max-height: 450px;
+    overflow-y: auto;
+}
+
+/* 修改搜索结果条目 - 缩小间距 */
+.result-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 15px; /* 缩小上下间距 */
+    border-bottom: 1px solid #f0f0f0;
+    transition: background 0.3s ease;
+    cursor: pointer;
+}
+
+.result-item:hover {
+    background: #f9faff;
+    border-radius: 8px;
+}
+
+.result-number {
+    width: 35px;
+    text-align: center;
+    font-weight: 600;
+    color: #6a11cb;
+    font-size: 15px;
+}
+
+.result-details {
+    flex: 1;
+    display: flex; /* 让歌名和歌手在同一行 */
+    align-items: center;
+    gap: 10px;
+}
+
+.result-title {
+    font-weight: 600;
+    font-size: 15px;
+}
+
+.result-artist {
+    color: #666;
+    font-size: 14px;
+}
+
+.result-songid {
+    width: 90px;
+    color: #888;
+    font-size: 13px;
+    text-align: right;
+}
+
+/* 页脚样式 */
+footer {
+    text-align: center;
+    color: #888;
+    font-size: 13px;
+    padding: 15px 0;
+}
+
+.current-song {
+    background: #f0f5ff;
+    border-left: 4px solid #6a11cb;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .player-grid {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto auto;
+    }
+    
+    .album-cover {
+        grid-column: 1;
+        grid-row: 1;
+        width: 100%;
+        max-width: 180px;
+        height: 180px;
+        margin: 0 auto;
+    }
+    
+    .song-info {
+        grid-column: 1;
+        grid-row: 2;
+    }
+    
+    .lyrics-container {
+        grid-column: 1;
+        grid-row: 3;
+    }
+    
+    .audio-player {
+        grid-column: 1;
+        grid-row: 4;
+    }
+    
+    .result-item {
+        flex-wrap: wrap;
+    }
+    
+    .result-number, .result-songid {
+        width: 100%;
+        text-align: left;
+        padding-left: 15px;
+        margin-bottom: 5px;
+    }
+}
