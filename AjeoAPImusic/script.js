@@ -411,7 +411,7 @@ function syncLyrics(currentTime) {
   // 自动滚动到当前歌词
   if (activeLineIndex >= 0 && !lyricsExpanded) {
     const lineHeight = parseInt(getComputedStyle(lyricsContent).lineHeight) || 24;
-    const scrollPosition = (activeLineIndex - 2) * lineHeight;
+    const scrollPosition = (activeLineIndex - 0) * lineHeight;
     lyricsContent.scrollTop = Math.max(0, scrollPosition);
   }
 }
