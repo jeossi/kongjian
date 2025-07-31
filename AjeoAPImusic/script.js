@@ -1,7 +1,7 @@
 // script.js
 // 热门搜索标签
 const hotKeywords = [
-  "王佳音", "鱼蛋", "艺凌", "洋澜一", "DJ", "王晴",
+  "流行", "热门", "新歌","王佳音", "鱼蛋", "艺凌", "洋澜一", "DJ", "王晴",
   "周杰伦", "林俊杰", "邓紫棋", "陈奕迅", "汪苏泷",
   "经典老歌", "薛之谦", "吴亦凡", "刀郎", "跳楼机",
   "王力宏", "皇后大道东", "周深", "王子健", "Beyond",
@@ -46,6 +46,7 @@ let currentLyrics = "";
 let loopMode = false;
 let isMuted = false;
 let lastVolume = 1;
+let baseApiUrl = ""; // 存储初始搜索API URL
 
 // 将任意图片 URL 转换为 HTTPS 代理地址
 function getSecureImageUrl(originalUrl) {
@@ -169,18 +170,18 @@ function renderHotTags() {
 
 // 搜索音乐
 function searchMusic(keyword) {
-  const apiUrl = `https://www.hhlqilongzhu.cn/api/joox/juhe_music.php?msg=${encodeURIComponent(keyword)}&type=json&n=`;
+  baseApiUrl = `https://www.hhlqilongzhu.cn/api/joox/juhe_music.php?msg=${encodeURIComponent(keyword)}&type=json&n=`;
+  
+  resultsList.innerHTML = '<div class="result-item" style="justify-content: center; color: #888;"><i class="fas fa-spinner fa-spin"></i> 搜索中...</div>';
 
-  resultsList.innerHTML = '<div class="result-item" style="justify-content: center; color: #888;">搜索中...</div>';
-
-  fetch(apiUrl)
+  fetch(baseApiUrl)
     .then(response => response.json())
     .then(data => {
       renderSearchResults(data);
     })
     .catch(error => {
       console.error('搜索错误:', error);
-      resultsList.innerHTML = '<div class="result-item" style="justify-content: center; color: #888;">搜索失败，请稍后重试</div>';
+      resultsList.innerHTML = '<div class="result-item" style="justify-content: center; color: #888;"><i class="fas fa-exclamation-triangle"></i> 搜索失败，请稍后重试</div>';
     });
 }
 
@@ -190,7 +191,7 @@ function renderSearchResults(results) {
   resultsList.innerHTML = '';
 
   if (!results || results.length === 0) {
-    resultsList.innerHTML = '<div class="result-item" style="justify-content: center; color: #888;">未找到相关歌曲</div>';
+    resultsList.innerHTML = '<div class="result-item" style="justify-content: center; color: #888;"><i class="fas fa-music"></i> 未找到相关歌曲</div>';
     return;
   }
 
@@ -228,8 +229,12 @@ function playSong(song) {
 
   songTitle.textContent = song.title;
   songArtist.textContent = song.singer;
-
-  const detailUrl = `https://www.hhlqilongzhu.cn/api/joox/juhe_music.php?msg=${searchInput.value.trim()}&type=json&n=${song.n}`;
+  
+  // 设置加载状态
+  lyricsContent.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 加载中...';
+  
+  // 使用初始搜索的API URL + 歌曲序号
+  const detailUrl = `${baseApiUrl}${song.n}`;
 
   fetch(detailUrl)
     .then(response => response.json())
@@ -249,12 +254,14 @@ function playSong(song) {
 
 // 更新播放器
 function updatePlayer(songDetail) {
+  // 更新专辑封面
   if (songDetail.cover) {
     albumCover.innerHTML = `<img src="${getSecureImageUrl(songDetail.cover)}" alt="${songDetail.title}">`;
   } else {
     albumCover.innerHTML = `<i class="fas fa-music"></i>`;
   }
 
+  // 更新音频源
   if (songDetail.url) {
     audioPlayer.src = songDetail.url;
     audioPlayer.load();
@@ -263,28 +270,33 @@ function updatePlayer(songDetail) {
     pauseBtn.style.display = 'none';
 
     setTimeout(() => {
-      audioPlayer.play();
+      audioPlayer.play().catch(e => console.error('播放失败:', e));
       playBtn.style.display = 'none';
       pauseBtn.style.display = 'flex';
     }, 300);
   }
 
+  // 更新歌词显示（修复时间戳问题）
   if (songDetail.lyric) {
     currentLyrics = songDetail.lyric;
-    const cleanedLyrics = currentLyrics.replace(/\[\d{2}:\d{2}(\.\d{2})?\]/g, '');
+    // 修复：使用更健壮的正则表达式移除所有时间戳
+    const cleanedLyrics = currentLyrics.replace(/\[\d{2}:\d{2}(?:\.\d{1,3})?\]/g, '');
     lyricsContent.textContent = cleanedLyrics;
   } else {
     lyricsContent.textContent = "暂无歌词";
     currentLyrics = "";
   }
 
+  // 更新歌曲信息
   currentSong.url = songDetail.url;
   currentSong.link = songDetail.link || null;
 
+  // 更新按钮状态
   detailBtn.disabled = !currentSong.link;
   downloadLyricsBtn.disabled = !currentLyrics;
   downloadSongBtn.disabled = !currentSong.url;
 
+  // 重置歌词展开状态
   lyricsExpanded = false;
   lyricsContainer.classList.remove('expanded');
   expandLyrics.textContent = '展开全部歌词';
@@ -349,15 +361,16 @@ function syncLyrics(currentTime) {
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    const timeMatch = line.match(/\[(\d{2}):(\d{2})\.?(\d{2})?\]/);
+    const timeMatch = line.match(/\[(\d{2}):(\d{2})(?:\.(\d{1,3}))?\]/);
 
     if (timeMatch) {
       const minutes = parseInt(timeMatch[1]);
       const seconds = parseInt(timeMatch[2]);
-      const lineTime = minutes * 60 + seconds;
+      const milliseconds = timeMatch[3] ? parseInt(timeMatch[3]) : 0;
+      const lineTime = minutes * 60 + seconds + milliseconds / 1000;
 
       if (lineTime <= currentTime) {
-        activeLine = line.replace(/\[\d{2}:\d{2}(\.\d{2})?\]/g, '').trim();
+        activeLine = line.replace(/\[\d{2}:\d{2}(?:\.\d{1,3})?\]/g, '').trim();
         activeLineIndex = i;
       } else {
         break;
@@ -365,7 +378,7 @@ function syncLyrics(currentTime) {
     }
   }
 
-  const cleanedLyrics = currentLyrics.replace(/\[\d{2}:\d{2}(\.\d{2})?\]/g, '');
+  const cleanedLyrics = currentLyrics.replace(/\[\d{2}:\d{2}(?:\.\d{1,3})?\]/g, '');
   const lyricsLines = cleanedLyrics.split('\n');
 
   const highlightedLyrics = lyricsLines.map((line, index) => {
