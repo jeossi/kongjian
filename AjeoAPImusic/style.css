@@ -206,8 +206,9 @@ header {
 }
 
 .song-actions .action-btn {
-    width: 30px;
-    height: 30px;
+    width: 40px;
+    height: 40px;
+	font-size: 20px;   /* 图标大小 */
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -215,9 +216,11 @@ header {
     cursor: pointer;
     background: #f0f5ff;
     color: #4a7dff;
-    font-size: 13px;
     border: none;
     transition: all 0.2s ease;
+}
+#detailBtn i {
+    font-size: 36px;  /* 仅详情按钮的图标变大 */
 }
 
 .song-actions .action-btn:hover {
@@ -266,8 +269,9 @@ header {
 }
 
 .current-lyric {
-    color: #0056b3 !important;
-    font-weight: bold !important;
+	font-size: 20px;  /* 比普通歌词更大 */
+    color: #2575fc;   /* 高亮颜色 */
+
 }
 
 .expand-lyrics {
@@ -330,7 +334,7 @@ header {
     justify-content: flex-start;
     align-items: center;
     color: #777;
-    font-size: 12px;
+    font-size: 16px;
     white-space: nowrap;
     gap: 5px;
     min-width: 80px;
@@ -339,14 +343,14 @@ header {
 .player-buttons {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 16px;
     justify-content: center;
     margin-top: 5px;
 }
 
 .player-btn {
-    width: 34px;
-    height: 34px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -354,7 +358,7 @@ header {
     cursor: pointer;
     background: #f0f5ff;
     color: #4a7dff;
-    font-size: 14px;
+    font-size: 26px;
     border: none;
     transition: all 0.2s ease;
 }
@@ -412,11 +416,11 @@ header {
 .result-item {
     display: flex;
     align-items: center;
-    padding: 6px 10px;
+    padding: 6px 6px;
     border-bottom: 1px solid #f0f0f0;
     transition: background 0.3s ease;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 16px;
     gap: 8px;
 }
 
@@ -441,7 +445,8 @@ header {
 }
 
 .result-title {
-    font-weight: 600;
+	font-size: 17px; 
+    font-weight: 500;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -449,6 +454,7 @@ header {
 }
 
 .result-artist {
+	font-size: 15px; 
     color: #666;
     white-space: nowrap;
     min-width: 80px;
@@ -508,7 +514,7 @@ footer {
     }
     
     .time-info {
-        font-size: 10px;
+        font-size: 14px;
         min-width: 65px;
     }
     
