@@ -1,10 +1,10 @@
 // script.js
 // 热门搜索标签
 const hotKeywords = [
-   "王佳音", "鱼蛋", "艺凌", "洋澜一", "DJ", "王晴","热歌","热门", "新歌","飙升","流行",
+   "王佳音", "鱼蛋", "艺凌", "洋澜","任夏", "魏佳艺", "韩小欠", "单依纯","DJ", "王晴","热歌","热门", "新歌","飙升","流行",
   "治愈房车","周杰伦", "林俊杰", "邓紫棋", "陈奕迅", "汪苏泷",
   "经典老歌", "薛之谦", "吴亦凡", "刀郎", "跳楼机",
-  "窝窝", "皇后大道东", "周深", "王子健", "Beyond",
+  "窝窝","周深", "王子健", "Beyond",
   "五月天", "伍佰", "王一佳", "王菲", "陶喆",
   "七月上", "于春洋", "搀扶", "周传雄",
   "张杰", "半吨兄弟", "张学友"
@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', function () {
   document.documentElement.classList.add('dark-theme');
   
   renderHotTags();
-  searchMusic('流行');
+  searchMusic('窝窝');
 
   // 循环按钮状态更新
   loopBtn.addEventListener('click', () => {
