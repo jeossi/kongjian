@@ -129,10 +129,10 @@ header {
 
 .hot-tag {
     background: #f0f5ff;
-    color: #4a7dff;
-    padding: 5px 10px;
+    color: #412f1f;
+    padding: 3px 5px;
     border-radius: 18px;
-    font-size: 12px;
+    font-size: 16px;
     cursor: pointer;
     transition: all 0.2s ease;
 }
