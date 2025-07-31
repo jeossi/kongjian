@@ -99,7 +99,7 @@
 
 .dark-theme .expand-lyrics {
     background: linear-gradient(to top, rgba(42, 42, 42, 0.9), transparent);
-    color: #9d4edd;
+    color: #ffffff;
 }
 
 .dark-theme .progress-container {
@@ -475,13 +475,13 @@ header {
     bottom: 0;
     left: 0;
     width: 100%;
-    text-align: left;
+    text-align: right;
     background: linear-gradient(to top, rgba(249, 245, 255, 0.9), transparent);
     padding: 20px 0 5px 15px;
     cursor: pointer;
     color: #6a1b9a;
-    font-weight: 600;
-    font-size: 13px;
+    font-weight: 400;
+    font-size: 14px;
 }
 
 /* 播放器控件 */
