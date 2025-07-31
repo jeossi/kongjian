@@ -46,7 +46,7 @@ let currentLyrics = "";
 let loopMode = false;
 let isMuted = false;
 let lastVolume = 1;
-let baseApiUrl = ""; // 存储初始搜索API URL
+let baseApiUrl = "";
 
 // 将任意图片 URL 转换为 HTTPS 代理地址
 function getSecureImageUrl(originalUrl) {
@@ -276,12 +276,10 @@ function updatePlayer(songDetail) {
     }, 300);
   }
 
-  // 更新歌词显示（修复时间戳问题）
+  // 更新歌词显示 - 只设置原始歌词
   if (songDetail.lyric) {
     currentLyrics = songDetail.lyric;
-    // 修复：使用更健壮的正则表达式移除所有时间戳
-    const cleanedLyrics = currentLyrics.replace(/\[\d{2}:\d{2}(?:\.\d{1,3})?\]/g, '');
-    lyricsContent.textContent = cleanedLyrics;
+    lyricsContent.textContent = currentLyrics; // 显示原始歌词（含时间戳）
   } else {
     lyricsContent.textContent = "暂无歌词";
     currentLyrics = "";
@@ -351,7 +349,7 @@ function formatTime(seconds) {
   return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 }
 
-// 歌词同步
+// 歌词同步（修复时间戳问题）
 function syncLyrics(currentTime) {
   if (!currentLyrics) return;
 
@@ -359,18 +357,25 @@ function syncLyrics(currentTime) {
   let activeLine = "";
   let activeLineIndex = -1;
 
+  // 改进的正则表达式，支持各种时间戳格式
+  const timeRegex = /\[(\d{1,2}):(\d{1,2})(?:\.(\d{1,3}))?\]/;
+  
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    const timeMatch = line.match(/\[(\d{2}):(\d{2})(?:\.(\d{1,3}))?\]/);
+    const timeMatch = line.match(timeRegex);
 
     if (timeMatch) {
       const minutes = parseInt(timeMatch[1]);
       const seconds = parseInt(timeMatch[2]);
       const milliseconds = timeMatch[3] ? parseInt(timeMatch[3]) : 0;
-      const lineTime = minutes * 60 + seconds + milliseconds / 1000;
+      
+      // 处理百分秒（如20.97）和毫秒（如2097）
+      const msValue = milliseconds < 100 ? milliseconds * 10 : milliseconds;
+      const lineTime = minutes * 60 + seconds + msValue / 1000;
 
       if (lineTime <= currentTime) {
-        activeLine = line.replace(/\[\d{2}:\d{2}(?:\.\d{1,3})?\]/g, '').trim();
+        // 移除时间戳后存储歌词文本
+        activeLine = line.replace(timeRegex, '').trim();
         activeLineIndex = i;
       } else {
         break;
@@ -378,9 +383,11 @@ function syncLyrics(currentTime) {
     }
   }
 
-  const cleanedLyrics = currentLyrics.replace(/\[\d{2}:\d{2}(?:\.\d{1,3})?\]/g, '');
+  // 生成清理后的歌词（移除所有时间戳）
+  const cleanedLyrics = currentLyrics.replace(/\[\d{1,2}:\d{1,2}(?:\.\d{1,3})?\]/g, '');
   const lyricsLines = cleanedLyrics.split('\n');
 
+  // 创建带高亮的歌词
   const highlightedLyrics = lyricsLines.map((line, index) => {
     if (index === activeLineIndex) {
       return `<span class="current-lyric">${line}</span>`;
@@ -388,10 +395,12 @@ function syncLyrics(currentTime) {
     return line;
   }).join('\n');
 
+  // 更新歌词显示
   lyricsContent.innerHTML = highlightedLyrics;
 
+  // 自动滚动到当前歌词
   if (activeLineIndex >= 0 && !lyricsExpanded) {
-    const lineHeight = parseInt(getComputedStyle(lyricsContent).lineHeight);
+    const lineHeight = parseInt(getComputedStyle(lyricsContent).lineHeight) || 24;
     const scrollPosition = (activeLineIndex - 2) * lineHeight;
     lyricsContent.scrollTop = Math.max(0, scrollPosition);
   }
