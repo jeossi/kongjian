@@ -1,7 +1,7 @@
 // script.js
 // 热门搜索标签
 const hotKeywords = [
-   "热歌","热门", "新歌","飙升","流行","王佳音", "鱼蛋", "艺凌", "洋澜一", "DJ", "王晴",
+   "王佳音", "鱼蛋", "艺凌", "洋澜一", "DJ", "王晴","热歌","热门", "新歌","飙升","流行",
   "治愈房车","周杰伦", "林俊杰", "邓紫棋", "陈奕迅", "汪苏泷",
   "经典老歌", "薛之谦", "吴亦凡", "刀郎", "跳楼机",
   "窝窝", "皇后大道东", "周深", "王子健", "Beyond",
@@ -57,8 +57,24 @@ function getSecureImageUrl(originalUrl) {
 
 // 初始化页面
 document.addEventListener('DOMContentLoaded', function () {
+  // 应用深色主题
+  document.documentElement.classList.add('dark-theme');
+  
   renderHotTags();
   searchMusic('流行');
+
+  // 循环按钮状态更新
+  loopBtn.addEventListener('click', () => {
+    loopMode = !loopMode;
+    loopBtn.classList.toggle('active', loopMode);
+  });
+  
+  // 静音按钮状态更新
+  muteBtn.addEventListener('click', toggleMute);
+  
+  // 初始化按钮状态
+  loopBtn.classList.toggle('active', loopMode);
+  muteBtn.classList.toggle('muted', isMuted);
 
   // 事件监听器
   searchInput.addEventListener('focus', () => {
@@ -113,12 +129,6 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   progressContainer.addEventListener('click', setProgress);
-
-  loopBtn.addEventListener('click', () => {
-    loopMode = !loopMode;
-    loopBtn.style.background = loopMode ? '#4a7dff' : '#f0f5ff';
-    loopBtn.style.color = loopMode ? 'white' : '#4a7dff';
-  });
 
   detailBtn.addEventListener('click', () => {
     if (currentSong && currentSong.link) {
@@ -419,6 +429,7 @@ function toggleMute() {
     muteBtn.innerHTML = '<i class="fas fa-volume-mute"></i>';
   }
   isMuted = !isMuted;
+  muteBtn.classList.toggle('muted', isMuted);
 }
 
 // 设置音量
@@ -433,6 +444,7 @@ function setVolume() {
     muteBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
     lastVolume = audioPlayer.volume;
   }
+  muteBtn.classList.toggle('muted', isMuted);
 }
 
 // 播放下一首
