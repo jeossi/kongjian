@@ -1,11 +1,12 @@
+// script.js
 // 热门搜索标签
 const hotKeywords = [
-    "王佳音", "鱼蛋", "艺凌", "洋一澜", "DJ", 
+    "王佳音", "鱼蛋", "艺凌", "洋澜一", "DJ", "王晴", 
     "周杰伦", "林俊杰", "邓紫棋", "陈奕迅", "汪苏泷", 
     "经典老歌", "薛之谦", "吴亦凡", "刀郎", "跳楼机", 
     "王力宏", "皇后大道东", "周深", "王子健", "Beyond", 
     "五月天", "伍佰", "赞美之泉", "王菲", "陶喆", 
-    "罗大佑", "年轮", "凤凰传奇", "周传雄", "沉园外", 
+    "罗大佑", "年轮", "凤凰传奇", "周传雄", 
     "张杰", "不可", "张学友"
 ];
 
@@ -42,16 +43,13 @@ let currentSong = null;
 let currentSearchResults = [];
 let lyricsExpanded = false;
 let currentLyrics = "";
-let loopMode = false; // 循环模式
-let isMuted = false; // 静音状态
-let lastVolume = 1; // 静音前的音量
+let loopMode = false;
+let isMuted = false;
+let lastVolume = 1;
 
 // 初始化页面
 document.addEventListener('DOMContentLoaded', function() {
-    // 初始化热门搜索标签
     renderHotTags();
-    
-    // 默认搜索"流行"
     searchMusic('流行');
     
     // 事件监听器
@@ -67,17 +65,13 @@ document.addEventListener('DOMContentLoaded', function() {
     
     searchBtn.addEventListener('click', () => {
         const keyword = searchInput.value.trim();
-        if (keyword) {
-            searchMusic(keyword);
-        }
+        if (keyword) searchMusic(keyword);
     });
     
     searchInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
             const keyword = searchInput.value.trim();
-            if (keyword) {
-                searchMusic(keyword);
-            }
+            if (keyword) searchMusic(keyword);
         }
     });
     
@@ -106,21 +100,18 @@ document.addEventListener('DOMContentLoaded', function() {
             audioPlayer.currentTime = 0;
             audioPlayer.play();
         } else {
-            // 自动播放下一首
             playNextSong();
         }
     });
     
     progressContainer.addEventListener('click', setProgress);
     
-    // 循环按钮
     loopBtn.addEventListener('click', () => {
         loopMode = !loopMode;
         loopBtn.style.background = loopMode ? '#4a7dff' : '#f0f5ff';
         loopBtn.style.color = loopMode ? 'white' : '#4a7dff';
     });
     
-    // 详情按钮
     detailBtn.addEventListener('click', () => {
         if (currentSong && currentSong.link) {
             window.open(currentSong.link, '_blank');
@@ -129,7 +120,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // 歌词下载按钮
     downloadLyricsBtn.addEventListener('click', () => {
         if (currentLyrics) {
             downloadLyrics(currentSong.title, currentSong.singer);
@@ -138,7 +128,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // 歌曲下载按钮
     downloadSongBtn.addEventListener('click', () => {
         if (currentSong && currentSong.url) {
             window.open(currentSong.url, '_blank');
@@ -147,13 +136,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // 静音按钮
     muteBtn.addEventListener('click', toggleMute);
-    
-    // 音量滑块
     volumeSlider.addEventListener('input', setVolume);
     
-    // 初始隐藏暂停按钮
+    prevBtn.addEventListener('click', playPrevSong);
+    nextBtn.addEventListener('click', playNextSong);
+    
     pauseBtn.style.display = 'none';
 });
 
@@ -174,10 +162,8 @@ function renderHotTags() {
 
 // 搜索音乐
 function searchMusic(keyword) {
-    // API请求
     const apiUrl = `https://www.hhlqilongzhu.cn/api/joox/juhe_music.php?msg=${encodeURIComponent(keyword)}&type=json&n=`;
     
-    // 显示加载状态
     resultsList.innerHTML = '<div class="result-item" style="justify-content: center; color: #888;">搜索中...</div>';
     
     fetch(apiUrl)
@@ -208,7 +194,6 @@ function renderSearchResults(results) {
             item.classList.add('current-song');
         }
         
-        // 修改后的结果条目 - 将歌手名放在歌名后面
         item.innerHTML = `
             <div class="result-number">${song.n}</div>
             <div class="result-details">
@@ -218,7 +203,6 @@ function renderSearchResults(results) {
             <div class="result-songid">ID: ${song.songid}</div>
         `;
         
-        // 添加点击播放事件
         item.addEventListener('click', () => {
             playSong(song);
         });
@@ -231,16 +215,13 @@ function renderSearchResults(results) {
 function playSong(song) {
     currentSong = song;
     
-    // 更新当前歌曲样式
     document.querySelectorAll('.result-item').forEach(item => {
         item.classList.remove('current-song');
     });
     
-    // 更新播放器信息
     songTitle.textContent = song.title;
     songArtist.textContent = song.singer;
     
-    // 获取歌曲详情
     const detailUrl = `https://www.hhlqilongzhu.cn/api/joox/juhe_music.php?msg=${searchInput.value.trim()}&type=json&n=${song.n}`;
     
     fetch(detailUrl)
@@ -261,23 +242,19 @@ function playSong(song) {
 
 // 更新播放器
 function updatePlayer(songDetail) {
-    // 更新封面
     if (songDetail.cover) {
         albumCover.innerHTML = `<img src="${songDetail.cover}" alt="${songDetail.title}">`;
     } else {
         albumCover.innerHTML = `<i class="fas fa-music"></i>`;
     }
     
-    // 设置音频源
     if (songDetail.url) {
         audioPlayer.src = songDetail.url;
         audioPlayer.load();
         
-        // 显示播放按钮
         playBtn.style.display = 'flex';
         pauseBtn.style.display = 'none';
         
-        // 自动播放
         setTimeout(() => {
             audioPlayer.play();
             playBtn.style.display = 'none';
@@ -285,7 +262,6 @@ function updatePlayer(songDetail) {
         }, 300);
     }
     
-    // 更新歌词
     if (songDetail.lyric) {
         currentLyrics = songDetail.lyric;
         const cleanedLyrics = currentLyrics.replace(/\[\d{2}:\d{2}(\.\d{2})?\]/g, '');
@@ -295,16 +271,13 @@ function updatePlayer(songDetail) {
         currentLyrics = "";
     }
     
-    // 保存链接信息
     currentSong.url = songDetail.url;
     currentSong.link = songDetail.link || null;
     
-    // 更新按钮状态
     detailBtn.disabled = !currentSong.link;
     downloadLyricsBtn.disabled = !currentLyrics;
     downloadSongBtn.disabled = !currentSong.url;
     
-    // 重置歌词展开状态
     lyricsExpanded = false;
     lyricsContainer.classList.remove('expanded');
     expandLyrics.textContent = '展开全部歌词';
@@ -317,20 +290,14 @@ function downloadLyrics(title, artist) {
         return;
     }
     
-    // 创建Blob对象
     const blob = new Blob([currentLyrics], { type: 'text/plain' });
-    
-    // 创建下载链接
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
     a.download = `${title} - ${artist}.lrc`;
     a.style.display = 'none';
-    
-    // 添加到DOM并触发下载
     document.body.appendChild(a);
     a.click();
     
-    // 清理
     setTimeout(() => {
         document.body.removeChild(a);
         URL.revokeObjectURL(a.href);
@@ -343,11 +310,9 @@ function updateProgress() {
     const progressPercent = (currentTime / duration) * 100;
     progressBar.style.width = `${progressPercent}%`;
     
-    // 更新时间显示
     currentTimeEl.textContent = formatTime(currentTime);
     durationEl.textContent = formatTime(duration);
     
-    // 同步歌词
     syncLyrics(currentTime);
 }
 
@@ -356,14 +321,12 @@ function setProgress(e) {
     const width = this.clientWidth;
     const clickX = e.offsetX;
     const duration = audioPlayer.duration;
-    
     audioPlayer.currentTime = (clickX / width) * duration;
 }
 
 // 格式化时间
 function formatTime(seconds) {
     if (isNaN(seconds)) return "00:00";
-    
     const minutes = Math.floor(seconds / 60);
     seconds = Math.floor(seconds % 60);
     return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
@@ -375,6 +338,7 @@ function syncLyrics(currentTime) {
     
     const lines = currentLyrics.split('\n');
     let activeLine = "";
+    let activeLineIndex = -1;
     
     for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
@@ -387,35 +351,40 @@ function syncLyrics(currentTime) {
             
             if (lineTime <= currentTime) {
                 activeLine = line.replace(/\[\d{2}:\d{2}(\.\d{2})?\]/g, '').trim();
+                activeLineIndex = i;
             } else {
                 break;
             }
         }
     }
     
-    // 高亮当前歌词行
     const cleanedLyrics = currentLyrics.replace(/\[\d{2}:\d{2}(\.\d{2})?\]/g, '');
     const lyricsLines = cleanedLyrics.split('\n');
     
-    const highlightedLyrics = lyricsLines.map(line => {
-        if (line.trim() === activeLine) {
-            return `<span style="color: #6a11cb; font-weight: bold;">${line}</span>`;
+    const highlightedLyrics = lyricsLines.map((line, index) => {
+        if (index === activeLineIndex) {
+            return `<span class="current-lyric">${line}</span>`;
         }
         return line;
     }).join('\n');
     
     lyricsContent.innerHTML = highlightedLyrics;
+    
+    // 自动滚动到当前歌词
+    if (activeLineIndex >= 0 && !lyricsExpanded) {
+        const lineHeight = parseInt(getComputedStyle(lyricsContent).lineHeight);
+        const scrollPosition = (activeLineIndex - 2) * lineHeight;
+        lyricsContent.scrollTop = Math.max(0, scrollPosition);
+    }
 }
 
 // 静音切换
 function toggleMute() {
     if (isMuted) {
-        // 取消静音
         audioPlayer.volume = lastVolume;
         volumeSlider.value = lastVolume;
         muteBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
     } else {
-        // 静音
         lastVolume = audioPlayer.volume;
         audioPlayer.volume = 0;
         volumeSlider.value = 0;
@@ -428,7 +397,6 @@ function toggleMute() {
 function setVolume() {
     audioPlayer.volume = volumeSlider.value;
     
-    // 更新静音状态
     if (audioPlayer.volume === 0) {
         isMuted = true;
         muteBtn.innerHTML = '<i class="fas fa-volume-mute"></i>';
@@ -443,20 +411,36 @@ function setVolume() {
 function playNextSong() {
     if (!currentSearchResults || currentSearchResults.length === 0) return;
     
-    // 查找当前歌曲的索引
     const currentIndex = currentSearchResults.findIndex(song => 
         currentSong && song.n === currentSong.n
     );
     
     if (currentIndex === -1) return;
     
-    // 计算下一首索引
     let nextIndex = currentIndex + 1;
     if (nextIndex >= currentSearchResults.length) {
-        nextIndex = 0; // 循环到第一首
+        nextIndex = 0;
     }
     
-    // 播放下一首
     const nextSong = currentSearchResults[nextIndex];
     playSong(nextSong);
+}
+
+// 播放上一首
+function playPrevSong() {
+    if (!currentSearchResults || currentSearchResults.length === 0) return;
+    
+    const currentIndex = currentSearchResults.findIndex(song => 
+        currentSong && song.n === currentSong.n
+    );
+    
+    if (currentIndex === -1) return;
+    
+    let prevIndex = currentIndex - 1;
+    if (prevIndex < 0) {
+        prevIndex = currentSearchResults.length - 1;
+    }
+    
+    const prevSong = currentSearchResults[prevIndex];
+    playSong(prevSong);
 }
