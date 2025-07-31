@@ -331,7 +331,7 @@ header {
     color: #412f1f;
     padding: 3px 5px;
     border-radius: 18px;
-    font-size: 16px;
+    font-size: 20px;
     cursor: pointer;
     transition: all 0.2s ease;
 }
@@ -758,11 +758,11 @@ footer {
         display: none;
     }
 	  .hot-tag {
-        font-size: 18px;  /* 增大字体 */
+        font-size: 20px;  /* 增大字体 */
         padding: 3px 5px; /* 调整内边距 */
     }
 
     .dark-theme .hot-tag {
-        font-size: 18px;  /* 深色模式同步调整 */
+        font-size: 20px;  /* 深色模式同步调整 */
     }
 }
