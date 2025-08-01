@@ -48,6 +48,7 @@ let loopMode = false;
 let isMuted = false;
 let lastVolume = 1;
 let baseApiUrl = "";
+let currentBlobUrl = null; // 存储当前的Blob URL
 
 // 备用图片URL
 const FALLBACK_IMAGE = '../mm.jpg';
@@ -129,6 +130,14 @@ document.addEventListener('DOMContentLoaded', function () {
       audioPlayer.play();
     } else {
       playNextSong();
+    }
+  });
+  
+  // 添加错误监听
+  audioPlayer.addEventListener('error', (e) => {
+    console.error('播放器错误:', e);
+    if(e.target.error.code === 4) { // MEDIA_ERR_SRC_NOT_SUPPORTED
+      alert('音频加载失败，请尝试其他歌曲');
     }
   });
 
@@ -285,19 +294,74 @@ function updatePlayer(songDetail) {
     albumCover.innerHTML = `<i class="fas fa-music"></i>`;
   }
 
-  // 更新音频源
+  // 更新音频源 - 针对抖音链接特殊处理
   if (songDetail.url) {
-    audioPlayer.src = songDetail.url;
-    audioPlayer.load();
-
-    playBtn.style.display = 'flex';
-    pauseBtn.style.display = 'none';
-
-    setTimeout(() => {
-      audioPlayer.play().catch(e => console.error('播放失败:', e));
-      playBtn.style.display = 'none';
-      pauseBtn.style.display = 'flex';
-    }, 300);
+    // 释放之前的Blob URL
+    if (currentBlobUrl) {
+      URL.revokeObjectURL(currentBlobUrl);
+      currentBlobUrl = null;
+    }
+    
+    // 抖音链接特殊处理
+    if (songDetail.url.includes('douyinvod.com')) {
+      // 显示加载状态
+      lyricsContent.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 正在加载抖音音频...';
+      
+      // 添加必要的请求头
+      const headers = new Headers({
+        'Referer': 'https://www.douyin.com/',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
+        'Origin': 'https://www.douyin.com'
+      });
+      
+      // 使用fetch获取音频并转换为Blob
+      fetch(songDetail.url, { headers })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('抖音音频请求失败');
+          }
+          return response.blob();
+        })
+        .then(blob => {
+          // 创建Blob URL
+          currentBlobUrl = URL.createObjectURL(blob);
+          audioPlayer.src = currentBlobUrl;
+          audioPlayer.load();
+          
+          // 播放处理
+          playBtn.style.display = 'flex';
+          pauseBtn.style.display = 'none';
+          
+          setTimeout(() => {
+            audioPlayer.play().catch(e => console.error('播放失败:', e));
+            playBtn.style.display = 'none';
+            pauseBtn.style.display = 'flex';
+          }, 300);
+        })
+        .catch(error => {
+          console.error('获取抖音音频失败:', error);
+          // 尝试直接播放
+          audioPlayer.src = songDetail.url;
+          audioPlayer.load();
+          audioPlayer.play().catch(e => console.error('直接播放失败:', e));
+          
+          // 显示错误信息
+          lyricsContent.innerHTML = `<span style="color: #ff6b6b">抖音音频加载失败，尝试直接播放</span>`;
+        });
+    } else {
+      // 非抖音链接直接播放
+      audioPlayer.src = songDetail.url;
+      audioPlayer.load();
+      
+      playBtn.style.display = 'flex';
+      pauseBtn.style.display = 'none';
+      
+      setTimeout(() => {
+        audioPlayer.play().catch(e => console.error('播放失败:', e));
+        playBtn.style.display = 'none';
+        pauseBtn.style.display = 'flex';
+      }, 300);
+    }
   }
 
   // 更新歌词显示 - 只设置原始歌词
