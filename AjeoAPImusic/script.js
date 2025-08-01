@@ -55,6 +55,7 @@ const FALLBACK_IMAGE = '../mm.jpg';
 
 // 代理服务器列表（优先使用自建代理，然后是公共代理）
 const PROXY_SERVERS = [
+  'https://api.codetabs.com/v1/proxy?quest=', // 新增代理
   'https://jeotv.dpdns.org/',
   'https://api.allorigins.win/raw?url='
 ];
