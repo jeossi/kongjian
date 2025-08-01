@@ -1,7 +1,7 @@
 // script.js
 // 热门搜索标签
 const hotKeywords = [
-   "王佳音", "鱼蛋", "艺凌", "洋澜","任夏", "魏佳艺", "韩小欠", "单依纯","DJ", "王晴",
+  "王佳音", "鱼蛋", "艺凌", "洋澜","任夏", "魏佳艺", "韩小欠", "单依纯","DJ", "王晴",
    "喝茶","古筝", "助眠","热歌","热门", "新歌","飙升","流行",
   "治愈房车","周杰伦", "林俊杰", "邓紫棋", "陈奕迅", "汪苏泷",
   "经典老歌", "薛之谦", "吴亦凡", "刀郎", "跳楼机",
@@ -276,19 +276,13 @@ function updatePlayer(songDetail) {
         <img 
           src="${secureImageUrl}" 
           alt="${songDetail.title}" 
-          onerror="this.src='${FALLBACK_IMAGE}'"
+          onerror="this.onerror=null; this.src='${FALLBACK_IMAGE}';"
         >
       </div>
     `;
   } else {
-    albumCover.innerHTML = `
-      <div class="album-image-container">
-        <img 
-          src="${FALLBACK_IMAGE}" 
-          alt="默认专辑封面"
-        >
-      </div>
-    `;
+    // 没有封面时显示原始的音乐图标
+    albumCover.innerHTML = `<i class="fas fa-music"></i>`;
   }
 
   // 更新音频源
