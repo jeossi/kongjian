@@ -1,7 +1,8 @@
 // script.js
 // 热门搜索标签
 const hotKeywords = [
-   "王佳音", "鱼蛋", "艺凌", "洋澜","任夏", "魏佳艺", "韩小欠", "单依纯","DJ", "王晴","热歌","热门", "新歌","飙升","流行",
+   "王佳音", "鱼蛋", "艺凌", "洋澜","任夏", "魏佳艺", "韩小欠", "单依纯","DJ", "王晴",
+   "喝茶","古筝", "助眠","热歌","热门", "新歌","飙升","流行",
   "治愈房车","周杰伦", "林俊杰", "邓紫棋", "陈奕迅", "汪苏泷",
   "经典老歌", "薛之谦", "吴亦凡", "刀郎", "跳楼机",
   "窝窝","周深", "王子健", "Beyond",
@@ -47,6 +48,9 @@ let loopMode = false;
 let isMuted = false;
 let lastVolume = 1;
 let baseApiUrl = "";
+
+// 备用图片URL
+const FALLBACK_IMAGE = '../mm.jpg';
 
 // 将任意图片 URL 转换为 HTTPS 代理地址
 function getSecureImageUrl(originalUrl) {
@@ -266,9 +270,25 @@ function playSong(song) {
 function updatePlayer(songDetail) {
   // 更新专辑封面
   if (songDetail.cover) {
-    albumCover.innerHTML = `<img src="${getSecureImageUrl(songDetail.cover)}" alt="${songDetail.title}">`;
+    const secureImageUrl = getSecureImageUrl(songDetail.cover);
+    albumCover.innerHTML = `
+      <div class="album-image-container">
+        <img 
+          src="${secureImageUrl}" 
+          alt="${songDetail.title}" 
+          onerror="this.src='${FALLBACK_IMAGE}'"
+        >
+      </div>
+    `;
   } else {
-    albumCover.innerHTML = `<i class="fas fa-music"></i>`;
+    albumCover.innerHTML = `
+      <div class="album-image-container">
+        <img 
+          src="${FALLBACK_IMAGE}" 
+          alt="默认专辑封面"
+        >
+      </div>
+    `;
   }
 
   // 更新音频源
