@@ -1,13 +1,13 @@
 // script.js
 // 热门搜索标签
 const hotKeywords = [
-  "周杰伦", "陈奕迅", "林俊杰", "邓紫棋","任然", "薛之谦", "韩小欠", "单依纯","DJ", "王靖雯",
-   "莫文蔚","古巨基", "助眠","热歌","热门", "新歌","飙升","流行",
-  "治愈系车载","周深", "林忆莲", "杨千嬅", "陈奕迅", "汪苏泷",
-  "经典老歌", "许嵩", "毛不易", "刀郎", "跳楼机",
-  "凤凰传奇","周传雄", "王力宏", "Beyond",
-  "五月天", "刘德华", "王一博", "王贰浪", "陶喆",
-  "七月上", "于春洋", "房东的猫", "周杰伦",
+ "王佳音", "鱼蛋", "艺凌", "洋澜","任夏", "魏佳艺", "韩小欠", "单依纯","DJ", "王晴",
+   "喝茶","古筝", "助眠","热歌","热门", "新歌","飙升","流行",
+  "治愈房车","周杰伦", "林俊杰", "邓紫棋", "陈奕迅", "汪苏泷",
+  "经典老歌", "薛之谦", "吴亦凡", "刀郎", "跳楼机",
+  "窝窝","周深", "王子健", "Beyond",
+  "五月天", "伍佰", "王一佳", "王菲", "陶喆",
+  "七月上", "于春洋", "搀扶", "周传雄",
   "张杰", "半吨兄弟", "张学友"
 ];
 
@@ -53,6 +53,12 @@ let currentBlobUrl = null; // 存储当前的Blob URL
 // 备用图片URL
 const FALLBACK_IMAGE = '../mm.jpg';
 
+// 代理服务器列表（优先使用自建代理，然后是公共代理）
+const PROXY_SERVERS = [
+  'https://jeotv.dpdns.org/',
+  'https://api.allorigins.win/raw?url='
+];
+
 // 将任意图片 URL 转换为 HTTPS 代理地址
 function getSecureImageUrl(originalUrl) {
   if (!originalUrl) return '';
@@ -66,7 +72,7 @@ document.addEventListener('DOMContentLoaded', function () {
   document.documentElement.classList.add('dark-theme');
   
   renderHotTags();
-  searchMusic('凤凰传奇');
+  searchMusic('蛋蛋');
 
   // 循环按钮状态更新
   loopBtn.addEventListener('click', () => {
@@ -276,7 +282,7 @@ function playSong(song) {
 }
 
 // 更新播放器
-function updatePlayer(songDetail) {
+async function updatePlayer(songDetail) {
   // 更新专辑封面
   if (songDetail.cover) {
     const secureImageUrl = getSecureImageUrl(songDetail.cover);
@@ -305,45 +311,33 @@ function updatePlayer(songDetail) {
     // 抖音链接特殊处理
     if (songDetail.url.includes('douyinvod.com')) {
       // 显示加载状态
-      lyricsContent.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 正在通过代理加载抖音音视频...';
+      lyricsContent.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 正在加载抖音音频...';
       
-      // 使用代理解决跨域问题
-      const proxyUrl = `https://dy-cors-proxy.ajeossiqq.workers.dev/?url=${encodeURIComponent(songDetail.url)}`;
-      
-      // 使用fetch获取音频并转换为Blob
-      fetch(proxyUrl)
-        .then(response => {
-          if (!response.ok) {
-            throw new Error('代理请求失败');
-          }
-          return response.blob();
-        })
-        .then(blob => {
-          // 创建Blob URL
-          currentBlobUrl = URL.createObjectURL(blob);
-          audioPlayer.src = currentBlobUrl;
-          audioPlayer.load();
-          
-          // 播放处理
-          playBtn.style.display = 'flex';
-          pauseBtn.style.display = 'none';
-          
-          setTimeout(() => {
-            audioPlayer.play().catch(e => console.error('播放失败:', e));
-            playBtn.style.display = 'none';
-            pauseBtn.style.display = 'flex';
-          }, 300);
-        })
-        .catch(error => {
-          console.error('通过代理获取抖音音视频失败:', error);
-          // 尝试直接播放
-          audioPlayer.src = songDetail.url;
-          audioPlayer.load();
-          audioPlayer.play().catch(e => console.error('直接播放失败:', e));
-          
-          // 显示错误信息
-          lyricsContent.innerHTML = `<span style="color: #ff6b6b">抖音音视频加载失败，尝试直接播放</span>`;
-        });
+      try {
+        // 尝试通过代理服务器获取音频
+        const proxyUrl = await getAudioThroughProxy(songDetail.url);
+        audioPlayer.src = proxyUrl;
+        audioPlayer.load();
+        
+        // 播放处理
+        playBtn.style.display = 'flex';
+        pauseBtn.style.display = 'none';
+        
+        setTimeout(() => {
+          audioPlayer.play().catch(e => console.error('播放失败:', e));
+          playBtn.style.display = 'none';
+          pauseBtn.style.display = 'flex';
+        }, 300);
+      } catch (error) {
+        console.error('获取抖音音频失败:', error);
+        // 尝试直接播放
+        audioPlayer.src = songDetail.url;
+        audioPlayer.load();
+        audioPlayer.play().catch(e => console.error('直接播放失败:', e));
+        
+        // 显示错误信息
+        lyricsContent.innerHTML = `<span style="color: #ff6b6b">抖音音频加载失败，尝试直接播放</span>`;
+      }
     } else {
       // 非抖音链接直接播放
       audioPlayer.src = songDetail.url;
@@ -360,10 +354,10 @@ function updatePlayer(songDetail) {
     }
   }
 
-  // 更新歌词显示 - 只设置原始歌词
+  // 更新歌词显示 - 只设置原始歌词（含时间戳）
   if (songDetail.lyric) {
     currentLyrics = songDetail.lyric;
-    lyricsContent.textContent = currentLyrics; // 显示原始歌词（含时间轴）
+    lyricsContent.textContent = currentLyrics; // 显示原始歌词（含时间戳）
   } else {
     lyricsContent.textContent = "暂无歌词";
     currentLyrics = "";
@@ -382,6 +376,29 @@ function updatePlayer(songDetail) {
   lyricsExpanded = false;
   lyricsContainer.classList.remove('expanded');
   expandLyrics.textContent = '展开全部歌词';
+}
+
+// 通过代理获取音频
+async function getAudioThroughProxy(originalUrl) {
+  // 尝试每个代理服务器
+  for (const proxy of PROXY_SERVERS) {
+    const proxyUrl = proxy + encodeURIComponent(originalUrl);
+    
+    try {
+      const response = await fetch(proxyUrl);
+      if (!response.ok) throw new Error(`代理请求失败: ${response.status}`);
+      
+      const blob = await response.blob();
+      currentBlobUrl = URL.createObjectURL(blob);
+      return currentBlobUrl;
+    } catch (error) {
+      console.error(`代理 ${proxy} 失败:`, error);
+      // 继续尝试下一个代理
+    }
+  }
+  
+  // 所有代理都失败，抛出错误
+  throw new Error('所有代理服务器均失败');
 }
 
 // 下载歌词
@@ -433,7 +450,7 @@ function formatTime(seconds) {
   return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 }
 
-// 歌词同步
+// 歌词同步（修复时间戳问题）
 function syncLyrics(currentTime) {
   if (!currentLyrics) return;
 
@@ -441,7 +458,7 @@ function syncLyrics(currentTime) {
   let activeLine = "";
   let activeLineIndex = -1;
 
-  // 改进的正则表达式，支持各种时间轴格式
+  // 改进的正则表达式，支持各种时间戳格式
   const timeRegex = /\[(\d{1,2}):(\d{1,2})(?:\.(\d{1,3}))?\]/;
   
   for (let i = 0; i < lines.length; i++) {
@@ -458,7 +475,7 @@ function syncLyrics(currentTime) {
       const lineTime = minutes * 60 + seconds + msValue / 1000;
 
       if (lineTime <= currentTime) {
-        // 移除时间轴后存储歌词文本
+        // 移除时间戳后存储歌词文本
         activeLine = line.replace(timeRegex, '').trim();
         activeLineIndex = i;
       } else {
@@ -467,7 +484,7 @@ function syncLyrics(currentTime) {
     }
   }
 
-  // 生成清理后的歌词（移除所有时间轴）
+  // 生成清理后的歌词（移除所有时间戳）
   const cleanedLyrics = currentLyrics.replace(/\[\d{1,2}:\d{1,2}(?:\.\d{1,3})?\]/g, '');
   const lyricsLines = cleanedLyrics.split('\n');
 
