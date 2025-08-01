@@ -116,9 +116,9 @@
     color: #ffd700 !important;
 }
 .dark-theme .album-cover {
-	 background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);
+	 background: linear-gradient(135deg, #2a0a4a 0%, #3d0c6e 100%);
     box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
-    color: #5a189a;
+    color: #9d4edd;
 }
 
 .dark-theme .song-title {
