@@ -204,9 +204,16 @@
     color: #888;
 }
 
+/* 深色主题当前播放歌曲高亮样式 */
 .dark-theme .current-song {
-    background: #2a2a2a;
-    border-left: 4px solid #7b2cbf;
+    background: #3a1e5a !important;
+    border-left: 4px solid #9d4edd !important;
+}
+
+/* 浅色主题当前播放歌曲高亮样式 */
+.current-song {
+    background: #f5edff !important;
+    border-left: 4px solid #8e44ad !important;
 }
 
 .dark-theme footer p {
@@ -692,11 +699,6 @@ footer {
     color: #888;
     font-size: 12px;
     padding: 10px 0;
-}
-
-.current-song {
-    background: #f5edff;
-    border-left: 4px solid #6a1b9a;
 }
 
 /* 响应式设计 */
