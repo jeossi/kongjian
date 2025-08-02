@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="icon" href="Aje128.png" type="image/png" sizes="32x32">
+    <title>图片处理工具</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+
+        html, body {
+            height: 100%;
+        }
+
+        body {
+            background: #f9f9f9;
+            color: #333;
+            min-height: 100%;
+            overflow-x: hidden;
+            position: relative;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .wrapper {
+            max-width: 1000px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 10;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            flex: 1;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px 0;
+        }
+
+        .header h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            color: #4CAF50;
+            text-shadow: 0 2px 4px rgba(76, 175, 80, 0.1);
+        }
+
+        .header p {
+            color: #757575;
+            font-size: 1.1rem;
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .category-title {
+            display: block;
+            font-size: 1.5rem;
+            color: #4CAF50;
+            font-weight: 700;
+            margin: 30px 0 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e8f5e9;
+            position: relative;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .category-title::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            bottom: -2px;
+            width: 80px;
+            height: 2px;
+            background: #4CAF50;
+        }
+
+        .resource-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .link-item {
+            display: inline-block;
+            background: #ffffff;
+            padding: 16px 20px;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            color: #333;
+            text-decoration: none !important;
+            position: relative;
+            overflow: hidden;
+            border-left: 4px solid #4CAF50;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+            min-width: 300px;
+        }
+
+        .link-item::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, rgba(76, 175, 80, 0.05), transparent);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .link-item:hover {
+            background: #f1f8e9;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.1);
+        }
+
+        .link-item:hover::before {
+            opacity: 1;
+        }
+
+        .link-item .title {
+            font-weight: 600;
+            font-size: 1.05rem;
+            margin-bottom: 5px;
+            position: relative;
+            color: #388E3C;
+        }
+
+        .link-item .description {
+            font-size: 0.9rem;
+            color: #757575;
+            position: relative;
+        }
+
+        .footer {
+            text-align: center;
+            color: #757575;
+            padding: 25px 15px 15px;
+            font-size: 0.9rem;
+            margin-top: 40px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .footer a {
+            color: #4CAF50;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .link-item {
+            animation: fadeIn 0.5s ease-out forwards;
+            opacity: 0;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.2rem;
+            }
+            
+            .resource-list {
+                gap: 10px;
+            }
+            
+            .link-item {
+                min-width: 100%;
+            }
+            
+            .wrapper {
+                padding: 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .header p {
+                font-size: 1rem;
+            }
+            
+            .category-title {
+                font-size: 1.3rem;
+            }
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #4CAF50;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #388E3C;
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <div class="header">
+            <h1>AI图片处理工具</h1>
+            <p>免费线上裁剪 调整大小 去水印</p>
+        </div>
+		 <!-- AI图片处理工具 -->
+        <div class="category-title"></div>
+        <div class="resource-list">
+		     <a href="https://www.iloveimg.com/zh-cn" target="_blank" class="link-item" style="animation-delay: 0.2s">
+                <div class="title">调整图像大小 裁剪</div>
+                <div class="description">iLoveIMG | 在线免费</div>
+            </a>
+			 <a href="https://aiimageeditor.me/" target="_blank" class="link-item" style="animation-delay: 0.2s">
+                <div class="title">A图片涂抹消除-VPN</div>
+                <div class="description">I Image Editor │在线免费</div>
+            </a>
+			
+			 <a href="https://www.watermarkremover.io/zh" target="_blank" class="link-item" style="animation-delay: 0.2s">
+                <div class="title">AI去除图片水印</div>
+                <div class="description">Watermark Remover | 在线每天限免2张-VPN</div>
+            </a>
+			 <a href="https://www.koukoutu.com/" target="_blank" class="link-item" style="animation-delay: 0.2s">
+                <div class="title">智能抠图</div>
+                <div class="description">抠抠图-永久免费在线智能抠图</div>
+            </a>
+			<a href="https://www.shulijp.com/index.html" target="_blank" class="link-item" style="animation-delay: 0.2s">
+                <div class="title">二维码 颜色对照</div>
+                <div class="description"></div>
+            </a>
+			
+        </div> 
+		  
+		
+    <div class="footer">
+        <p>© 2025 Ajeossi图片处理工具 | 免责声明：本网站仅提供资源导航服务</p>
+        <p>收藏本页面，<a href="#">永不迷路</a> | <a href="#">资源反馈</a></p>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const linkItems = document.querySelectorAll('.link-item');
+            linkItems.forEach((item, index) => {
+                const delay = (index % 10) * 0.1;
+                item.style.animationDelay = `${delay}s`;
+            });
+        });
+    </script>
+</body>
+</html>
