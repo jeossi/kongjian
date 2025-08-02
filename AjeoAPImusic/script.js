@@ -228,7 +228,9 @@ function renderSearchResults(results) {
   results.forEach(song => {
     const item = document.createElement('div');
     item.className = 'result-item';
-    if (currentSong && currentSong.n === song.n) {
+    
+    // 检查当前歌曲是否匹配
+    if (currentSong && currentSong.songid === song.songid) {
       item.classList.add('current-song');
     }
 
@@ -238,7 +240,7 @@ function renderSearchResults(results) {
         <div class="result-title">${song.title}</div>
         <div class="result-artist">${song.singer}</div>
       </div>
-      <div class="result-songid">ID: ${song.songid}</div>
+      <div class="result-songid" data-songid="${song.songid}">ID: ${song.songid}</div>
     `;
 
     item.addEventListener('click', () => {
@@ -253,9 +255,8 @@ function renderSearchResults(results) {
 function playSong(song) {
   currentSong = song;
 
-  document.querySelectorAll('.result-item').forEach(item => {
-    item.classList.remove('current-song');
-  });
+  // 更新搜索结果列表中的高亮
+  highlightCurrentSong(song);
 
   songTitle.textContent = song.title;
   songArtist.textContent = song.singer;
@@ -280,6 +281,31 @@ function playSong(song) {
       console.error('歌曲详情错误:', error);
       lyricsContent.textContent = "加载歌曲详情失败";
     });
+}
+
+// 高亮当前播放的歌曲并滚动到视图
+function highlightCurrentSong(song) {
+  // 移除所有高亮
+  document.querySelectorAll('.result-item').forEach(item => {
+    item.classList.remove('current-song');
+  });
+  
+  // 找到当前歌曲的元素并添加高亮
+  const items = document.querySelectorAll('.result-item');
+  let currentItem = null;
+  
+  items.forEach(item => {
+    const songId = item.querySelector('.result-songid').dataset.songid;
+    if (songId == song.songid) {
+      item.classList.add('current-song');
+      currentItem = item;
+    }
+  });
+  
+  // 滚动到当前歌曲
+  if (currentItem) {
+    currentItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
 }
 
 // 更新播放器
@@ -544,7 +570,7 @@ function playNextSong() {
   if (!currentSearchResults || currentSearchResults.length === 0) return;
 
   const currentIndex = currentSearchResults.findIndex(song =>
-    currentSong && song.n === currentSong.n
+    currentSong && song.songid === currentSong.songid
   );
 
   if (currentIndex === -1) return;
@@ -563,7 +589,7 @@ function playPrevSong() {
   if (!currentSearchResults || currentSearchResults.length === 0) return;
 
   const currentIndex = currentSearchResults.findIndex(song =>
-    currentSong && song.n === currentSong.n
+    currentSong && song.songid === currentSong.songid
   );
 
   if (currentIndex === -1) return;
