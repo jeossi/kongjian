@@ -194,9 +194,10 @@
 
         .book-cover {
             width: 100%;
-            height: 200px;
-            object-fit: cover; /* 修复1：改为cover填充容器 */
-            background-color: rgba(0, 0, 0, 0.2);
+            height: 250px;
+            object-fit: contain;
+            object-position: left;
+            background-color: var(--bg-secondary);
             padding: 5px;
         }
 
@@ -245,7 +246,7 @@
             color: var(--accent-color);
             font-size: 32px;
             cursor: pointer;
-            margin-right: 15px;
+            margin-right: 30px; /* 增大右边距以增加与图片的距离 */
             transition: var(--transition);
             width: 50px;
             height: 50px;
@@ -265,18 +266,21 @@
             gap: 25px;
             align-items: center;
             flex: 1;
+			justify-content: flex-start; /*靠左对齐 */
         }
 
         .book-large-cover {
-            width: 150px;
+            width: 200px;
             height: 200px;
             border-radius: 10px;
             object-fit: cover;
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+			margin-left: 20px; /*与箭头保持50px间距 */
         }
 
         .book-meta {
             flex: 1;
+            text-align: left;
         }
 
         .book-meta-title {
@@ -292,7 +296,7 @@
             margin-bottom: 8px;
         }
 
-        /* 播放器样式 - 修复布局 */
+        /* 播放器样式 */
         .player-container {
             background: var(--bg-tertiary);
             border-radius: var(--card-radius);
@@ -305,7 +309,7 @@
         /* 代理指示器上移 */
         .proxy-indicator {
             position: absolute;
-            top: 5px; /* 修复2：上移5px */
+            top: -1px;
             right: 10px;
             background: rgba(0, 0, 0, 0.5);
             color: white;
@@ -428,12 +432,18 @@
             background: rgba(255, 107, 107, 0.2);
             color: var(--text-primary);
             border: none;
-            padding: 3px 10px;
-            border-radius: 20px;
+            border-radius: 50%;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 14px;
             transition: var(--transition);
-            min-width: 70px;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 5px;
+            line-height: 1.2;
         }
 
         .speed-btn:hover {
@@ -590,10 +600,9 @@
 
             .controls-row {
                 flex-direction: row;
-                gap: 8px;
+                gap: 15px;
                 overflow-x: auto;
                 justify-content: center;
-                /* 修复3：按钮布局优化 */
                 flex-wrap: wrap;
                 padding: 10px 0;
                 justify-content: space-evenly;
@@ -601,8 +610,7 @@
 
             .main-controls {
                 flex-wrap: nowrap;
-                gap: 8px;
-                /* 修复3：按钮居中 */
+                gap: 15px;
                 justify-content: center;
                 width: 100%;
             }
@@ -611,7 +619,6 @@
                 display: flex;
                 align-items: center;
                 margin: 0;
-                /* 修复3：按钮间距 */
                 flex: 1;
                 justify-content: center;
             }
@@ -621,9 +628,10 @@
             }
 
             .speed-btn {
-                padding: 3px 8px;
                 font-size: 14px;
-                min-width: 60px;
+                min-width: 40px;
+                width: 40px;
+                height: 40px;
             }
 
             .chapter-item {
@@ -645,26 +653,29 @@
                 transform: translate(-50%, -50%);
                 z-index: 9999;
             }
+			.book-large-cover {
+        align-self: flex-start;
+        margin-left: 50px;
+    }
         }
 
         @media (max-width: 480px) {
             .main-controls {
                 gap: 5px;
-                /* 修复3：按钮大小调整 */
                 width: 100%;
                 justify-content: space-between;
             }
 
             .control-btn {
-                width: 44px;  /* 增大按钮尺寸 */
-                height: 44px;
-                font-size: 20px;  /* 增大图标尺寸 */
+                width: 40px;
+                height: 40px;
+                font-size: 28px;
             }
 
             .play-btn {
-                width: 44px;
-                height: 44px;
-                font-size: 24px;  /* 增大播放图标 */
+                width: 40px;
+                height: 40px;
+                font-size: 28px;
             }
 
             .volume-bar {
@@ -672,22 +683,12 @@
             }
 
             .speed-btn {
-                padding: 3px 6px;
-                min-width: 55px;
+                min-width: 40px;
                 font-size: 12px;
             }
 
-            .speed-menu {
-                position: fixed;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                z-index: 9999;
-            }
-            
-            /* 修复3：按钮布局优化 */
             .controls-row {
-                gap: 5px;
+                gap: 15px;
             }
             
             .volume-controls {
@@ -801,7 +802,7 @@
 
                     <div class="speed-control">
                         <button class="speed-btn" id="speed-btn">
-                            <i class="fas fa-running"></i> 倍速
+                            <i class="fas fa-running"></i><span>倍速</span>
                         </button>
                         <div class="speed-menu" id="speed-menu">
                             <div class="speed-option" data-speed="0.5">0.5x</div>
@@ -847,9 +848,14 @@
             searchResults: [],
             playbackRate: 1.0,
             currentProxyIndex: 0,
-            proxies: [
-                'https://api.codetabs.com/v1/proxy?quest=',
-                'https://tingshu-cors-proxy.ajeossiqq.workers.dev/'
+            lastSuccessfulProxyIndex: -1, // 记录上次成功的代理索引
+            retryCount: 0,
+            retryLoop: 0, // 0: 第一轮, 1: 第二轮
+            retryTimer: null,
+            proxies: [ 
+			    'https://api.codetabs.com/v1/proxy?quest=',
+                'https://jeotv.dpdns.org/',
+                
             ]
         };
 
@@ -950,7 +956,7 @@
                     const speed = parseFloat(option.dataset.speed);
                     state.audio.playbackRate = speed;
                     state.playbackRate = speed;
-                    dom.speedBtn.innerHTML = `<i class="fas fa-running"></i> ${speed}x`;
+                    dom.speedBtn.innerHTML = `<i class="fas fa-running"></i><span>${speed}x</span>`;
                     dom.speedMenu.classList.remove('show');
                 });
             });
@@ -1054,6 +1060,9 @@
                     state.currentBook = data;
                     state.chapters = data.data;
                     state.currentProxyIndex = 0; // 重置代理索引
+                    state.retryCount = 0; // 重置重试计数器
+                    state.lastSuccessfulProxyIndex = -1; // 重置上次成功的代理
+                    state.retryLoop = 0; // 重置重试轮次
                     renderPlayerPage();
                     showPage('player');
 
@@ -1107,15 +1116,45 @@
             return state.proxies[state.currentProxyIndex] + encodeURIComponent(url);
         }
 
-        // 尝试下一个代理
+        // 尝试下一个代理（添加5秒延迟）
         function tryNextProxy() {
-            state.currentProxyIndex = (state.currentProxyIndex + 1) % state.proxies.length;
-            dom.proxyIndicator.textContent = `代理: ${state.currentProxyIndex + 1}/${state.proxies.length}`;
-            
-            if (state.currentChapterIndex >= 0 && state.currentChapterIndex < state.chapters.length) {
-                const chapter = state.chapters[state.currentChapterIndex];
-                playChapterAudio(chapter);
+            // 清除之前的重试定时器
+            if (state.retryTimer) {
+                clearTimeout(state.retryTimer);
+                state.retryTimer = null;
             }
+            
+            // 增加重试计数器
+            state.retryCount++;
+            
+            // 如果超过重试次数限制（代理数量的两倍），停止重试
+            if (state.retryCount > state.proxies.length * 2) {
+                console.log('超过最大重试次数，停止尝试');
+                dom.proxyIndicator.textContent = '代理: 所有尝试失败';
+                return;
+            }
+            
+            // 计算延迟时间：第一轮8秒，第二轮12秒
+            const delay = state.retryLoop === 0 ? 8000 : 12000;
+            
+            // 设置延迟后重试
+            state.retryTimer = setTimeout(() => {
+                console.log(`尝试下一个代理 (${state.retryCount})`);
+                
+                // 如果当前重试次数超过代理数量，进入第二轮
+                if (state.retryCount > state.proxies.length) {
+                    state.retryLoop = 1;
+                }
+                
+                // 切换到下一个代理
+                state.currentProxyIndex = (state.currentProxyIndex + 1) % state.proxies.length;
+                dom.proxyIndicator.textContent = `代理: ${state.currentProxyIndex + 1}/${state.proxies.length} (${state.retryLoop+1}轮)`;
+                
+                if (state.currentChapterIndex >= 0 && state.currentChapterIndex < state.chapters.length) {
+                    const chapter = state.chapters[state.currentChapterIndex];
+                    playChapterAudio(chapter);
+                }
+            }, delay);
         }
 
         // 播放章节音频
@@ -1133,8 +1172,14 @@
                     state.audio.playbackRate = state.playbackRate;
                     playAudio();
                     
-                    dom.proxyIndicator.textContent = `代理: ${state.currentProxyIndex + 1}/${state.proxies.length}`;
+                    // 记录成功的代理索引
+                    state.lastSuccessfulProxyIndex = state.currentProxyIndex;
+                    dom.proxyIndicator.textContent = `代理: ${state.currentProxyIndex + 1}/${state.proxies.length} (成功)`;
                     console.log(`使用代理 ${state.proxies[state.currentProxyIndex]} 播放音频`);
+                    
+                    // 重置重试计数器
+                    state.retryCount = 0;
+                    state.retryLoop = 0;
                 } else {
                     throw new Error('获取音频URL失败');
                 }
@@ -1146,12 +1191,29 @@
 
         // 播放章节
         async function playChapter(index) {
+            // 停止当前播放
+            pauseAudio();
+            state.audio.src = '';
+            
+            // 重置重试状态
+            state.retryCount = 0;
+            state.retryLoop = 0;
+            
+            // 设置新章节
             state.currentChapterIndex = index;
             const chapter = state.chapters[index];
             
             if (!chapter) return;
             
-            tryNextProxy();
+            // 如果有上次成功的代理，优先使用
+            if (state.lastSuccessfulProxyIndex !== -1) {
+                state.currentProxyIndex = state.lastSuccessfulProxyIndex;
+                dom.proxyIndicator.textContent = `代理: ${state.currentProxyIndex + 1}/${state.proxies.length} (重用)`;
+                playChapterAudio(chapter);
+            } else {
+                // 否则开始代理尝试
+                tryNextProxy();
+            }
 
             // 更新章节列表选中状态
             document.querySelectorAll('.chapter-item').forEach((item, i) => {
