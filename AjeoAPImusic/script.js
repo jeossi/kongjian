@@ -57,7 +57,7 @@ const FALLBACK_IMAGE = '../mm.jpg';
 const PROXY_SERVERS = [
   'https://api.codetabs.com/v1/proxy?quest=', // 新增代理
   'https://jeotv.dpdns.org/',
-  'https://api.allorigins.win/raw?url='
+  'https://tingshu-cors-proxy.ajeossiqq.workers.dev/'
 ];
 
 // 将任意图片 URL 转换为 HTTPS 代理地址
@@ -73,7 +73,7 @@ document.addEventListener('DOMContentLoaded', function () {
   document.documentElement.classList.add('dark-theme');
   
   renderHotTags();
-  searchMusic('蛋蛋');
+  searchMusic('窝窝');
 
   // 循环按钮状态更新
   loopBtn.addEventListener('click', () => {
