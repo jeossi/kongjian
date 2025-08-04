@@ -89,16 +89,15 @@ document.addEventListener('DOMContentLoaded', () => {
     loopMode ? (audioPlayer.currentTime = 0, audioPlayer.play()) : playNextSong();
   });
   audioPlayer.addEventListener('error', (e) => {
-  console.error('播放器错误:', e);
-  if (e.target.error.code === 4) {
-    // 延迟 1.5 秒判断是否真的加载失败
-    setTimeout(() => {
-      if (audioPlayer.error && audioPlayer.error.code === 4 && audioPlayer.readyState < 2) {
-        alert('音频加载失败，请尝试其他歌曲');
-      }
-    }, 1500);
-  }
-});
+    console.error('播放器错误:', e);
+    if (e.target.error.code === 4) {
+      setTimeout(() => {
+        if (audioPlayer.error && audioPlayer.error.code === 4 && audioPlayer.readyState < 2) {
+          alert('音频加载失败，请尝试其他歌曲');
+        }
+      }, 6000);
+    }
+  });
 
   progressContainer.addEventListener('click', setProgress);
   detailBtn.addEventListener('click', () => {
@@ -155,7 +154,7 @@ function renderSearchResults(results) {
   currentSearchResults.forEach(song => {
     const item = document.createElement('div');
     item.className = 'result-item';
-    if (currentSong && currentSong.songid === song.songid) item.classList.add('current-song');
+    item.dataset.songid = song.songid;
     item.innerHTML = `
       <div class="result-number">${song.n}</div>
       <div class="result-details">
@@ -193,16 +192,12 @@ function playSong(song) {
 function highlightCurrentSong(song) {
   document.querySelectorAll('.result-item').forEach(i => i.classList.remove('current-song'));
   const items = document.querySelectorAll('.result-item');
-  let target = null;
-  items.forEach(i => {
-    if (i.querySelector('.result-title').textContent === song.title) {
-      i.classList.add('current-song');
-      target = i;
+  items.forEach(item => {
+    if (item.dataset.songid === song.songid) {
+      item.classList.add('current-song');
+      item.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
   });
-  if (target) {
-    target.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  }
 }
 
 async function updatePlayer(songDetail) {
@@ -274,12 +269,14 @@ function updateProgress() {
   durationEl.textContent = formatTime(duration);
   syncLyrics(currentTime);
 }
+
 function setProgress(e) {
   const width = this.clientWidth;
   const clickX = e.offsetX;
   const duration = audioPlayer.duration;
   audioPlayer.currentTime = (clickX / width) * duration;
 }
+
 function formatTime(sec) {
   if (isNaN(sec)) return '00:00';
   const m = Math.floor(sec / 60);
@@ -324,6 +321,7 @@ function toggleMute() {
   isMuted = !isMuted;
   muteBtn.classList.toggle('muted', isMuted);
 }
+
 function setVolume() {
   audioPlayer.volume = volumeSlider.value;
   isMuted = audioPlayer.volume === 0;
@@ -339,6 +337,7 @@ function playNextSong() {
   const next = currentSearchResults[(idx + 1) % currentSearchResults.length];
   playSong(next);
 }
+
 function playPrevSong() {
   if (!currentSearchResults.length) return;
   const idx = currentSearchResults.findIndex(s => currentSong && s.songid === currentSong.songid);
