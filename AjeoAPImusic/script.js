@@ -1,41 +1,39 @@
-// script.js
+// 完整修复版 script.js
 const hotKeywords = [
-  "王佳音", "鱼蛋","窝窝", "艺凌", "洋澜", "任夏", "魏佳艺", "韩小欠", "单依纯", "DJ", "林宥嘉",
-  "喝茶", "古筝", "助眠", "热歌", "热门", "新歌", "飙升", "流行",
-  "治愈房车", "周杰伦", "林俊杰", "邓紫棋", "陈奕迅", "汪苏泷",
-  "经典老歌", "薛之谦", "吴亦凡", "刀郎", "跳楼机",
-   "周深", "王子健", "Beyond",
-  "五月天", "伍佰", "王一佳", "王菲", "陶喆",
-  "七月上", "于春洋", "搀扶", "周传雄",
-  "张杰", "半吨兄弟", "张学友"
+  "王佳音","鱼蛋","窝窝","艺凌","洋澜","任夏","魏佳艺","韩小欠","单依纯","DJ","林宥嘉",
+  "喝茶","古筝","助眠","热歌","热门","新歌","飙升","流行",
+  "治愈房车","周杰伦","林俊杰","邓紫棋","陈奕迅","汪苏泷",
+  "经典老歌","薛之谦","吴亦凡","刀郎","跳楼机",
+  "周深","王子健","Beyond","五月天","伍佰","王一佳","王菲","陶喆",
+  "七月上","于春洋","搀扶","周传雄","张杰","半吨兄弟","张学友"
 ];
 
-const searchInput = document.getElementById('searchInput');
-const searchBtn = document.getElementById('searchBtn');
-const hotSearchPanel = document.getElementById('hotSearchPanel');
-const hotTags = document.getElementById('hotTags');
-const albumCover = document.getElementById('albumCover');
-const songTitle = document.getElementById('songTitle');
-const songArtist = document.getElementById('songArtist');
-const audioPlayer = document.getElementById('audioPlayer');
-const playBtn = document.getElementById('playBtn');
-const pauseBtn = document.getElementById('pauseBtn');
-const prevBtn = document.getElementById('prevBtn');
-const nextBtn = document.getElementById('nextBtn');
-const loopBtn = document.getElementById('loopBtn');
-const progressBar = document.getElementById('progressBar');
+const searchInput       = document.getElementById('searchInput');
+const searchBtn         = document.getElementById('searchBtn');
+const hotSearchPanel    = document.getElementById('hotSearchPanel');
+const hotTags           = document.getElementById('hotTags');
+const albumCover        = document.getElementById('albumCover');
+const songTitle         = document.getElementById('songTitle');
+const songArtist        = document.getElementById('songArtist');
+const audioPlayer       = document.getElementById('audioPlayer');
+const playBtn           = document.getElementById('playBtn');
+const pauseBtn          = document.getElementById('pauseBtn');
+const prevBtn           = document.getElementById('prevBtn');
+const nextBtn           = document.getElementById('nextBtn');
+const loopBtn           = document.getElementById('loopBtn');
+const progressBar       = document.getElementById('progressBar');
 const progressContainer = document.getElementById('progressContainer');
-const currentTimeEl = document.getElementById('currentTime');
-const durationEl = document.getElementById('duration');
-const lyricsContainer = document.getElementById('lyricsContainer');
-const lyricsContent = document.getElementById('lyricsContent');
-const expandLyrics = document.getElementById('expandLyrics');
-const resultsList = document.getElementById('resultsList');
+const currentTimeEl     = document.getElementById('currentTime');
+const durationEl        = document.getElementById('duration');
+const lyricsContainer   = document.getElementById('lyricsContainer');
+const lyricsContent     = document.getElementById('lyricsContent');
+const expandLyrics      = document.getElementById('expandLyrics');
+const resultsList       = document.getElementById('resultsList');
 const downloadLyricsBtn = document.getElementById('downloadLyricsBtn');
-const downloadSongBtn = document.getElementById('downloadSongBtn');
-const detailBtn = document.getElementById('detailBtn');
-const muteBtn = document.getElementById('muteBtn');
-const volumeSlider = document.getElementById('volumeSlider');
+const downloadSongBtn   = document.getElementById('downloadSongBtn');
+const detailBtn         = document.getElementById('detailBtn');
+const muteBtn           = document.getElementById('muteBtn');
+const volumeSlider      = document.getElementById('volumeSlider');
 
 let currentSong = null;
 let currentSearchResults = [];
@@ -70,8 +68,8 @@ document.addEventListener('DOMContentLoaded', () => {
   loopBtn.classList.toggle('active', loopMode);
   muteBtn.classList.toggle('muted', isMuted);
 
-  searchInput.addEventListener('focus', () => { hotSearchPanel.style.display = 'block'; });
-  searchInput.addEventListener('blur', () => { setTimeout(() => { hotSearchPanel.style.display = 'none'; }, 200); });
+  searchInput.addEventListener('focus', () => hotSearchPanel.style.display = 'block');
+  searchInput.addEventListener('blur', () => setTimeout(() => hotSearchPanel.style.display = 'none', 200));
 
   searchBtn.addEventListener('click', () => { const k = searchInput.value.trim(); if (k) searchMusic(k); });
   searchInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') { const k = searchInput.value.trim(); if (k) searchMusic(k); } });
@@ -82,12 +80,10 @@ document.addEventListener('DOMContentLoaded', () => {
     expandLyrics.textContent = lyricsExpanded ? '收起歌词' : '展开全部歌词';
   });
 
-  playBtn.addEventListener('click', () => { audioPlayer.play(); });
-  pauseBtn.addEventListener('click', () => { audioPlayer.pause(); });
+  playBtn.addEventListener('click', () => audioPlayer.play());
+  pauseBtn.addEventListener('click', () => audioPlayer.pause());
   audioPlayer.addEventListener('timeupdate', updateProgress);
-  audioPlayer.addEventListener('ended', () => {
-    loopMode ? (audioPlayer.currentTime = 0, audioPlayer.play()) : playNextSong();
-  });
+  audioPlayer.addEventListener('ended', () => loopMode ? (audioPlayer.currentTime = 0, audioPlayer.play()) : playNextSong());
   audioPlayer.addEventListener('error', (e) => {
     console.error('播放器错误:', e);
     if (e.target.error.code === 4) {
@@ -95,7 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (audioPlayer.error && audioPlayer.error.code === 4 && audioPlayer.readyState < 2) {
           alert('音频加载失败，请尝试其他歌曲');
         }
-      }, 6000);
+      }, 30000);
     }
   });
 
@@ -135,9 +131,7 @@ function searchMusic(keyword) {
     .then(r => r.json())
     .then(data => {
       renderSearchResults(data);
-      if (data && data.length > 0) {
-        playSong(data[0]);
-      }
+      if (data && data.length > 0) playSong(data[0]);
     })
     .catch(() => {
       resultsList.innerHTML = '<div class="result-item" style="justify-content:center;color:#888"><i class="fas fa-exclamation-triangle"></i> 搜索失败，请稍后重试</div>';
@@ -269,14 +263,12 @@ function updateProgress() {
   durationEl.textContent = formatTime(duration);
   syncLyrics(currentTime);
 }
-
 function setProgress(e) {
   const width = this.clientWidth;
   const clickX = e.offsetX;
   const duration = audioPlayer.duration;
   audioPlayer.currentTime = (clickX / width) * duration;
 }
-
 function formatTime(sec) {
   if (isNaN(sec)) return '00:00';
   const m = Math.floor(sec / 60);
@@ -321,7 +313,6 @@ function toggleMute() {
   isMuted = !isMuted;
   muteBtn.classList.toggle('muted', isMuted);
 }
-
 function setVolume() {
   audioPlayer.volume = volumeSlider.value;
   isMuted = audioPlayer.volume === 0;
@@ -337,7 +328,6 @@ function playNextSong() {
   const next = currentSearchResults[(idx + 1) % currentSearchResults.length];
   playSong(next);
 }
-
 function playPrevSong() {
   if (!currentSearchResults.length) return;
   const idx = currentSearchResults.findIndex(s => currentSong && s.songid === currentSong.songid);
