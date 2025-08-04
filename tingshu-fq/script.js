@@ -11,7 +11,7 @@ const state = {
     retryCount: 0,
     maxRetry: 2,
     retryTimer: null,
-    proxy: 'https://jeotv.dpdns.org/',
+    proxy: 'https://ajeo.cc/',
 };
 
 // 防抖锁
