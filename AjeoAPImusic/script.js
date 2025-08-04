@@ -89,9 +89,16 @@ document.addEventListener('DOMContentLoaded', () => {
     loopMode ? (audioPlayer.currentTime = 0, audioPlayer.play()) : playNextSong();
   });
   audioPlayer.addEventListener('error', (e) => {
-    console.error('播放器错误:', e);
-    if (e.target.error.code === 4) alert('音频加载失败，请尝试其他歌曲');
-  });
+  console.error('播放器错误:', e);
+  if (e.target.error.code === 4) {
+    // 延迟 1.5 秒判断是否真的加载失败
+    setTimeout(() => {
+      if (audioPlayer.error && audioPlayer.error.code === 4 && audioPlayer.readyState < 2) {
+        alert('音频加载失败，请尝试其他歌曲');
+      }
+    }, 1500);
+  }
+});
 
   progressContainer.addEventListener('click', setProgress);
   detailBtn.addEventListener('click', () => {
