@@ -1,7 +1,7 @@
 // script.js
 // 热门搜索标签
 const hotKeywords = [
- "王佳音", "鱼蛋", "艺凌", "洋澜","任夏", "魏佳艺", "韩小欠", "单依纯","DJ", "王晴",
+ "王佳音", "鱼蛋", "艺凌", "洋澜","任夏", "魏佳艺", "韩小欠", "单依纯","DJ", "林又嘉",
    "喝茶","古筝", "助眠","热歌","热门", "新歌","飙升","流行",
   "治愈房车","周杰伦", "林俊杰", "邓紫棋", "陈奕迅", "汪苏泷",
   "经典老歌", "薛之谦", "吴亦凡", "刀郎", "跳楼机",
@@ -55,9 +55,9 @@ const FALLBACK_IMAGE = '../mm.jpg';
 
 // 代理服务器列表（优先使用自建代理，然后是公共代理）
 const PROXY_SERVERS = [
-  'https://api.codetabs.com/v1/proxy?quest=', // 新增代理
-  'https://jeotv.dpdns.org/',
-  'https://tingshu-cors-proxy.ajeossiqq.workers.dev/'
+
+  'https://ajeo.cc/'
+
 ];
 
 // 将任意图片 URL 转换为 HTTPS 代理地址
