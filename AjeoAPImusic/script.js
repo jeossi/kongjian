@@ -145,19 +145,32 @@ function renderSearchResults(results) {
     resultsList.innerHTML = '<div class="result-item" style="justify-content:center;color:#888"><i class="fas fa-music"></i> 未找到相关歌曲</div>';
     return;
   }
-  currentSearchResults.forEach(song => {
+  
+  currentSearchResults.forEach((song, index) => {
     const item = document.createElement('div');
     item.className = 'result-item';
-    item.dataset.songid = song.songid;
+    item.dataset.n = song.n; // 使用歌曲的 n 字段作为唯一标识符
+    
+    // 如果当前歌曲存在且匹配，添加高亮类
+    if (currentSong && currentSong.n === song.n) {
+      item.classList.add('current-song');
+    }
+    
     item.innerHTML = `
-      <div class="result-number">${song.n}</div>
+      <div class="result-number">${index + 1}</div>
       <div class="result-details">
         <div class="result-title">${song.title}</div>
         <div class="result-artist">${song.singer}</div>
-      </div>`;
+      </div>
+      <div class="result-songid">ID:${song.n}</div>`;
     item.addEventListener('click', () => playSong(song));
     resultsList.appendChild(item);
   });
+  
+  // 渲染完成后再次尝试高亮当前歌曲
+  if (currentSong) {
+    highlightCurrentSong(currentSong);
+  }
 }
 
 function playSong(song) {
@@ -185,13 +198,36 @@ function playSong(song) {
 
 function highlightCurrentSong(song) {
   document.querySelectorAll('.result-item').forEach(i => i.classList.remove('current-song'));
+  
   const items = document.querySelectorAll('.result-item');
+  let found = false;
+  
   items.forEach(item => {
-    if (item.dataset.songid === song.songid) {
+    if (parseInt(item.dataset.n) === song.n) {
       item.classList.add('current-song');
-      item.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      found = true;
+      
+      // 确保当前歌曲在可视区域内
+      const container = resultsList;
+      const itemTop = item.offsetTop;
+      const itemHeight = item.offsetHeight;
+      const containerHeight = container.clientHeight;
+      const containerScrollTop = container.scrollTop;
+      
+      if (itemTop < containerScrollTop) {
+        // 如果当前歌曲在可视区域上方，滚动到顶部对齐
+        container.scrollTop = itemTop - 10;
+      } else if (itemTop + itemHeight > containerScrollTop + containerHeight) {
+        // 如果当前歌曲在可视区域下方，滚动到底部对齐
+        container.scrollTop = itemTop - containerHeight + itemHeight + 10;
+      }
     }
   });
+  
+  // 如果未找到匹配项，可能是搜索结果还未渲染
+  if (!found) {
+    setTimeout(() => highlightCurrentSong(song), 100);
+  }
 }
 
 async function updatePlayer(songDetail) {
@@ -323,14 +359,14 @@ function setVolume() {
 
 function playNextSong() {
   if (!currentSearchResults.length) return;
-  const idx = currentSearchResults.findIndex(s => currentSong && s.songid === currentSong.songid);
+  const idx = currentSearchResults.findIndex(s => currentSong && s.n === currentSong.n);
   if (idx === -1) return;
   const next = currentSearchResults[(idx + 1) % currentSearchResults.length];
   playSong(next);
 }
 function playPrevSong() {
   if (!currentSearchResults.length) return;
-  const idx = currentSearchResults.findIndex(s => currentSong && s.songid === currentSong.songid);
+  const idx = currentSearchResults.findIndex(s => currentSong && s.n === currentSong.n);
   if (idx === -1) return;
   const prev = currentSearchResults[(idx - 1 + currentSearchResults.length) % currentSearchResults.length];
   playSong(prev);
