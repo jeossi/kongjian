@@ -634,6 +634,7 @@ header {
 .results-list {
     max-height: 400px;
     overflow-y: auto;
+    scroll-behavior: smooth; /* 添加平滑滚动效果 */
 }
 
 /* 搜索结果条目 - 紧凑布局 */
