@@ -17,6 +17,7 @@ const state = {
 // 防抖锁
 let isLoadingAudio = false;
 let lastPlayedChapterId = null;
+let audioTimeout = null;  // 音频加载超时计时器
 
 // ================= DOM 节点 =================
 const dom = {
@@ -279,11 +280,18 @@ function renderPlayerPage() {
 }
 
 // ================= 代理 & 播放 =================
-function proxyUrl(url) { return state.proxy + encodeURIComponent(url); }
+// ================= 音频加载优化 =================
 async function playChapterAudio(chapter) {
     if (isLoadingAudio || lastPlayedChapterId === chapter.item_id) return;
     isLoadingAudio = true;
     lastPlayedChapterId = chapter.item_id;
+
+    // 清除之前的重试定时器
+    if (state.retryTimer) {
+        clearTimeout(state.retryTimer);
+        state.retryTimer = null;
+    }
+
     try {
         const res = await fetch(`https://api.cenguigui.cn/api/tingshu/?item_id=${chapter.item_id}`);
         const data = await res.json();
@@ -291,12 +299,33 @@ async function playChapterAudio(chapter) {
             state.audio.src = proxyUrl(data.data.url);
             state.audio.load();
             state.audio.playbackRate = state.playbackRate;
+            
+            // 设置加载超时（10秒）
+            audioTimeout = setTimeout(() => {
+                if (!state.isPlaying) {
+                    console.warn('音频加载超时，触发重试');
+                    tryRetry();
+                }
+            }, 10000);
+            
+            // 加载成功清除超时
+            state.audio.addEventListener('canplay', () => {
+                if (audioTimeout) {
+                    clearTimeout(audioTimeout);
+                    audioTimeout = null;
+                }
+            });
+            
             playAudio();
             updateProxyIndicator('success');
             state.retryCount = 0;
         } else throw new Error('获取音频URL失败');
     } catch (err) {
         console.error(err);
+        if (audioTimeout) {
+            clearTimeout(audioTimeout);
+            audioTimeout = null;
+        }
         if (state.audio.currentTime === 0) tryRetry();
     } finally {
         isLoadingAudio = false;
@@ -318,8 +347,15 @@ function tryRetry() {
     if (state.retryCount < state.maxRetry) {
         state.retryCount++;
         updateProxyIndicator('retry');
-        state.retryTimer = setTimeout(() => playChapterAudio(state.chapters[state.currentChapterIndex]), 10000);
-    } else updateProxyIndicator('error');
+        // 缩短重试间隔为3秒
+        state.retryTimer = setTimeout(() => {
+            const chapter = state.chapters[state.currentChapterIndex];
+            if (chapter) playChapterAudio(chapter);
+        }, 3000);
+    } else {
+        updateProxyIndicator('error');
+        console.warn('达到最大重试次数，停止重试');
+    }
 }
 
 // ================= 音频控制 =================
