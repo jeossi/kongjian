@@ -1,3 +1,52 @@
+/* 新增样式 */
+.favorite-btn-text {
+    display: inline-block;
+    margin-left: 5px;
+}
+
+.book-btn-text {
+    margin-left: 5px;
+}
+
+/* 修改现有样式 */
+.favorite-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: var(--text-primary);
+    border-radius: 18px;
+    cursor: pointer;
+    transition: var(--transition);
+    padding: 8px 15px;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    height: 36px;
+}
+
+.favorite-btn:hover {
+    background: rgba(255, 107, 107, 0.2);
+    color: var(--accent-color);
+}
+
+.book-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: var(--text-primary);
+    border-radius: 18px;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px 12px;
+    gap: 5px;
+    height: 36px;
+    white-space: nowrap;
+}
+
+/* 保持原有样式不变 */
 :root {
     --bg-primary: #121212;
     --bg-secondary: #1e1e1e;
@@ -69,6 +118,96 @@ body {
     background: linear-gradient(90deg, #ff6b6b, #ffa502);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+}
+
+.header-buttons {
+    display: flex;
+    gap: 15px;
+}
+
+/* 收藏面板 */
+.favorite-panel {
+    position: absolute;
+    top: 100px;
+    right: 20px;
+    background: var(--bg-tertiary);
+    border-radius: var(--card-radius);
+    padding: 20px;
+    z-index: 100;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    display: none;
+    width: 320px;
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.favorite-panel h3 {
+    margin-bottom: 15px;
+    color: var(--accent-color);
+    border-bottom: 1px solid #333;
+    padding-bottom: 10px;
+}
+
+.favorite-item {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    background: var(--bg-secondary);
+    cursor: pointer;
+    transition: var(--transition);
+    position: relative;
+}
+
+.favorite-item:hover {
+    background: rgba(255, 107, 107, 0.1);
+}
+
+.favorite-cover {
+    width: 50px;
+    height: 70px;
+    object-fit: cover;
+    border-radius: 5px;
+    margin-right: 15px;
+}
+
+.favorite-info {
+    flex: 1;
+}
+
+.favorite-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: var(--text-primary);
+}
+
+.favorite-author {
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.remove-favorite {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 16px;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 50%;
+    transition: var(--transition);
+}
+
+.remove-favorite:hover {
+    background: rgba(255, 107, 107, 0.2);
+    color: var(--accent-color);
+}
+
+.no-favorites {
+    text-align: center;
+    padding: 20px;
+    color: var(--text-secondary);
 }
 
 /* 搜索区域样式 */
@@ -213,12 +352,50 @@ body {
 }
 
 .book-intro {
+    display: -webkit-box;
+    -webkit-line-clamp: 5;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
     font-size: 15px;
     margin-top: 15px;
     line-height: 1.5;
     color: #ddd;
-    overflow-y: auto;
     flex: 1;
+}
+
+.book-intro.expanded {
+    display: block;
+    -webkit-line-clamp: unset;
+}
+
+.expand-btn {
+    background: transparent;
+    border: none;
+    color: var(--accent-color);
+    text-align: left;
+    padding: 5px 0;
+    cursor: pointer;
+    font-size: 14px;
+    transition: var(--transition);
+}
+
+.expand-btn:hover {
+    color: var(--accent-hover);
+}
+
+.book-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.book-btn:hover {
+    background: rgba(255, 107, 107, 0.2);
+}
+
+.book-btn.favorited {
+    color: #ffd700;
 }
 
 /* 播放页面样式 */
@@ -365,6 +542,22 @@ body {
     margin: 0 auto;
     gap: 15px;
     white-space: nowrap;
+    overflow-x: auto;
+    padding: 10px 0;
+    min-width: min-content;
+}
+
+.controls-row::-webkit-scrollbar {
+    height: 5px;
+}
+
+.controls-row::-webkit-scrollbar-track {
+    background: var(--progress-bg);
+}
+
+.controls-row::-webkit-scrollbar-thumb {
+    background: var(--accent-color);
+    border-radius: 5px;
 }
 
 .main-controls {
@@ -411,6 +604,7 @@ body {
     display: flex;
     align-items: center;
     gap: 8px;
+    flex-shrink: 0;
 }
 
 .volume-bar {
@@ -419,6 +613,7 @@ body {
     background: var(--progress-bg);
     border-radius: 2px;
     position: relative;
+    flex-shrink: 0;
 }
 
 .volume-level {
@@ -431,6 +626,7 @@ body {
 .speed-control {
     position: relative;
     display: inline-block;
+    flex-shrink: 0;
 }
 
 .speed-btn {
@@ -609,10 +805,9 @@ body {
         flex-direction: row;
         gap: 15px;
         overflow-x: auto;
-        justify-content: center;
-        flex-wrap: wrap;
+        justify-content: flex-start;
+        flex-wrap: nowrap;
         padding: 10px 0;
-        justify-content: space-evenly;
     }
 
     .main-controls {
@@ -631,7 +826,7 @@ body {
     }
 
     .volume-bar {
-        width: 100px;
+        width: 80px;
     }
 
     .speed-btn {
@@ -663,6 +858,15 @@ body {
     .book-large-cover {
         align-self: flex-start;
         margin-left: 1%;
+    }
+    
+    .favorite-panel {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 90%;
+        max-width: 400px;
     }
 }
 
