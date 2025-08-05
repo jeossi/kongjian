@@ -84,16 +84,16 @@ document.addEventListener('DOMContentLoaded', () => {
   pauseBtn.addEventListener('click', () => audioPlayer.pause());
   audioPlayer.addEventListener('timeupdate', updateProgress);
   audioPlayer.addEventListener('ended', () => loopMode ? (audioPlayer.currentTime = 0, audioPlayer.play()) : playNextSong());
-  audioPlayer.addEventListener('error', (e) => {
-    console.error('播放器错误:', e);
-    if (e.target.error.code === 4) {
-      setTimeout(() => {
-        if (audioPlayer.error && audioPlayer.error.code === 4 && audioPlayer.readyState < 2) {
-          alert('音频加载失败，请尝试其他歌曲');
-        }
-      }, 30000);
-    }
-  });
+audioPlayer.addEventListener('error', (e) => {
+  console.error('播放器错误:', e);
+  if (e.target.error.code === 4) {
+    setTimeout(() => {
+      if (audioPlayer.error && audioPlayer.error.code === 4 && audioPlayer.readyState < 2) {
+        console.warn('音频加载失败，请尝试其他歌曲');
+      }
+    }, 180000);
+  }
+});
 
   progressContainer.addEventListener('click', setProgress);
   detailBtn.addEventListener('click', () => {
@@ -206,25 +206,16 @@ function highlightCurrentSong(song) {
     if (parseInt(item.dataset.n) === song.n) {
       item.classList.add('current-song');
       found = true;
-      
-      // 确保当前歌曲在可视区域内
-      const container = resultsList;
-      const itemTop = item.offsetTop;
-      const itemHeight = item.offsetHeight;
-      const containerHeight = container.clientHeight;
-      const containerScrollTop = container.scrollTop;
-      
-      if (itemTop < containerScrollTop) {
-        // 如果当前歌曲在可视区域上方，滚动到顶部对齐
-        container.scrollTop = itemTop - 10;
-      } else if (itemTop + itemHeight > containerScrollTop + containerHeight) {
-        // 如果当前歌曲在可视区域下方，滚动到底部对齐
-        container.scrollTop = itemTop - containerHeight + itemHeight + 10;
-      }
+      // 使用scrollIntoView确保元素在可视区域内
+      item.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+        inline: 'nearest'
+      });
     }
   });
   
-  // 如果未找到匹配项，可能是搜索结果还未渲染
+  // 如果未找到匹配项，延迟重试
   if (!found) {
     setTimeout(() => highlightCurrentSong(song), 100);
   }
