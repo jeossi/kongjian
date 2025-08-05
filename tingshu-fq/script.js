@@ -45,7 +45,10 @@ const dom = {
     volumeLevel: document.getElementById('volume-level'),
     speedBtn: document.getElementById('speed-btn'),
     speedMenu: document.getElementById('speed-menu'),
-    proxyIndicator: document.getElementById('proxy-indicator')
+    proxyIndicator: document.getElementById('proxy-indicator'),
+    favoriteButton: document.getElementById('favorite-button'),
+    favoritePanel: document.getElementById('favorite-panel'),
+    favoriteList: document.getElementById('favorite-list')
 };
 
 // ================= 事件绑定 =================
@@ -80,7 +83,11 @@ function setupEventListeners() {
     });
     state.audio.addEventListener('timeupdate', updateProgressBar);
     state.audio.addEventListener('ended', playNextChapter);
-    state.audio.addEventListener('loadedmetadata', () => dom.totalTime.textContent = formatTime(state.audio.duration));
+    state.audio.addEventListener('loadedmetadata', () => {
+        dom.totalTime.textContent = formatTime(state.audio.duration);
+        // 恢复播放进度
+        restorePlaybackPosition();
+    });
     state.audio.addEventListener('error', () => {
         // 已播放过，不再重试
         if (state.audio.currentTime > 0) {
@@ -99,6 +106,14 @@ function setupEventListeners() {
         } else {
             updateProxyIndicator('error');
             console.warn('达到最大重试次数，停止重试');
+        }
+    });
+    
+    // 收藏按钮事件
+    dom.favoriteButton.addEventListener('click', toggleFavoritePanel);
+    document.addEventListener('click', e => {
+        if (!dom.favoriteButton.contains(e.target) && !dom.favoritePanel.contains(e.target)) {
+            dom.favoritePanel.style.display = 'none';
         }
     });
 }
@@ -185,6 +200,7 @@ function renderSearchResults(books) {
     books.forEach(b => {
         const card = document.createElement('div');
         card.className = 'result-card';
+        const isFavorited = isBookFavorited(b.book_id);
         card.innerHTML = `
             <img src="${b.cover}" alt="${b.title}" class="book-cover">
             <div class="book-info">
@@ -193,8 +209,29 @@ function renderSearchResults(books) {
                 <div class="book-type">分类: ${b.type}</div>
                 <div class="book-status">${b.CntPay}</div>
                 <div class="book-intro">${b.intro}</div>
+                <button class="expand-btn">展开</button>
+                <div class="book-buttons">
+                    <button class="book-btn favorite-book-btn ${isFavorited ? 'favorited' : ''}" 
+                        data-bookid="${b.book_id}" title="${isFavorited ? '已收藏' : '收藏'}">
+                        <i class="${isFavorited ? 'fas' : 'far'} fa-star"></i> 收藏
+                    </button>
+                    <button class="book-btn share-book-btn" data-bookid="${b.book_id}" title="分享">
+                        <i class="fas fa-share-alt"></i> 分享
+                    </button>
+                </div>
             </div>`;
-        card.addEventListener('click', () => loadBookDetails(b.book_id));
+        
+        // 卡片点击事件 - 排除按钮点击
+        card.addEventListener('click', (e) => {
+            if (!e.target.closest('.book-btn') && !e.target.closest('.expand-btn')) {
+                loadBookDetails(b.book_id);
+            }
+        });
+        
+        // 按钮事件
+        card.querySelector('.favorite-book-btn').addEventListener('click', toggleFavorite);
+        card.querySelector('.share-book-btn').addEventListener('click', shareBook);
+        card.querySelector('.expand-btn').addEventListener('click', toggleExpand);
         dom.resultsGrid.appendChild(card);
     });
 }
@@ -210,7 +247,17 @@ async function loadBookDetails(bookId) {
             state.retryCount = 0;
             renderPlayerPage();
             showPage('player');
-            if (state.chapters.length) playChapter(0);
+            if (state.chapters.length) {
+                // 检查是否有保存的进度
+                const savedProgress = getSavedProgress(bookId);
+                if (savedProgress) {
+                    state.currentChapterIndex = savedProgress.chapterIndex;
+                    playChapter(state.currentChapterIndex);
+                    // 设置进度会在音频加载后恢复
+                } else {
+                    playChapter(0);
+                }
+            }
         } else throw new Error('加载书籍详情失败');
     } catch (err) { alert(`加载失败: ${err.message}`); }
 }
@@ -257,6 +304,9 @@ async function playChapterAudio(chapter) {
 }
 function playChapter(index) {
     pauseAudio();
+    // 重置播放进度
+    state.audio.currentTime = 0;
+    updateProgressBar();
     state.audio.src = '';
     state.currentChapterIndex = index;
     state.retryCount = 0;
@@ -282,6 +332,8 @@ function pauseAudio() {
     state.audio.pause();
     state.isPlaying = false;
     dom.playButton.innerHTML = '<i class="fas fa-play"></i>';
+    // 保存播放进度
+    savePlaybackPosition();
 }
 function togglePlay() {
     state.isPlaying ? pauseAudio() : playAudio();
@@ -316,6 +368,169 @@ function formatTime(sec) {
     return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
 }
 
+// ================= 收藏功能 =================
+function toggleFavorite(e) {
+    e.stopPropagation();
+    const btn = e.currentTarget;
+    const bookId = btn.dataset.bookid;
+    
+    const storedFavorites = localStorage.getItem('bookFavorites');
+    let favorites = storedFavorites ? JSON.parse(storedFavorites) : [];
+    
+    const bookIndex = favorites.findIndex(f => f.book_id === bookId);
+    
+    if (bookIndex !== -1) {
+        // 移除收藏
+        favorites.splice(bookIndex, 1);
+        btn.innerHTML = '<i class="far fa-star"></i> 收藏';
+        btn.classList.remove('favorited');
+    } else {
+        // 添加收藏
+        const book = state.searchResults.find(b => b.book_id === bookId);
+        if (book) {
+            favorites.push({
+                book_id: book.book_id,
+                title: book.title,
+                cover: book.cover,
+                author: book.author
+            });
+            btn.innerHTML = '<i class="fas fa-star"></i> 收藏';
+            btn.classList.add('favorited');
+        }
+    }
+    
+    localStorage.setItem('bookFavorites', JSON.stringify(favorites));
+    renderFavorites();
+}
+
+function isBookFavorited(bookId) {
+    const storedFavorites = localStorage.getItem('bookFavorites');
+    if (!storedFavorites) return false;
+    
+    const favorites = JSON.parse(storedFavorites);
+    return favorites.some(f => f.book_id === bookId);
+}
+
+function toggleFavoritePanel(e) {
+    e.stopPropagation();
+    renderFavorites();
+    dom.favoritePanel.style.display = dom.favoritePanel.style.display === 'block' ? 'none' : 'block';
+}
+
+function renderFavorites() {
+    const storedFavorites = localStorage.getItem('bookFavorites');
+    const favorites = storedFavorites ? JSON.parse(storedFavorites) : [];
+    
+    dom.favoriteList.innerHTML = '';
+    
+    if (favorites.length === 0) {
+        dom.favoriteList.innerHTML = '<div class="no-favorites">暂无收藏书籍</div>';
+        return;
+    }
+    
+    favorites.forEach(book => {
+        const item = document.createElement('div');
+        item.className = 'favorite-item';
+        item.innerHTML = `
+            <img src="${book.cover}" alt="${book.title}" class="favorite-cover">
+            <div class="favorite-info">
+                <div class="favorite-title">${book.title}</div>
+                <div class="favorite-author">${book.author}</div>
+            </div>
+            <button class="remove-favorite" data-bookid="${book.book_id}">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        item.addEventListener('click', () => loadBookDetails(book.book_id));
+        item.querySelector('.remove-favorite').addEventListener('click', (e) => {
+            e.stopPropagation();
+            removeFavorite(book.book_id);
+        });
+        dom.favoriteList.appendChild(item);
+    });
+}
+
+function removeFavorite(bookId) {
+    const storedFavorites = localStorage.getItem('bookFavorites');
+    let favorites = storedFavorites ? JSON.parse(storedFavorites) : [];
+    
+    favorites = favorites.filter(f => f.book_id !== bookId);
+    localStorage.setItem('bookFavorites', JSON.stringify(favorites));
+    renderFavorites();
+    
+    // 更新搜索结果中的收藏状态
+    document.querySelectorAll(`.favorite-book-btn[data-bookid="${bookId}"]`).forEach(btn => {
+        btn.innerHTML = '<i class="far fa-star"></i> 收藏';
+        btn.classList.remove('favorited');
+    });
+}
+
+function shareBook(e) {
+    e.stopPropagation();
+    const bookId = e.currentTarget.dataset.bookid;
+    const book = state.searchResults.find(b => b.book_id === bookId);
+    
+    if (book) {
+        const shareText = `${book.title} - 番茄听书\n点击链接收听: ${window.location.href.split('#')[0]}#book_id=${bookId}`;
+        
+        navigator.clipboard.writeText(shareText).then(() => {
+            alert('已复制分享链接，请到微信粘贴分享');
+        }).catch(err => {
+            console.error('复制失败:', err);
+            alert('复制失败，请手动复制链接');
+        });
+    }
+}
+
+// ================= 进度保存 =================
+function savePlaybackPosition() {
+    if (!state.currentBook || !state.audio.duration) return;
+    
+    const progress = {
+        bookId: state.currentBook.book_id,
+        chapterIndex: state.currentChapterIndex,
+        currentTime: state.audio.currentTime,
+        timestamp: Date.now()
+    };
+    
+    localStorage.setItem(`bookProgress_${state.currentBook.book_id}`, JSON.stringify(progress));
+}
+
+function restorePlaybackPosition() {
+    if (!state.currentBook) return;
+    
+    const saved = localStorage.getItem(`bookProgress_${state.currentBook.book_id}`);
+    if (!saved) return;
+    
+    const progress = JSON.parse(saved);
+    if (progress && progress.chapterIndex === state.currentChapterIndex) {
+        state.audio.currentTime = progress.currentTime;
+        updateProgressBar();
+    }
+}
+
+function getSavedProgress(bookId) {
+    const saved = localStorage.getItem(`bookProgress_${bookId}`);
+    if (!saved) return null;
+    
+    return JSON.parse(saved);
+}
+
+// ================= 展开按钮 =================
+function toggleExpand(e) {
+    e.stopPropagation();
+    const btn = e.currentTarget;
+    const intro = btn.previousElementSibling;
+    
+    if (intro.classList.contains('expanded')) {
+        intro.classList.remove('expanded');
+        btn.textContent = '展开';
+    } else {
+        intro.classList.add('expanded');
+        btn.textContent = '收起';
+    }
+}
+
 // ================= 初始化 =================
 function initApp() {
     setupEventListeners();
@@ -323,5 +538,12 @@ function initApp() {
     state.audio.volume = .7;
     updateVolumeUI();
     updateProxyIndicator('init');
+    
+    // 检查URL中是否有书籍ID
+    const hash = window.location.hash;
+    if (hash.startsWith('#book_id=')) {
+        const bookId = hash.split('=')[1];
+        loadBookDetails(bookId);
+    }
 }
 window.addEventListener('DOMContentLoaded', initApp);
