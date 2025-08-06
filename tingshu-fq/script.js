@@ -471,7 +471,7 @@ function shareBook(e) {
     const book = state.searchResults.find(b => b.book_id === bookId);
     
     if (book) {
-        const shareText = `${book.title} - Ajeo提示：\n请勿在微信打开,前往浏览器粘贴收听:\n ${window.location.href.split('#')[0]}#book_id=${bookId}`;
+        const shareText = `${book.title} - Ajeo提示：\n切勿在微信打开,请前往浏览器粘贴收听:\n ${window.location.href.split('#')[0]}#book_id=${bookId}`;
         
         navigator.clipboard.writeText(shareText).then(() => {
             alert('已复制，请到微信粘贴分享');
