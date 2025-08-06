@@ -9,7 +9,7 @@ const state = {
     searchResults: [],
     playbackRate: 1.0,
     retryCount: 0,
-    maxRetry: 2,
+    maxRetry: 1,
     retryTimer: null,
     proxy: 'https://ajeo.cc/',
 };
@@ -102,7 +102,7 @@ function setupEventListeners() {
             state.retryTimer = setTimeout(() => {
                 const chapter = state.chapters[state.currentChapterIndex];
                 if (chapter) playChapterAudio(chapter);
-            }, 10000);
+            }, 6000);
         } else {
             updateProxyIndicator('error');
             console.warn('达到最大重试次数，停止重试');
@@ -157,18 +157,18 @@ function updateProxyIndicator(status) {
     switch (status) {
         case 'success':
             dom.proxyIndicator.classList.add('proxy-success');
-            dom.proxyIndicator.innerHTML = '<i class="fas fa-check"></i>';
+            dom.proxyIndicator.innerHTML = '<i class="fas fa-check"></i>'; //绿色对勾，代理连接成功，请求正常完成。
             break;
         case 'retry':
             dom.proxyIndicator.classList.add('proxy-warning');
-            dom.proxyIndicator.innerHTML = '<i class="fas fa-redo-alt"></i>';
+            dom.proxyIndicator.innerHTML = '<i class="fas fa-redo-alt"></i>'; // 橙色刷新箭头，代理连接暂时失败，正在或需要自动重试
             break;
         case 'error':
             dom.proxyIndicator.classList.add('proxy-error');
-            dom.proxyIndicator.innerHTML = '<i class="fas fa-times"></i>';
+            dom.proxyIndicator.innerHTML = '<i class="fas fa-times"></i>'; //红色叉号，代理连接彻底失败，无法恢复（如认证失败、服务器宕机）
             break;
         default:
-            dom.proxyIndicator.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>';
+            dom.proxyIndicator.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>'; //旋转的圆形加载图标，代理正在连接中或等待响应，尚未有明确的结果
     }
 }
 
@@ -471,10 +471,10 @@ function shareBook(e) {
     const book = state.searchResults.find(b => b.book_id === bookId);
     
     if (book) {
-        const shareText = `${book.title} - 番茄听书\n点击链接收听: ${window.location.href.split('#')[0]}#book_id=${bookId}`;
+        const shareText = `${book.title} - Ajeo提示：\n请勿在微信打开,前往浏览器粘贴收听:\n ${window.location.href.split('#')[0]}#book_id=${bookId}`;
         
         navigator.clipboard.writeText(shareText).then(() => {
-            alert('已复制分享链接，请到微信粘贴分享');
+            alert('已复制，请到微信粘贴分享');
         }).catch(err => {
             console.error('复制失败:', err);
             alert('复制失败，请手动复制链接');
