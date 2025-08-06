@@ -471,15 +471,91 @@ function shareBook(e) {
     const book = state.searchResults.find(b => b.book_id === bookId);
     
     if (book) {
-        const shareText = `${book.title} - Ajeo提示：\n切勿在微信打开,请前往浏览器粘贴收听:\n ${window.location.href.split('#')[0]}#book_id=${bookId}`;
+        const shareText = `【Ajeo提示】：请前往浏览器粘贴【链接】收听 \n  ${book.title} \n 【链接】：\n ${window.location.href.split('#')[0]}#book_id=${bookId}`;
         
-        navigator.clipboard.writeText(shareText).then(() => {
-            alert('已复制，请到微信粘贴分享');
-        }).catch(err => {
+        // 创建一个临时的textarea元素来复制文本
+        const copyToClipboardFallback = (text) => {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';  // 防止页面滚动
+            document.body.appendChild(textarea);
+            textarea.select();
+            
+            try {
+                const successful = document.execCommand('copy');
+                if (!successful) {
+                    throw new Error('复制失败');
+                }
+            } catch (err) {
+                console.error('使用execCommand复制失败:', err);
+                throw err;
+            } finally {
+                document.body.removeChild(textarea);
+            }
+        };
+        
+        try {
+            // 优先使用现代API
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(shareText).then(() => {
+                    showToast('已复制，请到微信粘贴分享');
+                }).catch(() => {
+                    // 如果现代API失败，使用回退方案
+                    copyToClipboardFallback(shareText);
+                    showToast('已复制，请到微信粘贴分享');
+                });
+            } else {
+                // 不支持clipboard API，直接使用回退方案
+                copyToClipboardFallback(shareText);
+                showToast('已复制，请到微信粘贴分享');
+            }
+        } catch (err) {
             console.error('复制失败:', err);
-            alert('复制失败，请手动复制链接');
-        });
+            // 如果所有方法都失败，显示手动复制提示
+            promptManualCopy(shareText);
+        }
     }
+}
+
+// 添加新的辅助函数
+function showToast(message) {
+    const toast = document.createElement('div');
+    toast.className = 'toast-message';
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.classList.add('show');
+    }, 10);
+    
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => {
+            document.body.removeChild(toast);
+        }, 300);
+    }, 3000);
+}
+
+function promptManualCopy(text) {
+    const container = document.createElement('div');
+    container.className = 'manual-copy-container';
+    
+    container.innerHTML = `
+        <div class="manual-copy-box">
+            <h3>请手动复制以下链接</h3>
+            <textarea readonly class="copy-textarea">${text}</textarea>
+            <button class="search-btn close-copy-btn">关闭</button>
+        </div>
+    `;
+    
+    document.body.appendChild(container);
+    
+    const textarea = container.querySelector('.copy-textarea');
+    textarea.select();
+    
+    container.querySelector('.close-copy-btn').addEventListener('click', () => {
+        document.body.removeChild(container);
+    });
 }
 
 // ================= 进度保存 =================
