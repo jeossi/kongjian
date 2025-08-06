@@ -368,7 +368,7 @@ function renderSearchResults(results) {
     const shareBtn = item.querySelector('.share-btn');
     shareBtn.addEventListener('click', () => {
       const shareUrl = generateShareUrl(song);
-      const shareText = `【Ajeo提示】：请前往浏览器粘贴【链接】收听！\n ${song.title} - ${song.singer}\n【链接】：\n${shareUrl}`;
+      const shareText = `【Ajeo提示】：请前往浏览器粘贴<链接>收听！\n ${song.title} - ${song.singer}\n【链接】：\n${shareUrl}`;
       
       navigator.clipboard.writeText(shareText)
         .then(() => {
