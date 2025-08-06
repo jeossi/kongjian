@@ -250,8 +250,9 @@
 
 /* 操作按钮样式 */
 .dark-theme .song-actions .action-btn {
-    background: #3a3a3a;
-    color: #ffd700;
+    background: #4a3b5c; /* 柔和紫灰 */
+    color: #d1b8ff;      /* 淡紫色图标 */
+    transition: all 0.2s ease;
 }
 
 .dark-theme .song-actions .action-btn:hover {
@@ -261,7 +262,7 @@
 
 /* 循环按钮激活状态 */
 .dark-theme .loop-btn.active {
-    background: #7b2cbf;
+    background: #5a4775;
     color: #ffd700;
 }
 
