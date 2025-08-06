@@ -49,7 +49,7 @@ let lastVolume = 1;
 let baseApiUrl = "";
 let currentBlobUrl = null;
 let favorites = JSON.parse(localStorage.getItem('musicFavorites')) || [];
-let currentKeyword = "窝窝"; // 默认搜索关键字
+let isFromShareLink = false; // 标记是否来自分享链接
 
 const PROXY_SERVER = 'https://ajeo.cc/';
 const FALLBACK_IMAGE = '../mm.jpg';
@@ -72,31 +72,45 @@ function handleShareUrl() {
   const songId = getUrlParameter('songId');
   
   if (keyword) {
-    searchInput.value = decodeURIComponent(keyword);
-    currentKeyword = decodeURIComponent(keyword);
+    // 标记为来自分享链接
+    isFromShareLink = true;
     
-    if (songId) {
-      // 延迟执行以确保搜索完成
-      setTimeout(() => {
+    // 设置搜索框和当前关键字
+    searchInput.value = decodeURIComponent(keyword);
+    const decodedKeyword = decodeURIComponent(keyword);
+    
+    // 清除URL参数避免重复处理
+    window.history.replaceState({}, document.title, window.location.pathname);
+    
+    // 执行搜索
+    searchMusic(decodedKeyword, () => {
+      // 搜索完成后处理歌曲
+      if (songId) {
+        // 尝试在搜索结果中找到指定歌曲
         const targetSong = currentSearchResults.find(song => song.n == songId);
         if (targetSong) {
+          // 播放指定歌曲
           playSong(targetSong);
         } else if (currentSearchResults.length > 0) {
+          // 如果找不到指定歌曲，播放第一首
           playSong(currentSearchResults[0]);
         }
-      }, 1000);
-    }
+      } else if (currentSearchResults.length > 0) {
+        // 如果没有指定歌曲ID，播放第一首
+        playSong(currentSearchResults[0]);
+      }
+    });
     
-    // 清除URL参数
-    window.history.replaceState({}, document.title, window.location.pathname);
+    return true; // 表示处理了分享链接
   }
+  return false; // 没有分享链接需要处理
 }
 
 // 生成分享链接
 function generateShareUrl(song) {
   const baseUrl = window.location.origin + window.location.pathname;
   const params = new URLSearchParams();
-  params.append('keyword', encodeURIComponent(currentKeyword));
+  params.append('keyword', encodeURIComponent(searchInput.value.trim()));
   params.append('songId', song.n);
   return `${baseUrl}?${params.toString()}`;
 }
@@ -104,11 +118,16 @@ function generateShareUrl(song) {
 document.addEventListener('DOMContentLoaded', () => {
   document.documentElement.classList.add('dark-theme');
   renderHotTags();
-  searchMusic(currentKeyword);
-  renderFavorites();
   
-  // 处理分享链接
-  handleShareUrl();
+  // 先尝试处理分享链接
+  const handledShareLink = handleShareUrl();
+  
+  // 如果没有处理分享链接，执行默认搜索
+  if (!handledShareLink) {
+    searchMusic('窝窝');
+  }
+  
+  renderFavorites();
 
   loopBtn.addEventListener('click', () => {
     loopMode = !loopMode;
@@ -124,19 +143,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   searchBtn.addEventListener('click', () => { 
     const k = searchInput.value.trim(); 
-    if (k) {
-      currentKeyword = k;
-      searchMusic(k); 
-    }
+    if (k) searchMusic(k); 
   });
   
   searchInput.addEventListener('keypress', (e) => { 
     if (e.key === 'Enter') { 
       const k = searchInput.value.trim(); 
-      if (k) {
-        currentKeyword = k;
-        searchMusic(k); 
-      }
+      if (k) searchMusic(k); 
     } 
   });
 
@@ -194,11 +207,7 @@ function renderHotTags() {
     const tag = document.createElement('div');
     tag.className = 'hot-tag';
     tag.textContent = kw;
-    tag.addEventListener('click', () => { 
-      searchInput.value = kw; 
-      currentKeyword = kw;
-      searchMusic(kw); 
-    });
+    tag.addEventListener('click', () => { searchInput.value = kw; searchMusic(kw); });
     hotTags.appendChild(tag);
   });
 }
@@ -269,17 +278,31 @@ function removeFavorite(songId) {
   localStorage.setItem('musicFavorites', JSON.stringify(favorites));
 }
 
-function searchMusic(keyword) {
+function searchMusic(keyword, callback = null) {
   baseApiUrl = `https://www.hhlqilongzhu.cn/api/joox/juhe_music.php?msg=${encodeURIComponent(keyword)}&type=json&n=`;
   resultsList.innerHTML = '<div class="result-item" style="justify-content:center;color:#888"><i class="fas fa-spinner fa-spin"></i> 搜索中...</div>';
+  
   fetch(baseApiUrl)
     .then(r => r.json())
     .then(data => {
       renderSearchResults(data);
-      if (data && data.length > 0) playSong(data[0]);
+      
+      // 如果是来自分享链接，不自动播放第一首（等待回调处理）
+      if (!isFromShareLink && data && data.length > 0) {
+        playSong(data[0]);
+      }
+      
+      // 如果有回调函数，执行回调
+      if (callback && typeof callback === 'function') {
+        callback();
+      }
+      
+      // 重置分享链接标志
+      isFromShareLink = false;
     })
     .catch(() => {
       resultsList.innerHTML = '<div class="result-item" style="justify-content:center;color:#888"><i class="fas fa-exclamation-triangle"></i> 搜索失败，请稍后重试</div>';
+      isFromShareLink = false; // 重置分享链接标志
     });
 }
 
@@ -401,8 +424,16 @@ function playSong(song) {
 
   fetch(`${baseApiUrl}${song.n}`)
     .then(r => r.json())
-    .then(data => { if (data && data.data) updatePlayer(data.data); })
-    .catch(() => { lyricsContent.textContent = "加载歌曲详情失败"; });
+    .then(data => { 
+      if (data && data.data) {
+        updatePlayer(data.data); 
+      } else {
+        lyricsContent.textContent = "加载歌曲详情失败";
+      }
+    })
+    .catch(() => { 
+      lyricsContent.textContent = "加载歌曲详情失败";
+    });
 }
 
 function highlightCurrentSong(song) {
