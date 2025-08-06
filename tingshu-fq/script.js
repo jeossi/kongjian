@@ -252,10 +252,10 @@ async function loadBookDetails(bookId) {
                 const savedProgress = getSavedProgress(bookId);
                 if (savedProgress) {
                     state.currentChapterIndex = savedProgress.chapterIndex;
-                    playChapter(state.currentChapterIndex);
+                    playChapter(state.currentChapterIndex, true); // 添加参数指示是恢复播放
                     // 设置进度会在音频加载后恢复
                 } else {
-                    playChapter(0);
+                    playChapter(0, true);
                 }
             }
         } else throw new Error('加载书籍详情失败');
@@ -273,7 +273,7 @@ function renderPlayerPage() {
         const li = document.createElement('li');
         li.className = 'chapter-item' + (i === state.currentChapterIndex ? ' active' : '');
         li.innerHTML = `<span class="chapter-number">${i + 1}</span>${c.title}`;
-        li.addEventListener('click', () => playChapter(i));
+        li.addEventListener('click', () => playChapter(i, false));
         dom.chapterList.appendChild(li);
     });
 }
@@ -302,17 +302,29 @@ async function playChapterAudio(chapter) {
         isLoadingAudio = false;
     }
 }
-function playChapter(index) {
+function playChapter(index, isInitialLoad) {
+    // 重置状态
     pauseAudio();
+    clearTimeout(state.retryTimer);
+    state.retryCount = 0;
+    lastPlayedChapterId = null;
+    
     // 重置播放进度
     state.audio.currentTime = 0;
     updateProgressBar();
     state.audio.src = '';
+    
+    // 设置新章节
     state.currentChapterIndex = index;
-    state.retryCount = 0;
     updateProxyIndicator('retry');
-    if (state.chapters[index]) playChapterAudio(state.chapters[index]);
+    
+    // 高亮当前章节
     document.querySelectorAll('.chapter-item').forEach((li, i) => li.classList.toggle('active', i === index));
+    
+    // 如果是初始加载且当前章节是保存的进度章节，则不立即播放（等待元数据加载）
+    if (!isInitialLoad || !getSavedProgress(state.currentBook.book_id)) {
+        if (state.chapters[index]) playChapterAudio(state.chapters[index]);
+    }
 }
 function tryRetry() {
     if (state.retryCount < state.maxRetry) {
@@ -339,10 +351,10 @@ function togglePlay() {
     state.isPlaying ? pauseAudio() : playAudio();
 }
 function playPrevChapter() {
-    if (state.currentChapterIndex > 0) playChapter(state.currentChapterIndex - 1);
+    if (state.currentChapterIndex > 0) playChapter(state.currentChapterIndex - 1, false);
 }
 function playNextChapter() {
-    if (state.currentChapterIndex < state.chapters.length - 1) playChapter(state.currentChapterIndex + 1);
+    if (state.currentChapterIndex < state.chapters.length - 1) playChapter(state.currentChapterIndex + 1, false);
     else {
         pauseAudio();
         state.audio.currentTime = 0;
