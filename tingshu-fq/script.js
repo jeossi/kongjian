@@ -12,6 +12,7 @@ const state = {
     maxRetry: 3,
     retryTimer: null,
     proxy: 'https://ajeo.cc/',
+    isAudioLoaded: false // 新增状态标记
 };
 
 // 防抖锁
@@ -87,27 +88,40 @@ function setupEventListeners() {
         // 恢复播放进度
         restorePlaybackPosition();
     });
+    
+    // 改进的错误处理逻辑
     state.audio.addEventListener('error', () => {
+        // 如果音频已经成功加载过，不再重试
+        if (state.isAudioLoaded) {
+            console.log('音频已加载过，忽略错误');
+            return;
+        }
+        
         // 已播放过，不再重试
         if (state.audio.currentTime > 0) {
             console.warn('播放中出错，停止重试');
             updateProxyIndicator('error');
             return;
         }
+        
         // 否则重试
         if (state.retryCount < state.maxRetry) {
             state.retryCount++;
             updateProxyIndicator('retry');
-            // 修复：第一次重试立即执行，后续重试等待3秒
-            const delay = state.retryCount === 1 ? 0 : 3000;
             state.retryTimer = setTimeout(() => {
                 const chapter = state.chapters[state.currentChapterIndex];
                 if (chapter) playChapterAudio(chapter);
-            }, delay);
+            }, 3000);
         } else {
             updateProxyIndicator('error');
             console.warn('达到最大重试次数，停止重试');
         }
+    });
+    
+    // 新增：当音频成功开始播放时标记
+    state.audio.addEventListener('playing', () => {
+        state.isAudioLoaded = true;
+        console.log('音频成功开始播放');
     });
     
     // 收藏按钮事件
@@ -246,6 +260,7 @@ async function loadBookDetails(bookId) {
             state.currentBook = data;
             state.chapters = data.data;
             state.retryCount = 0;
+            state.isAudioLoaded = false; // 重置音频加载状态
             renderPlayerPage();
             showPage('player');
             if (state.chapters.length) {
@@ -304,15 +319,25 @@ async function playChapterAudio(chapter) {
             state.audio.src = proxyUrl(data.data.url);
             state.audio.load();
             state.audio.playbackRate = state.playbackRate;
-            playAudio();
-            updateProxyIndicator('success');
-            state.retryCount = 0;
+            
+            // 重置音频状态标记
+            state.isAudioLoaded = false;
+            
+            // 使用更可靠的方式播放音频
+            try {
+                await state.audio.play();
+                state.isPlaying = true;
+                dom.playButton.innerHTML = '<i class="fas fa-pause"></i>';
+                updateProxyIndicator('success');
+                state.retryCount = 0;
+            } catch (playErr) {
+                console.error('播放失败:', playErr);
+                tryRetry();
+            }
         } else throw new Error('获取音频URL失败');
     } catch (err) {
         console.error(err);
-        if (state.audio.currentTime === 0) {
-            tryRetry();
-        }
+        tryRetry();
     } finally {
         isLoadingAudio = false;
     }
@@ -352,9 +377,13 @@ function tryRetry() {
 
 // ================= 音频控制 =================
 function playAudio() {
-    state.audio.play().catch(() => tryRetry());
-    state.isPlaying = true;
-    dom.playButton.innerHTML = '<i class="fas fa-pause"></i>';
+    state.audio.play().then(() => {
+        state.isPlaying = true;
+        dom.playButton.innerHTML = '<i class="fas fa-pause"></i>';
+    }).catch((err) => {
+        console.error('播放失败:', err);
+        tryRetry();
+    });
 }
 function pauseAudio() {
     state.audio.pause();
