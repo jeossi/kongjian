@@ -96,9 +96,9 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px 0;
+    padding: 10px 0;
     border-bottom: 1px solid #333;
-    margin-bottom: 30px;
+    margin-bottom: 10px;
 }
 
 .logo {
@@ -213,7 +213,7 @@ body {
 /* 搜索区域样式 */
 .search-container {
     position: relative;
-    margin: 30px 0 40px;
+    margin: 10px 0 10px;
 }
 
 .search-box {
@@ -478,7 +478,7 @@ body {
 /* 代理指示器上移 */
 .proxy-indicator {
     position: absolute;
-    top: 30px;
+    top: -40px;
     right: 10px;
     width: 28px;
     height: 28px;
@@ -552,7 +552,7 @@ body {
 }
 
 .controls-row::-webkit-scrollbar-track {
-    background: var(--progress-bg);
+	display: none;
 }
 
 .controls-row::-webkit-scrollbar-thumb {
@@ -869,7 +869,7 @@ body {
 @media (max-width: 768px) {
     .header {
         flex-direction: column;
-        gap: 20px;
+        gap: 10px;
     }
 
     .book-details {
