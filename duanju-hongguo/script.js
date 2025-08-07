@@ -4,7 +4,7 @@ const state = {
     currentBook: null,
     currentChapterIndex: 0,
     chapters: [],
-    video: document.createElement('video'),
+    video: document.getElementById('video-player'), // 使用现有DOM元素而不是创建新元素
     isPlaying: false,
     searchResults: [],
     playbackRate: 1.0,
@@ -322,6 +322,10 @@ async function playChapterVideo(chapter) {
         if (data.code === 200 && data.data) {
             const videoUrl = proxyUrl(data.data.url);
             state.video.src = videoUrl;
+            
+            // 设置视频类型为MP4以解决兼容性问题
+            state.video.type = 'video/mp4';
+            
             state.video.load();
             state.video.playbackRate = state.playbackRate;
             
