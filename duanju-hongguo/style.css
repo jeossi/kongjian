@@ -1,49 +1,34 @@
 /* 新增样式 */
-.favorite-btn-text {
-    display: inline-block;
-    margin-left: 5px;
+.video-container {
+    width: 100%;
+    max-width: 100%;
+    height: 300px;
+    background-color: #000;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 20px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
 }
 
-.book-btn-text {
-    margin-left: 5px;
+.video-player {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background-color: #000;
 }
 
-/* 修改现有样式 */
-.favorite-btn {
-    background: rgba(255, 255, 255, 0.1);
-    border: none;
-    color: var(--text-primary);
-    border-radius: 18px;
-    cursor: pointer;
-    transition: var(--transition);
-    padding: 8px 15px;
-    font-size: 16px;
+.book-stats {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-    height: 36px;
+    gap: 15px;
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-bottom: 5px;
 }
 
-.favorite-btn:hover {
-    background: rgba(255, 107, 107, 0.2);
-    color: var(--accent-color);
-}
-
-.book-btn {
-    background: rgba(255, 255, 255, 0.1);
-    border: none;
-    color: var(--text-primary);
-    border-radius: 18px;
-    cursor: pointer;
-    transition: var(--transition);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 5px 12px;
-    gap: 5px;
-    height: 36px;
-    white-space: nowrap;
+.book-meta-duration {
+    font-size: 18px;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
 }
 
 /* 保持原有样式不变 */
@@ -345,7 +330,7 @@ body {
     color: var(--accent-color);
 }
 
-.book-author, .book-type, .book-status {
+.book-author, .book-type, .book-stats {
     font-size: 14px;
     color: var(--text-secondary);
     margin-bottom: 5px;
@@ -447,9 +432,8 @@ body {
 }
 
 .book-meta {
-	text-align: left;
+    text-align: left;
     margin-top: 10px;
-
 }
 
 .book-meta-title {
@@ -459,7 +443,7 @@ body {
     color: var(--accent-color);
 }
 
-.book-meta-author, .book-meta-category {
+.book-meta-author, .book-meta-category, .book-meta-duration {
     font-size: 18px;
     color: var(--text-secondary);
     margin-bottom: 8px;
@@ -529,12 +513,11 @@ body {
     height: 100%;
     background: var(--progress-color);
     border-radius: 3px;
-	width: 0%; 
-
+    width: 0%; 
 }
 
 .controls-row {
-	display: flex;
+    display: flex;
     justify-content: center;
     align-items: center;
     flex-wrap: nowrap;
@@ -555,8 +538,8 @@ body {
 }
 
 .controls-row::-webkit-scrollbar-track {
-	background: transparent;
-	display: none;
+    background: transparent;
+    display: none;
 }
 
 .controls-row::-webkit-scrollbar-thumb {
@@ -679,7 +662,7 @@ body {
     cursor: pointer;
     transition: var(--transition);
     text-align: center;
-	font-size: 16px;
+    font-size: 16px;
 }
 
 .speed-option:hover {
@@ -949,6 +932,10 @@ body {
         width: 90%;
         max-width: 400px;
     }
+    
+    .video-container {
+        height: 200px;
+    }
 }
 
 @media (max-width: 480px) {
@@ -976,7 +963,7 @@ body {
 
     .speed-btn {
         min-width: 40px;
-		height: 40px;
+        height: 40px;
         font-size: 16px;
     }
 
@@ -986,6 +973,10 @@ body {
     
     .volume-controls {
         min-width: 100px;
+    }
+    
+    .video-container {
+        height: 180px;
     }
 }
 
