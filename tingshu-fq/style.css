@@ -534,7 +534,7 @@ body {
 }
 
 .controls-row {
-    display: flex;
+	display: flex;
     justify-content: center;
     align-items: center;
     flex-wrap: nowrap;
@@ -542,7 +542,10 @@ body {
     margin: 0 auto;
     gap: 15px;
     white-space: nowrap;
-    overflow-x: auto;
+    overflow-x: auto;            /* 允许横向滚动 */
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;       /* Firefox */
+    -ms-overflow-style: none;    /* IE/Edge */
     padding: 10px 0;
     min-width: min-content;
 }
@@ -552,6 +555,7 @@ body {
 }
 
 .controls-row::-webkit-scrollbar-track {
+	background: transparent;
 	display: none;
 }
 
