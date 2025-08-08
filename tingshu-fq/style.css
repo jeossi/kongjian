@@ -532,13 +532,28 @@ body {
     max-width: 95%;
     margin: 0 auto;
 }
+/* 缓冲条样式 */
+.buffer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.2); /* 半透明的浅色缓冲条 */
+    border-radius: 3px;
+    width: 0%;
+    z-index: 1; /* 在进度条下方 */
+}
 
+/* 调整进度条位置 */
 .progress {
     height: 100%;
     background: var(--progress-color);
     border-radius: 3px;
 	width: 0%; 
-
+}
+.progress {
+    position: relative;
+    z-index: 2;  /* 在缓冲条上方 */
 }
 
 .controls-row {
