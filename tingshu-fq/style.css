@@ -126,11 +126,13 @@ body {
 }
 
 /* 收藏面板 */
+
 .favorite-panel {
     position: absolute;
     top: 100px;
     right: 20px;
-    background: var(--bg-tertiary);
+    background:#1a222d;
+    backdrop-filter: blur(10px);
     border-radius: var(--card-radius);
     padding: 20px;
     z-index: 100;
@@ -139,6 +141,12 @@ body {
     width: 320px;
     max-height: 500px;
     overflow-y: auto;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+}
+
+.favorite-panel:hover {
+    border-color: rgba(255, 107, 107, 0.3); /* 悬停时边框变色 */
 }
 
 .favorite-panel h3 {
