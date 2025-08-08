@@ -9,7 +9,7 @@ const state = {
     searchResults: [],
     playbackRate: 1.0,
     retryCount: 0,
-    maxRetry: 3,
+    maxRetry: 2,
     retryTimer: null,
     proxy: 'https://ajeo.cc/',
     isAudioLoaded: false // 新增状态标记
@@ -680,3 +680,4 @@ function initApp() {
     }
 }
 window.addEventListener('DOMContentLoaded', initApp);
+
