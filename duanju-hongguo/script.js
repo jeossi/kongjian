@@ -4,7 +4,7 @@ const state = {
     currentBook: null,
     currentChapterIndex: 0,
     chapters: [],
-    video: document.getElementById('video-player'), // 使用现有DOM元素而不是创建新元素
+    audio: null, // 改为video元素
     isPlaying: false,
     searchResults: [],
     playbackRate: 1.0,
@@ -12,11 +12,11 @@ const state = {
     maxRetry: 3,
     retryTimer: null,
     proxy: 'https://ajeo.cc/',
-    isVideoLoaded: false
+    isAudioLoaded: false
 };
 
 // 防抖锁
-let isLoadingVideo = false;
+let isLoadingAudio = false;
 
 // ================= DOM 节点 =================
 const dom = {
@@ -32,7 +32,7 @@ const dom = {
     playerBookTitle: document.getElementById('player-book-title'),
     playerBookAuthor: document.getElementById('player-book-author'),
     playerBookCategory: document.getElementById('player-book-category'),
-    playerBookDuration: document.getElementById('player-book-duration'), // 新增时长元素
+    playerBookDuration: document.getElementById('player-book-duration'), // 新增
     chapterList: document.getElementById('chapter-list'),
     currentTime: document.getElementById('current-time'),
     totalTime: document.getElementById('total-time'),
@@ -53,6 +53,9 @@ const dom = {
     videoPlayer: document.getElementById('video-player') // 新增视频播放器
 };
 
+// 设置audio为视频播放器
+state.audio = dom.videoPlayer;
+
 // ================= 事件绑定 =================
 function setupEventListeners() {
     dom.searchInput.addEventListener('focus', () => dom.hotSearchPanel.style.display = 'block');
@@ -64,41 +67,43 @@ function setupEventListeners() {
     }));
     dom.searchButton.addEventListener('click', performSearch);
     dom.searchInput.addEventListener('keypress', e => { if (e.key === 'Enter') performSearch(); });
-    dom.backButton.addEventListener('click', () => { showPage('search'); pauseVideo(); });
+    dom.backButton.addEventListener('click', () => { showPage('search'); pauseAudio(); });
     dom.playButton.addEventListener('click', togglePlay);
     dom.prevButton.addEventListener('click', playPrevChapter);
     dom.nextButton.addEventListener('click', playNextChapter);
     dom.progressBar.addEventListener('click', e => {
         const percent = (e.clientX - dom.progressBar.getBoundingClientRect().left) / dom.progressBar.offsetWidth;
-        state.video.currentTime = percent * state.video.duration;
+        state.audio.currentTime = percent * state.audio.duration;
     });
     dom.volumeButton.addEventListener('click', toggleMute);
     dom.speedBtn.addEventListener('click', e => { e.stopPropagation(); dom.speedMenu.classList.toggle('show'); });
     document.querySelectorAll('.speed-option').forEach(opt => opt.addEventListener('click', () => {
         const speed = parseFloat(opt.dataset.speed);
-        state.video.playbackRate = speed; 
-        state.playbackRate = speed;
+        state.audio.playbackRate = speed; state.playbackRate = speed;
         dom.speedBtn.innerHTML = `<span>${speed}x</span>`;
         dom.speedMenu.classList.remove('show');
     }));
     document.addEventListener('click', e => {
         if (!dom.speedBtn.contains(e.target) && !dom.speedMenu.contains(e.target)) dom.speedMenu.classList.remove('show');
     });
-    state.video.addEventListener('timeupdate', updateProgressBar);
-    state.video.addEventListener('ended', playNextChapter);
-    state.video.addEventListener('loadedmetadata', () => {
-        dom.totalTime.textContent = formatTime(state.video.duration);
+    
+    // 视频播放器事件监听
+    state.audio.addEventListener('timeupdate', updateProgressBar);
+    state.audio.addEventListener('ended', playNextChapter);
+    state.audio.addEventListener('loadedmetadata', () => {
+        dom.totalTime.textContent = formatTime(state.audio.duration);
+        // 恢复播放进度
         restorePlaybackPosition();
     });
     
-    // 视频错误处理
-    state.video.addEventListener('error', () => {
-        if (state.isVideoLoaded) {
+    // 错误处理逻辑
+    state.audio.addEventListener('error', () => {
+        if (state.isAudioLoaded) {
             console.log('视频已加载过，忽略错误');
             return;
         }
         
-        if (state.video.currentTime > 0) {
+        if (state.audio.currentTime > 0) {
             console.warn('播放中出错，停止重试');
             updateProxyIndicator('error');
             return;
@@ -109,7 +114,7 @@ function setupEventListeners() {
             updateProxyIndicator('retry');
             state.retryTimer = setTimeout(() => {
                 const chapter = state.chapters[state.currentChapterIndex];
-                if (chapter) playChapterVideo(chapter);
+                if (chapter) playChapterAudio(chapter);
             }, 3000);
         } else {
             updateProxyIndicator('error');
@@ -117,9 +122,8 @@ function setupEventListeners() {
         }
     });
     
-    // 视频开始播放事件
-    state.video.addEventListener('playing', () => {
-        state.isVideoLoaded = true;
+    state.audio.addEventListener('playing', () => {
+        state.isAudioLoaded = true;
         console.log('视频成功开始播放');
     });
     
@@ -135,7 +139,7 @@ function setVolumeFromEvent(e) {
     const rect = dom.volumeBar.getBoundingClientRect();
     const x = (e.clientX ?? e.touches[0].clientX) - rect.left;
     const percent = Math.max(0, Math.min(1, x / rect.width));
-    state.video.volume = percent;
+    state.audio.volume = percent;
     updateVolumeUI();
 }
 
@@ -220,12 +224,10 @@ function renderSearchResults(books) {
             <img src="${b.cover}" alt="${b.title}" class="book-cover">
             <div class="book-info">
                 <div class="book-title">${b.title}</div>
-                <div class="book-author">播音: ${b.author}</div>
+                <div class="book-author">演员: ${b.author}</div>
                 <div class="book-type">分类: ${b.type}</div>
-                <div class="book-stats">
-                    <span>播放: ${b.play_cnt}</span>
-                    <span>集数: ${b.episode_cnt}</span>
-                </div>
+                <div class="book-play">播放: ${b.play_cnt}次</div>
+                <div class="book-episode">集数: ${b.episode_cnt}集</div>
                 <div class="book-intro">${b.intro}</div>
                 <button class="expand-btn">展开</button>
                 <div class="book-buttons">
@@ -239,7 +241,7 @@ function renderSearchResults(books) {
                 </div>
             </div>`;
         
-        // 卡片点击事件
+        // 卡片点击事件 - 排除按钮点击
         card.addEventListener('click', (e) => {
             if (!e.target.closest('.book-btn') && !e.target.closest('.expand-btn')) {
                 loadBookDetails(b.book_id);
@@ -260,16 +262,25 @@ async function loadBookDetails(bookId) {
         const res = await fetch(`https://api.cenguigui.cn/api/duanju/api.php?book_id=${bookId}&showRawParams=false`);
         const data = await res.json();
         if (data.code === 200 && data.data) {
-            state.currentBook = data;
+            state.currentBook = {
+                book_id: bookId,
+                book_name: data.book_name,
+                author: data.author,
+                category: data.category,
+                book_pic: data.book_pic,
+                duration: data.duration
+            };
             state.chapters = data.data;
             state.retryCount = 0;
-            state.isVideoLoaded = false;
+            state.isAudioLoaded = false; // 重置视频加载状态
             renderPlayerPage();
             showPage('player');
             if (state.chapters.length) {
+                // 检查是否有保存的进度
                 const savedProgress = getSavedProgress(bookId);
                 if (savedProgress) {
                     state.currentChapterIndex = savedProgress.chapterIndex;
+                    // 播放保存的剧集
                     playChapter(state.currentChapterIndex);
                 } else {
                     state.currentChapterIndex = 0;
@@ -288,9 +299,9 @@ function renderPlayerPage() {
     const { book_name, author, category, book_pic, duration } = state.currentBook;
     dom.playerBookCover.src = book_pic;
     dom.playerBookTitle.textContent = book_name;
-    dom.playerBookAuthor.textContent = `播音: ${author}`;
+    dom.playerBookAuthor.textContent = `演员: ${author}`;
     dom.playerBookCategory.textContent = `分类: ${category}`;
-    dom.playerBookDuration.textContent = `时长: ${duration}`; // 设置时长
+    dom.playerBookDuration.textContent = `时长: ${duration}`; // 新增时长显示
     dom.chapterList.innerHTML = '';
     state.chapters.forEach((c, i) => {
         const li = document.createElement('li');
@@ -300,7 +311,7 @@ function renderPlayerPage() {
         dom.chapterList.appendChild(li);
     });
     
-    // 滚动到当前章节
+    // 滚动到当前剧集
     setTimeout(() => {
         const activeChapter = dom.chapterList.querySelector('.chapter-item.active');
         if (activeChapter) {
@@ -312,28 +323,26 @@ function renderPlayerPage() {
 // ================= 代理 & 播放 =================
 function proxyUrl(url) { return state.proxy + encodeURIComponent(url); }
 
-async function playChapterVideo(chapter) {
-    if (isLoadingVideo) return;
-    isLoadingVideo = true;
+async function playChapterAudio(chapter) {
+    if (isLoadingAudio) return;
+    isLoadingAudio = true;
     try {
         updateProxyIndicator('init');
         const res = await fetch(`https://api.cenguigui.cn/api/duanju/api.php?video_id=${chapter.video_id}&type=json&showRawParams=false`);
         const data = await res.json();
         if (data.code === 200 && data.data) {
+            // 使用代理获取视频URL
             const videoUrl = proxyUrl(data.data.url);
-            state.video.src = videoUrl;
-            
-            // 设置视频类型为MP4以解决兼容性问题
-            state.video.type = 'video/mp4';
-            
-            state.video.load();
-            state.video.playbackRate = state.playbackRate;
+            state.audio.src = videoUrl;
+            state.audio.load();
+            state.audio.playbackRate = state.playbackRate;
             
             // 重置视频状态标记
-            state.isVideoLoaded = false;
+            state.isAudioLoaded = false;
             
+            // 播放视频
             try {
-                await state.video.play();
+                await state.audio.play();
                 state.isPlaying = true;
                 dom.playButton.innerHTML = '<i class="fas fa-pause"></i>';
                 updateProxyIndicator('success');
@@ -347,30 +356,30 @@ async function playChapterVideo(chapter) {
         console.error(err);
         tryRetry();
     } finally {
-        isLoadingVideo = false;
+        isLoadingAudio = false;
     }
 }
 
 function playChapter(index) {
     // 重置状态
-    pauseVideo();
+    pauseAudio();
     clearTimeout(state.retryTimer);
     state.retryCount = 0;
     
     // 重置播放进度
-    state.video.currentTime = 0;
+    state.audio.currentTime = 0;
     updateProgressBar();
-    state.video.src = '';
+    state.audio.src = '';
     
-    // 设置新章节
+    // 设置新剧集
     state.currentChapterIndex = index;
     updateProxyIndicator('retry');
     
-    // 高亮当前章节
+    // 高亮当前剧集
     document.querySelectorAll('.chapter-item').forEach((li, i) => li.classList.toggle('active', i === index));
     
     if (state.chapters[index]) {
-        playChapterVideo(state.chapters[index]);
+        playChapterAudio(state.chapters[index]);
     }
 }
 
@@ -380,14 +389,14 @@ function tryRetry() {
         updateProxyIndicator('retry');
         state.retryTimer = setTimeout(() => {
             const chapter = state.chapters[state.currentChapterIndex];
-            if (chapter) playChapterVideo(chapter);
+            if (chapter) playChapterAudio(chapter);
         }, 3000);
     } else updateProxyIndicator('error');
 }
 
-// ================= 视频控制 =================
-function playVideo() {
-    state.video.play().then(() => {
+// ================= 音频控制 =================
+function playAudio() {
+    state.audio.play().then(() => {
         state.isPlaying = true;
         dom.playButton.innerHTML = '<i class="fas fa-pause"></i>';
     }).catch((err) => {
@@ -396,15 +405,16 @@ function playVideo() {
     });
 }
 
-function pauseVideo() {
-    state.video.pause();
+function pauseAudio() {
+    state.audio.pause();
     state.isPlaying = false;
     dom.playButton.innerHTML = '<i class="fas fa-play"></i>';
+    // 保存播放进度
     savePlaybackPosition();
 }
 
 function togglePlay() {
-    state.isPlaying ? pauseVideo() : playVideo();
+    state.isPlaying ? pauseAudio() : playAudio();
 }
 
 function playPrevChapter() {
@@ -414,25 +424,25 @@ function playPrevChapter() {
 function playNextChapter() {
     if (state.currentChapterIndex < state.chapters.length - 1) playChapter(state.currentChapterIndex + 1);
     else {
-        pauseVideo();
-        state.video.currentTime = 0;
+        pauseAudio();
+        state.audio.currentTime = 0;
         updateProgressBar();
     }
 }
 
 function updateProgressBar() {
-    if (state.video.duration) dom.progress.style.width = (state.video.currentTime / state.video.duration * 100) + '%';
-    dom.currentTime.textContent = formatTime(state.video.currentTime);
+    if (state.audio.duration) dom.progress.style.width = (state.audio.currentTime / state.audio.duration * 100) + '%';
+    dom.currentTime.textContent = formatTime(state.audio.currentTime);
 }
 
 function updateVolumeUI() {
-    const v = state.video.volume;
+    const v = state.audio.volume;
     dom.volumeLevel.style.width = v * 100 + '%';
-    dom.volumeButton.innerHTML = `<i class="fas fa-volume-${state.video.muted || v === 0 ? 'mute' : v < .5 ? 'down' : 'up'}"></i>`;
+    dom.volumeButton.innerHTML = `<i class="fas fa-volume-${state.audio.muted || v === 0 ? 'mute' : v < .5 ? 'down' : 'up'}"></i>`;
 }
 
 function toggleMute() {
-    state.video.muted = !state.video.muted;
+    state.audio.muted = !state.audio.muted;
     updateVolumeUI();
 }
 
@@ -545,7 +555,7 @@ function shareBook(e) {
     const book = state.searchResults.find(b => b.book_id === bookId);
     
     if (book) {
-        const shareText = `【Ajeo提示】：请前往浏览器粘贴【链接】收听 \n  ${book.title} \n 【链接】：\n ${window.location.href.split('#')[0]}#book_id=${bookId}`;
+        const shareText = `【Ajeo提示】：请前往浏览器粘贴【链接】收看 \n  ${book.title} \n 【链接】：\n ${window.location.href.split('#')[0]}#book_id=${bookId}`;
         
         // 创建一个临时的textarea元素来复制文本
         const copyToClipboardFallback = (text) => {
@@ -591,7 +601,7 @@ function shareBook(e) {
     }
 }
 
-// ================= 辅助函数 =================
+// 添加新的辅助函数
 function showToast(message) {
     const toast = document.createElement('div');
     toast.className = 'toast-message';
@@ -634,12 +644,12 @@ function promptManualCopy(text) {
 
 // ================= 进度保存 =================
 function savePlaybackPosition() {
-    if (!state.currentBook || !state.video.duration) return;
+    if (!state.currentBook || !state.audio.duration) return;
     
     const progress = {
         bookId: state.currentBook.book_id,
         chapterIndex: state.currentChapterIndex,
-        currentTime: state.video.currentTime,
+        currentTime: state.audio.currentTime,
         timestamp: Date.now()
     };
     
@@ -654,7 +664,7 @@ function restorePlaybackPosition() {
     
     const progress = JSON.parse(saved);
     if (progress && progress.chapterIndex === state.currentChapterIndex) {
-        state.video.currentTime = progress.currentTime;
+        state.audio.currentTime = progress.currentTime;
         updateProgressBar();
     }
 }
@@ -685,7 +695,7 @@ function toggleExpand(e) {
 function initApp() {
     setupEventListeners();
     performSearch();
-    state.video.volume = .7;
+    state.audio.volume = .7;
     updateVolumeUI();
     updateProxyIndicator('init');
     
@@ -696,5 +706,4 @@ function initApp() {
         loadBookDetails(bookId);
     }
 }
-
 window.addEventListener('DOMContentLoaded', initApp);
