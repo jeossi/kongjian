@@ -9,7 +9,7 @@ const state = {
     searchResults: [],
     playbackRate: 1.0,
     retryCount: 0,
-    maxRetry: 2,
+    maxRetry: 1,
     retryTimer: null,
     proxy: 'https://ajeo.cc/',
     isAudioLoaded: false // 新增状态标记
