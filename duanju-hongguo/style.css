@@ -1,34 +1,90 @@
 /* 新增样式 */
-.video-container {
-    width: 100%;
-    max-width: 100%;
-    height: 300px;
-    background-color: #000;
-    border-radius: 12px;
-    overflow: hidden;
-    margin-bottom: 20px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+.favorite-btn-text {
+    display: inline-block;
+    margin-left: 5px;
 }
 
-.video-player {
+.book-btn-text {
+    margin-left: 5px;
+}
+
+/* 修改现有样式 */
+.favorite-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: var(--text-primary);
+    border-radius: 18px;
+    cursor: pointer;
+    transition: var(--transition);
+    padding: 8px 15px;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    height: 36px;
+}
+
+.favorite-btn:hover {
+    background: rgba(255, 107, 107, 0.2);
+    color: var(--accent-color);
+}
+
+.book-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: var(--text-primary);
+    border-radius: 18px;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px 12px;
+    gap: 5px;
+    height: 36px;
+    white-space: nowrap;
+}
+
+/* 16:9 视频容器 */
+.video-container-aspect {
+    width: 100%;
+    position: relative;
+    padding-top: 56.25%; /* 16:9 宽高比 */
+    margin: 15px 0;
+    border-radius: var(--card-radius);
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    background: #000;
+}
+
+.video-container-inner {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+#video-player {
     width: 100%;
     height: 100%;
     object-fit: contain;
-    background-color: #000;
+    display: block;
 }
 
-.book-stats {
-    display: flex;
-    gap: 15px;
+/* 新增书籍时长样式 */
+.book-meta-duration {
+    font-size: 16px;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+}
+
+/* 新增播放计数样式 */
+.book-play, .book-episode {
     font-size: 14px;
     color: var(--text-secondary);
     margin-bottom: 5px;
-}
-
-.book-meta-duration {
-    font-size: 18px;
-    color: var(--text-secondary);
-    margin-bottom: 8px;
 }
 
 /* 保持原有样式不变 */
@@ -115,7 +171,8 @@ body {
     position: absolute;
     top: 100px;
     right: 20px;
-    background: var(--bg-tertiary);
+    background: #1e1a2a;
+    backdrop-filter: blur(10px);
     border-radius: var(--card-radius);
     padding: 20px;
     z-index: 100;
@@ -124,6 +181,12 @@ body {
     width: 320px;
     max-height: 500px;
     overflow-y: auto;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+}
+
+.favorite-panel:hover {
+    border-color: rgba(255, 107, 107, 0.3); /* 悬停时边框变色 */
 }
 
 .favorite-panel h3 {
@@ -330,7 +393,7 @@ body {
     color: var(--accent-color);
 }
 
-.book-author, .book-type, .book-stats {
+.book-author, .book-type, .book-play, .book-episode {
     font-size: 14px;
     color: var(--text-secondary);
     margin-bottom: 5px;
@@ -669,7 +732,7 @@ body {
     background: rgba(255, 107, 107, 0.2);
 }
 
-/* 章节列表样式 */
+/* 剧集列表样式 */
 .chapters-container {
     background: var(--bg-secondary);
     border-radius: var(--card-radius);
@@ -932,10 +995,6 @@ body {
         width: 90%;
         max-width: 400px;
     }
-    
-    .video-container {
-        height: 200px;
-    }
 }
 
 @media (max-width: 480px) {
@@ -975,8 +1034,9 @@ body {
         min-width: 100px;
     }
     
-    .video-container {
-        height: 180px;
+    .book-large-cover {
+        width: 150px;
+        height: 150px;
     }
 }
 
