@@ -10,7 +10,7 @@
     <title>番茄听书</title>
     <link rel="icon" href="../Aje128.png" type="image/png" sizes="32x32">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css?v=8.8.2001">
+    <link rel="stylesheet" href="style.css?v=8.8.2050">
 </head>
 <body>
     <div class="container">
@@ -108,6 +108,8 @@
                     <span id="current-time">00:00</span>
                     <div class="progress-bar-container">
                         <div class="progress-bar" id="progress-bar">
+						  <!-- 新增缓冲条 -->
+                             <div class="buffer" id="buffer"></div>
                             <div class="progress" id="progress"></div>
                         </div>
                     </div>
@@ -140,8 +142,8 @@
                             <div class="speed-option" data-speed="3.0">3.0x</div>
                         </div>
                     </div>
-
-                    <div class="volume-controls">
+                     <div class="progress-bar-container">
+             <div class="volume-controls">
                         <button class="control-btn" id="volume-btn">
                             <i class="fas fa-volume-up"></i>
                         </button>
@@ -163,6 +165,6 @@
         </div>
     </div>
 
-    <script src="script.js?v=8.8.2001"></script>
+    <script src="script.js?v=8.8.2050"></script>
 </body>
 </html>
