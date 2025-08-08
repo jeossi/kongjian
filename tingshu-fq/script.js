@@ -37,6 +37,7 @@ const dom = {
     totalTime: document.getElementById('total-time'),
     progressBar: document.getElementById('progress-bar'),
     progress: document.getElementById('progress'),
+    buffer: document.getElementById('buffer'), // 新增缓冲条元素
     playButton: document.getElementById('play-btn'),
     prevButton: document.getElementById('prev-btn'),
     nextButton: document.getElementById('next-btn'),
@@ -82,11 +83,14 @@ function setupEventListeners() {
         if (!dom.speedBtn.contains(e.target) && !dom.speedMenu.contains(e.target)) dom.speedMenu.classList.remove('show');
     });
     state.audio.addEventListener('timeupdate', updateProgressBar);
+    state.audio.addEventListener('progress', updateBufferBar); // 新增缓冲条更新
     state.audio.addEventListener('ended', playNextChapter);
     state.audio.addEventListener('loadedmetadata', () => {
         dom.totalTime.textContent = formatTime(state.audio.duration);
         // 恢复播放进度
         restorePlaybackPosition();
+        // 更新缓冲条
+        updateBufferBar();
     });
     
     // 改进的错误处理逻辑
@@ -184,6 +188,22 @@ function updateProxyIndicator(status) {
             break;
         default:
             dom.proxyIndicator.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>';
+    }
+}
+
+// ================= 缓冲条更新 =================
+function updateBufferBar() {
+    if (!state.audio || !state.audio.buffered || state.audio.buffered.length === 0) {
+        dom.buffer.style.width = '0%';
+        return;
+    }
+    
+    try {
+        const bufferedEnd = state.audio.buffered.end(state.audio.buffered.length - 1);
+        const bufferedPercent = (bufferedEnd / state.audio.duration) * 100;
+        dom.buffer.style.width = `${bufferedPercent}%`;
+    } catch (e) {
+        console.warn('更新缓冲条时出错:', e);
     }
 }
 
@@ -352,6 +372,9 @@ function playChapter(index) {
     state.audio.currentTime = 0;
     updateProgressBar();
     state.audio.src = '';
+    
+    // 重置缓冲条
+    dom.buffer.style.width = '0%';
     
     // 设置新章节
     state.currentChapterIndex = index;
@@ -680,4 +703,3 @@ function initApp() {
     }
 }
 window.addEventListener('DOMContentLoaded', initApp);
-
