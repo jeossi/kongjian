@@ -1,4 +1,4 @@
-// 修复版 script.js（修复收藏按钮无法取消、列表状态未同步等问题）
+// 修复版 script.js（修复收藏按钮无法取消、列表状态未同步、点击歌曲不切换等问题）
 const hotKeywords = [
   "王佳音","鱼蛋","窝窝","艺凌","洋澜","任夏","魏佳艺","韩小欠","单依纯","DJ","林宥嘉",
   "喝茶","古筝","助眠","热歌","热门","新歌","飙升","流行",
@@ -77,7 +77,6 @@ function generateShareUrl(song) {
 }
 
 /* ---------- 收藏相关 ---------- */
-// 唯一标识：title + singer + keyword
 function getFavoriteKey(song, keyword) {
   return `${song.title}::${song.singer}::${keyword || currentSearchKeyword}`;
 }
@@ -105,7 +104,6 @@ function saveFavorites() {
   renderFavorites();
 }
 
-// 刷新搜索结果列表收藏图标
 function updateSearchResultsFavStatus() {
   document.querySelectorAll('.result-item').forEach(item => {
     const n = parseInt(item.dataset.n, 10);
@@ -119,7 +117,6 @@ function updateSearchResultsFavStatus() {
   });
 }
 
-// 渲染收藏面板
 function renderFavorites() {
   collectionList.innerHTML = '';
   if (!favorites.length) {
@@ -155,11 +152,25 @@ function renderFavorites() {
 /* ---------- 搜索 & 渲染 ---------- */
 function renderHotTags() {
   hotTags.innerHTML = '';
+
+  // 创建关闭按钮
+  const closeBtn = document.createElement('div');
+  closeBtn.className = 'hot-search-close';
+  closeBtn.innerHTML = '<i class="fas fa-times"></i>';
+  closeBtn.addEventListener('click', () => {
+    hotSearchPanel.style.display = 'none';
+  });
+  hotTags.appendChild(closeBtn);
+
+  // 渲染热门关键词
   hotKeywords.forEach(kw => {
     const tag = document.createElement('div');
     tag.className = 'hot-tag';
     tag.textContent = kw;
-    tag.addEventListener('click', () => { searchInput.value = kw; searchMusic(kw); });
+    tag.addEventListener('click', () => {
+      searchInput.value = kw;
+      searchMusic(kw);
+    });
     hotTags.appendChild(tag);
   });
 }
@@ -280,7 +291,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (!handleShareUrl()) searchMusic('新歌');
   renderFavorites();
 
-  /* 事件委托：收藏/分享按钮 */
+  /* 事件委托：收藏/分享按钮 & 歌曲点击切换 */
   resultsList.addEventListener('click', e => {
     const btn = e.target.closest('.fav-btn');
     if (btn) {
@@ -314,6 +325,14 @@ document.addEventListener('DOMContentLoaded', () => {
           document.body.removeChild(ta);
           alert('已复制请到微信粘贴分享');
         });
+      return;
+    }
+    // 歌曲切换
+    const item = e.target.closest('.result-item');
+    if (item) {
+      const n = parseInt(item.dataset.n, 10);
+      const song = currentSearchResults.find(s => s.n === n);
+      if (song) playSong(song);
     }
   });
 
