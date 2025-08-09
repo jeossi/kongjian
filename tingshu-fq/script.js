@@ -94,33 +94,24 @@ function setupEventListeners() {
     });
     
     // 改进的错误处理逻辑
-    state.audio.addEventListener('error', () => {
-        // 如果音频已经成功加载过，不再重试
-        if (state.isAudioLoaded) {
-            console.log('音频已加载过，忽略错误');
-            return;
-        }
-        
-        // 已播放过，不再重试
-        if (state.audio.currentTime > 0) {
-            console.warn('播放中出错，停止重试');
-            updateProxyIndicator('error');
-            return;
-        }
-        
-        // 否则重试
-        if (state.retryCount < state.maxRetry) {
-            state.retryCount++;
-            updateProxyIndicator('retry');
-            state.retryTimer = setTimeout(() => {
-                const chapter = state.chapters[state.currentChapterIndex];
-                if (chapter) playChapterAudio(chapter);
-            }, 3000);
-        } else {
-            updateProxyIndicator('error');
-            console.warn('达到最大重试次数，停止重试');
-        }
-    });
+state.audio.addEventListener('error', () => {
+    if (state.isAudioLoaded || state.audio.currentTime > 0) {
+        console.warn('播放中出错，停止重试');
+        updateProxyIndicator('error');
+        return;
+    }
+
+    if (state.retryCount < state.maxRetry) {
+        state.retryCount++;
+        updateProxyIndicator('retry');
+        state.retryTimer = setTimeout(() => {
+            const chapter = state.chapters[state.currentChapterIndex];
+            if (chapter) playChapterAudio(chapter);
+        }, 3000);
+    } else {
+        updateProxyIndicator('error');
+    }
+});
     
     // 新增：当音频成功开始播放时标记
     state.audio.addEventListener('playing', () => {
@@ -329,32 +320,50 @@ function renderPlayerPage() {
 // ================= 代理 & 播放 =================
 function proxyUrl(url) { return state.proxy + encodeURIComponent(url); }
 async function playChapterAudio(chapter) {
-    if (isLoadingAudio) return;
+    if (isLoadingAudio || state.isAudioLoaded) return;
     isLoadingAudio = true;
+
     try {
         updateProxyIndicator('init');
+
         const res = await fetch(`https://api.cenguigui.cn/api/tingshu/?item_id=${chapter.item_id}`);
         const data = await res.json();
-        if (data.code === 200 && data.data) {
-            state.audio.src = proxyUrl(data.data.url);
-            state.audio.load();
-            state.audio.playbackRate = state.playbackRate;
-            
-            // 重置音频状态标记
-            state.isAudioLoaded = false;
-            
-            // 使用更可靠的方式播放音频
-            try {
-                await state.audio.play();
-                state.isPlaying = true;
-                dom.playButton.innerHTML = '<i class="fas fa-pause"></i>';
-                updateProxyIndicator('success');
-                state.retryCount = 0;
-            } catch (playErr) {
-                console.error('播放失败:', playErr);
-                tryRetry();
+
+        if (data.code === 200 && data.data?.url) {
+            const audioUrl = proxyUrl(data.data.url);
+
+            // 避免重复设置 src
+            if (state.audio.src !== audioUrl) {
+                state.audio.src = audioUrl;
+                state.audio.load(); // 只加载一次
             }
-        } else throw new Error('获取音频URL失败');
+
+            state.audio.playbackRate = state.playbackRate;
+            state.isAudioLoaded = false;
+
+            // 等待音频可以播放
+            state.audio.oncanplay = async () => {
+                try {
+                    await state.audio.play();
+                    state.isPlaying = true;
+                    dom.playButton.innerHTML = '<i class="fas fa-pause"></i>';
+                    updateProxyIndicator('success');
+                    state.retryCount = 0;
+                    state.isAudioLoaded = true;
+                } catch (playErr) {
+                    console.error('播放失败:', playErr);
+                    tryRetry();
+                }
+            };
+
+            state.audio.onerror = () => {
+                if (!state.isAudioLoaded) {
+                    tryRetry();
+                }
+            };
+        } else {
+            throw new Error('获取音频URL失败');
+        }
     } catch (err) {
         console.error(err);
         tryRetry();
@@ -363,26 +372,23 @@ async function playChapterAudio(chapter) {
     }
 }
 function playChapter(index) {
-    // 重置状态
+    if (index === state.currentChapterIndex && state.isAudioLoaded) return;
+
     pauseAudio();
     clearTimeout(state.retryTimer);
     state.retryCount = 0;
-    
-    // 重置播放进度
+    state.isAudioLoaded = false;
+
     state.audio.currentTime = 0;
     updateProgressBar();
-    state.audio.src = '';
-    
-    // 重置缓冲条
-    dom.buffer.style.width = '0%';
-    
-    // 设置新章节
+
     state.currentChapterIndex = index;
     updateProxyIndicator('retry');
-    
-    // 高亮当前章节
-    document.querySelectorAll('.chapter-item').forEach((li, i) => li.classList.toggle('active', i === index));
-    
+
+    document.querySelectorAll('.chapter-item').forEach((li, i) =>
+        li.classList.toggle('active', i === index)
+    );
+
     if (state.chapters[index]) {
         playChapterAudio(state.chapters[index]);
     }
