@@ -860,7 +860,7 @@ header {
 
 .result-actions {
     display: flex;
-    gap: 12px; /* 调整按钮间距 */
+    gap: 18px; /* 调整按钮间距 */
     margin-right: 25px;
 }
 
@@ -925,6 +925,23 @@ footer {
     color: #888;
     font-size: 12px;
     padding: 10px 0;
+}
+/* 热门搜索面板右上角关闭按钮 */
+.hot-search-close {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 28px;
+  cursor: pointer;
+  z-index: 10;
+  transition: transform 0.2s ease;
+}
+
+.hot-search-close:hover {
+  transform: scale(1.2);
 }
 
 /* 响应式设计 */
