@@ -168,8 +168,45 @@
     background: rgba(155, 89, 182, 0.3);
 }
 
+/* 新增缓冲条样式 */
+.buffer-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    background-color: rgba(150, 150, 150, 0.3); /* 浅色主题缓冲条 */
+    width: 0%;
+    border-radius: 3px;
+    z-index: 1; /* 在进度条下方 */
+    transition: width 0.3s ease;
+}
+
+.dark-theme .buffer-bar {
+    background-color: rgba(255, 255, 255, 0.2); /* 深色主题缓冲条 */
+}
+
+.progress-container {
+    position: relative; /* 确保子元素绝对定位相对此元素 */
+    background: #eee6ff;
+    height: 5px;
+    border-radius: 3px;
+    overflow: hidden;
+    cursor: pointer;
+    margin-bottom: 3px;
+}
+
 .dark-theme .progress-container {
     background: #333;
+}
+
+.progress-bar {
+    position: relative; /* 确保在缓冲条之上 */
+    height: 100%;
+    background: linear-gradient(90deg, #6a1b9a 0%, #8e44ad 100%);
+    width: 0%;
+    border-radius: 3px;
+    transition: width 0.1s linear;
+    z-index: 2; /* 在缓冲条上方 */
 }
 
 .dark-theme .progress-bar {
@@ -575,21 +612,12 @@ header {
 
 .progress-container {
     flex: 1;
-    background: #eee6ff;
     height: 5px;
     border-radius: 3px;
     overflow: hidden;
     cursor: pointer;
     position: relative;
     margin-bottom: 3px;
-}
-
-.progress-bar {
-    height: 100%;
-    background: linear-gradient(90deg, #6a1b9a 0%, #8e44ad 100%);
-    width: 0%;
-    border-radius: 3px;
-    transition: width 0.1s linear;
 }
 
 .time-info {
@@ -670,7 +698,7 @@ header {
 }
 
 .dark-theme .collection-panel {
-    background: #2a2a2a;
+	background: linear-gradient(135deg, #3a1e5a 0%, #4a2470 100%);
     color: #e0e0e0;
 }
 
@@ -729,7 +757,7 @@ header {
 }
 
 .dark-theme .fav-item {
-    background: #333;
+	background: linear-gradient(135deg, #1e1e3f 0%, #2a2a5a 100%);
 }
 
 .fav-item:hover {
@@ -827,18 +855,19 @@ header {
     font-weight: 600;
     color: #6a1b9a;
 	padding-left: 0; /* 移除左侧内边距 */
-    margin-right: 4px; /* 调整序号间距 */
+    margin-right: 15px; /* 调整序号间距 */
 }
 
 .result-actions {
     display: flex;
-    gap: 4px; /* 调整按钮间距 */
-    margin-right: 5px;
+    gap: 12px; /* 调整按钮间距 */
+    margin-right: 25px;
 }
 
 .fav-btn, .share-btn {
     width: 24px; /* 调整按钮大小 */
     height: 24px;
+	font-size: 20px;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -947,7 +976,7 @@ footer {
     }
     
     .result-actions {
-        margin-right: 5px;
+        margin-right: 25px;
     }
     
     .result-details {
