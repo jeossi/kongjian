@@ -557,7 +557,7 @@ function shareBook(e) {
     const book = state.searchResults.find(b => b.book_id === bookId);
     
     if (book) {
-        const shareText = `【Ajeo提示】：请前往浏览器粘贴【链接】收听 \n  ${book.title} \n 【链接】：\n ${window.location.href.split('#')[0]}#book_id=${bookId}`;
+        const shareText = `【Ajeo提示】请前往浏览器粘贴【链接】收听 \n  ${book.title} \n 【链接】：\n ${window.location.href.split('#')[0]}#book_id=${bookId}`;
         
         // 创建一个临时的textarea元素来复制文本
         const copyToClipboardFallback = (text) => {
