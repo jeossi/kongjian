@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>番茄看书</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" crossorigin="anonymous">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="index.css?v=8.11.1632">
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen flex flex-col">
+    <!-- 顶部导航栏 -->
+    <header class="bg-gray-800/80 backdrop-blur-md border-b border-gray-700 sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-3">
+            <!-- 桌面端布局 -->
+            <div class="hidden md:flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <i class="fa-solid fa-book text-indigo-400 text-xl"></i>
+                    <h1 class="text-xl font-bold tracking-tight">Ajeo 番茄看书v1.0</h1>
+                </div>
+                
+                <div class="relative flex-1 max-w-md mx-4">
+                    <div class="relative">
+                        <input type="text" id="search-input" placeholder="搜索书籍、作者或关键词..." 
+                               autocomplete="off"
+                               class="w-full bg-gray-700/50 border border-gray-600 rounded-full py-2 px-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm">
+                        <button id="search-btn" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- 热门搜索面板 -->
+                    <div id="hot-search-panel" class="hidden absolute top-full left-0 right-0 mt-1 bg-gray-800 border border-gray-700 rounded-lg shadow-lg z-50 overflow-hidden">
+                        <div class="flex justify-between items-center p-3 border-b border-gray-700">
+                            <h3 class="font-medium text-gray-300">热门搜索</h3>
+                            <button id="close-search-panel" class="text-gray-400 hover:text-white">
+                                <i class="fa-solid fa-times"></i>
+                            </button>
+                        </div>
+                        <div id="hot-keywords" class="p-3 grid grid-cols-3 gap-2">
+                            <!-- 热门关键词将通过JS动态生成 -->
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <button id="font-size-control" class="p-2 rounded-full hover:bg-gray-700 transition-colors">
+                        <i class="fa-solid fa-text-height text-gray-300"></i>
+                    </button>
+                    <button id="favorites-btn" class="px-3 py-1 rounded-md text-sm bg-gray-700 hover:bg-gray-600 transition-colors text-gray-300">
+                        收藏夹
+                    </button>
+                    <button id="share-btn" class="p-2 rounded-full hover:bg-gray-700 transition-colors">
+                        <i class="fa-solid fa-share-alt text-gray-300"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 移动端布局 -->
+            <div class="md:hidden">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center space-x-2">
+                        <i class="fa-solid fa-book text-indigo-400 text-xl"></i>
+                        <h1 class="text-lg font-bold tracking-tight">Ajeo 番茄看书</h1>
+                    </div>
+                    
+                    <div class="flex items-center space-x-2">
+                        <button id="font-size-control-mobile" class="p-2 rounded-full hover:bg-gray-700 transition-colors">
+                            <i class="fa-solid fa-text-height text-gray-300"></i>
+                        </button>
+                        <button id="favorites-btn-mobile" class="p-2 rounded-full hover:bg-gray-700 transition-colors text-gray-300">
+                            <i class="fa-solid fa-bookmark"></i>
+                        </button>
+                        <button id="share-btn-mobile" class="p-2 rounded-full hover:bg-gray-700 transition-colors">
+                            <i class="fa-solid fa-share-alt text-gray-300"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 移动端搜索框 -->
+                <div class="relative">
+                    <input type="text" id="search-input-mobile" placeholder="搜索书籍、作者或关键词..." 
+                           autocomplete="off"
+                           class="w-full bg-gray-700/50 border border-gray-600 rounded-full py-2 px-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm">
+                    <button id="search-btn-mobile" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </button>
+                </div>
+                
+                <!-- 移动端热门搜索面板 -->
+                <div id="hot-search-panel-mobile" class="hidden absolute top-full left-0 right-0 mt-1 bg-gray-800 border border-gray-700 rounded-lg shadow-lg z-50 overflow-hidden">
+                    <div class="flex justify-between items-center p-3 border-b border-gray-700">
+                        <h3 class="font-medium text-gray-300">热门搜索</h3>
+                        <button id="close-search-panel-mobile" class="text-gray-400 hover:text-white">
+                            <i class="fa-solid fa-times"></i>
+                        </button>
+                    </div>
+                    <div id="hot-keywords-mobile" class="p-3 grid grid-cols-2 gap-2">
+                        <!-- 热门关键词将通过JS动态生成 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <main class="flex-1 container mx-auto px-4 py-6">
+        <!-- 页面1: 书籍列表页 -->
+        <section id="books-page" class="block">
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold mb-4">推荐书籍</h2>
+            </div>
+            
+            <div id="books-loading" class="hidden flex justify-center items-center h-64">
+                <div class="text-center">
+                    <div class="inline-block animate-spin rounded-full h-10 w-10 border-2 border-indigo-500 border-t-transparent mb-3"></div>
+                    <p class="text-gray-400">加载书籍中...</p>
+                </div>
+            </div>
+            
+            <div id="books-empty" class="hidden flex flex-col items-center justify-center h-64 text-gray-400">
+                <i class="fa-solid fa-search text-5xl mb-4 opacity-20"></i>
+                <p>未找到相关书籍</p>
+                <p class="text-sm mt-2">尝试使用其他关键词搜索</p>
+            </div>
+            
+            <div id="books-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- 书籍卡片将通过JS动态生成 -->
+            </div>
+        </section>
+
+        <!-- 页面2: 章节列表页 -->
+        <section id="chapters-page" class="hidden">
+            <div class="mb-6 flex items-center justify-between">
+                <button id="back-to-books" class="flex items-center text-indigo-400 hover:text-indigo-300">
+                    <i class="fa-solid fa-arrow-left mr-2"></i> 返回书籍列表
+                </button>
+                <button id="scroll-to-top" class="p-2 bg-gray-700 rounded-full text-gray-300 hover:bg-gray-600 transition-colors">
+                    <i class="fa-solid fa-arrow-up"></i>
+                </button>
+            </div>
+            
+            <div class="mb-6">
+                <h2 id="book-title" class="text-2xl font-bold text-gray-100 mb-1"></h2>
+                <div class="flex flex-wrap gap-3 text-sm text-gray-400">
+                    <span id="book-author"></span>
+                    <span id="book-status"></span>
+                    <span id="book-update"></span>
+                </div>
+            </div>
+            
+            <div id="chapters-loading" class="hidden flex justify-center items-center h-64">
+                <div class="text-center">
+                    <div class="inline-block animate-spin rounded-full h-10 w-10 border-2 border-indigo-500 border-t-transparent mb-3"></div>
+                    <p class="text-gray-400">加载章节中...</p>
+                </div>
+            </div>
+            
+            <div id="chapters-container" class="bg-gray-800/50 rounded-xl border border-gray-700 divide-y divide-gray-700 max-h-[calc(100vh-240px)] overflow-y-auto pr-2">
+                <!-- 章节列表将通过JS动态生成 -->
+            </div>
+        </section>
+
+        <!-- 页面3: 阅读内容页 -->
+        <section id="reader-page" class="hidden">
+            <div class="mb-6 flex items-center justify-between">
+                <button id="back-to-chapters" class="flex items-center text-indigo-400 hover:text-indigo-300">
+                    <i class="fa-solid fa-arrow-left mr-2"></i> 返回章节列表
+                </button>
+                <div class="flex items-center space-x-2">
+                    <button id="decrease-font" class="p-2 bg-gray-700 rounded hover:bg-gray-600 transition-colors">
+                        <i class="fa-solid fa-minus text-sm"></i>
+                    </button>
+                    <button id="increase-font" class="p-2 bg-gray-700 rounded hover:bg-gray-600 transition-colors">
+                        <i class="fa-solid fa-plus text-sm"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="mb-4 text-center">
+                <h2 id="chapter-title" class="text-xl font-semibold text-gray-200"></h2>
+            </div>
+            
+            <div id="reader-loading" class="hidden flex justify-center items-center h-64">
+                <div class="text-center">
+                    <div class="inline-block animate-spin rounded-full h-10 w-10 border-2 border-indigo-500 border-t-transparent mb-3"></div>
+                    <p class="text-gray-400">加载内容中...</p>
+                </div>
+            </div>
+            
+            <div id="reader-content" class="bg-gray-800/60 rounded-xl p-8 md:p-12 min-h-[calc(100vh-300px)] text-gray-200 leading-relaxed transition-all duration-300" style="font-size: 18px; line-height: 1.8;">
+                <!-- 阅读内容将通过JS动态生成 -->
+            </div>
+            
+            <!-- 阅读导航控制 -->
+            <div id="reader-navigation" class="mt-8 flex justify-between items-center">
+                <button id="prev-page" class="px-6 py-3 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center">
+                    <i class="fa-solid fa-angle-left mr-2"></i> 上一页
+                </button>
+                
+                <div class="text-center">
+                    <div id="page-info" class="text-gray-400 text-sm">第 <span id="current-page"></span>/<span id="total-pages"></span> 页</div>
+                    <div id="chapter-info" class="text-gray-500 text-xs mt-1"></div>
+                </div>
+                
+                <button id="next-page" class="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items">
+                    下一页 <i class="fa-solid fa-angle-right ml-2"></i>
+                </button>
+            </div>
+        </section>
+    </main>
+
+    <!-- 字体大小调整面板 -->
+    <div id="font-size-panel" class="fixed bottom-6 right-6 bg-gray-800 border border-gray-700 rounded-lg shadow-xl p-4 z-40 hidden">
+        <h3 class="font-medium text-gray-300 mb-3">调整字体大小</h3>
+        <div class="flex items-center justify-between">
+            <button id="font-sm" class="text-sm p-2 hover:bg-gray-700 rounded">小</button>
+            <button id="font-md" class="text-base p-2 bg-gray-700 rounded">中</button>
+            <button id="font-lg" class="text-lg p-2 hover:bg-gray-700 rounded">大</button>
+            <button id="font-xl" class="text-xl p-2 hover:bg-gray-700 rounded">特大</button>
+        </div>
+        <button id="close-font-panel" class="absolute top-2 right-2 text-gray-400 hover:text-white">
+            <i class="fa-solid fa-times"></i>
+        </button>
+    </div>
+
+    <!-- 分享面板 -->
+    <div id="share-panel" class="fixed bottom-6 right-6 bg-gray-800 border border-gray-700 rounded-lg shadow-xl p-4 z-40 hidden">
+        <h3 class="font-medium text-gray-300 mb-3">分享</h3>
+        <div class="flex space-x-4 justify-center">
+            <button id="wechat-share-btn" class="flex flex-col items-center p-3 bg-gray-700 rounded-full hover:bg-gray-600 transition-colors">
+                <i class="fa-brands fa-weixin text-green-400 text-xl mb-1"></i>
+                <span class="text-xs text-gray-300">微信</span>
+            </button>
+            <button id="qq-share-btn" class="flex flex-col items-center p-3 bg-gray-700 rounded-full hover:bg-gray-600 transition-colors">
+                <i class="fa-brands fa-qq text-blue-400 text-xl mb-1"></i>
+                <span class="text-xs text-gray-300">QQ</span>
+            </button>
+            <button id="copy-link-btn" class="flex flex-col items-center p-3 bg-gray-700 rounded-full hover:bg-gray-600 transition-colors">
+                <i class="fa-solid fa-link text-indigo-400 text-xl mb-1"></i>
+                <span class="text-xs text-gray-300">复制链接</span>
+            </button>
+        </div>
+        <button id="close-share-panel" class="absolute top-2 right-2 text-gray-400 hover:text-white">
+            <i class="fa-solid fa-times"></i>
+        </button>
+    </div>
+
+    <!-- 收藏夹面板 -->
+    <div id="favorites-panel" class="fixed bottom-6 right-6 bg-gray-800 border border-gray-700 rounded-lg shadow-xl p-4 z-40 hidden w-80 max-h-[70vh] flex flex-col">
+        <div class="flex justify-between items-center mb-3">
+            <h3 class="font-medium text-gray-300">我的收藏</h3>
+            <button id="close-favorites-panel" class="text-gray-400 hover:text-white">
+                <i class="fa-solid fa-times"></i>
+            </button>
+        </div>
+        <div id="favorites-container" class="overflow-y-auto flex-1 pr-2">
+            <!-- 收藏书籍将通过JS动态生成 -->
+        </div>
+        <div class="mt-3 pt-3 border-t border-gray-700 text-sm text-gray-400">
+            共 <span id="favorites-count">0</span> 本收藏
+        </div>
+    </div>
+
+    <script src="script.js?v=8.11.1632"></script>
+</body>
+</html>
