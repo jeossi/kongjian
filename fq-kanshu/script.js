@@ -8,7 +8,7 @@ const appState = {
     totalPages: 3,
     booksData: [],
     chaptersData: [],
-    hotKeywords: "玄幻", "穿越", "科幻", "盗墓", "情感", "总裁", "兵王","赘婿", "神医", "重生", "宫斗宅斗", "悬疑", "民俗秘闻", "脑洞","学霸", "儿童", "言情"],
+    hotKeywords: ["玄幻", "穿越", "科幻", "盗墓", "情感", "总裁", "兵王","赘婿", "神医", "重生", "宫斗宅斗", "悬疑", "民俗秘闻", "脑洞","学霸", "儿童", "言情"],
     fontSize: 'md', // sm, md, lg, xl
     favorites: [],
     readingProgress: {},
