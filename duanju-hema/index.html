@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>河马短剧</title>
+    <link rel="icon" href="../Aje128.png" type="image/png" sizes="32x32">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css?v=8.13.1845">
+</head>
+<body>
+    <div class="container">
+        <!-- 搜索页面 -->
+        <div id="search-page">
+            <div class="header">
+                <div class="logo">
+                    <i class="fas fa-film logo-icon"></i>
+                    <div class="logo-text">河马短剧</div>
+                </div>
+                <div class="header-buttons">
+                    <button class="favorite-btn" id="favorite-button">我的收藏</button>
+                </div>
+            </div>
+
+            <div class="favorite-panel" id="favorite-panel">
+                <h3>我的收藏</h3>
+                <div class="favorite-list" id="favorite-list">
+                    <!-- 收藏列表将在这里动态生成 -->
+                </div>
+            </div>
+
+            <div class="search-container">
+                <div class="search-box">
+                    <input type="text" id="search-input" placeholder="输入剧名、分类或演员..." autocomplete="off">
+                    <button class="search-btn" id="search-button">
+                        <i class="fas fa-search"></i> 搜索
+                    </button>
+                </div>
+                <div class="hot-search" id="hot-search-panel">
+                    <h3>热门搜索</h3>
+                    <div class="hot-tags">                       
+<div class="tag">新剧</div>
+<div class="tag">逆袭</div>
+<div class="tag">霸总</div>
+<div class="tag">现代言情</div>
+<div class="tag">打脸虐渣</div>
+<div class="tag">豪门恩怨</div>
+<div class="tag">推荐榜</div>
+<div class="tag">神豪</div>
+<div class="tag">马甲</div>
+<div class="tag">都市日常</div>
+<div class="tag">战神归来</div>
+<div class="tag">小人物</div>
+<div class="tag">女性成长</div>
+<div class="tag">大女主</div>
+<div class="tag">穿越</div>
+<div class="tag">都市修仙</div>
+<div class="tag">强者回归</div>
+<div class="tag">亲情</div>
+<div class="tag">古装</div>
+<div class="tag">重生</div>
+<div class="tag">闪婚</div>
+<div class="tag">赘婿逆袭</div>
+<div class="tag">虐恋</div>
+<div class="tag">追妻</div>
+<div class="tag">天下无敌</div>
+<div class="tag">家庭伦理</div>
+<div class="tag">萌宝</div>
+<div class="tag">古风权谋</div>
+<div class="tag">职场</div>
+<div class="tag">奇幻脑洞</div>
+<div class="tag">异能</div>
+<div class="tag">无敌神医</div>
+<div class="tag">古风言情</div>
+<div class="tag">传承觉醒</div>
+<div class="tag">现言甜宠</div>
+<div class="tag">奇幻爱情</div>
+<div class="tag">乡村</div>
+<div class="tag">历史古代</div>
+<div class="tag">王妃</div>
+<div class="tag">高手下山</div>
+<div class="tag">娱乐圈</div>
+<div class="tag">强强联合</div>
+<div class="tag">破镜重圆</div>
+<div class="tag">暗恋成真</div>
+<div class="tag">民国</div>
+<div class="tag">欢喜冤家</div>
+<div class="tag">系统</div>
+<div class="tag">真假千金</div>
+<div class="tag">龙王</div>
+<div class="tag">校园</div>
+<div class="tag">穿书</div>
+<div class="tag">女帝</div>
+<div class="tag">团宠</div>
+<div class="tag">年代爱情</div>
+<div class="tag">玄幻仙侠</div>
+<div class="tag">青梅竹马</div>
+<div class="tag">悬疑推理</div>
+<div class="tag">皇后</div>
+<div class="tag">替身</div>
+<div class="tag">大叔</div>
+<div class="tag">喜剧</div>
+<div class="tag">剧情</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="loader" id="search-loader">
+                <div class="loader-spinner"></div>
+                <div>正在加载视频数据...</div>
+            </div>
+
+            <div class="results-container">
+                <div class="results-grid" id="results-grid">
+                    <!-- 搜索结果将在这里动态生成 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 播放页面 -->
+        <div id="player-page">
+            <div class="player-header">
+                <button class="back-btn" id="back-button">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <div class="book-details">
+                    <img src="https://via.placeholder.com/150x200/1e1e1e/ff6b6b?text=Book+Cover" alt="Book Cover" class="book-large-cover" id="player-book-cover">
+                    <div class="book-meta">
+                        <div class="book-meta-title" id="player-book-title">龙潜都市</div>
+                        <div class="book-meta-author" id="player-book-author">演员: 亦朵儿，帝九紫</div>
+                        <div class="book-meta-category" id="player-book-category">分类: 赘婿</div>
+                        <div class="book-meta-total" id="player-book-total">总集: 81集</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 16:9 视频容器 -->
+            <div class="video-container-aspect">
+                <div class="video-container-inner">
+                    <video id="video-player" controls></video>
+                </div>
+            </div>
+
+            <div class="player-container">
+                <div class="proxy-indicator" id="proxy-indicator">代理: 准备中...</div>
+                <div class="time-container">
+                    <span id="current-time">00:00</span>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" id="progress-bar">
+                            <div class="buffer" id="buffer"></div>
+                            <div class="progress" id="progress"></div>
+                        </div>
+                    </div>
+                    <span id="total-time">00:00</span>
+                </div>
+
+                <div class="controls-row">
+                    <button class="control-btn" id="prev-btn">
+                        <i class="fas fa-step-backward"></i>
+                    </button>
+                    <button class="control-btn play-btn" id="play-btn">
+                        <i class="fas fa-play"></i>
+                    </button>
+                    <button class="control-btn" id="next-btn">
+                        <i class="fas fa-step-forward"></i>
+                    </button>
+
+                    <div class="speed-control">
+                        <button class="speed-btn" id="speed-btn">
+                            <span>倍速</span>
+                        </button>
+                        <div class="speed-menu" id="speed-menu">
+                            <div class="speed-option" data-speed="0.5">0.5x</div>
+                            <div class="speed-option" data-speed="1.0">1.0x</div>
+                            <div class="speed-option" data-speed="1.25">1.25x</div>
+                            <div class="speed-option" data-speed="1.5">1.5x</div>
+                            <div class="speed-option" data-speed="1.75">1.75x</div>
+                            <div class="speed-option" data-speed="2.0">2.0x</div>
+                            <div class="speed-option" data-speed="2.5">2.5x</div>
+                            <div class="speed-option" data-speed="3.0">3.0x</div>
+                            <div class="speed-option" data-speed="4.0">4.0x</div>
+                            <div class="speed-option" data-speed="5.0">5.0x</div>
+                        </div>
+                    </div>
+
+                    <div class="volume-controls">
+                        <button class="control-btn" id="volume-btn">
+                            <i class="fas fa-volume-up"></i>
+                        </button>
+                        <div class="volume-bar" id="volume-bar">
+                            <div class="volume-level" id="volume-level"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chapters-container">
+                <div class="chapter-title">
+                    <i class="fas fa-list"></i> 剧集列表
+                </div>
+                <ul class="chapter-list" id="chapter-list">
+                    <!-- 剧集列表将在这里动态生成 -->
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js?v=8.13.1845"></script>
+</body>
+</html>
