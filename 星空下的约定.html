@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>星空下的约定</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: rgba(10, 15, 35, 0.85);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+            position: relative;
+            backdrop-filter: blur(10px);
+        }
+        
+        .header {
+            text-align: center;
+            padding: 30px 20px;
+            background: rgba(5, 10, 25, 0.7);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header::before {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            z-index: 0;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+            letter-spacing: 2px;
+        }
+        
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.8;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .content {
+            display: flex;
+            flex-direction: column;
+            padding: 30px;
+        }
+        
+        .player-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .cover-art {
+            flex: 1;
+            min-width: 300px;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            position: relative;
+            aspect-ratio: 1/1;
+            background: #0a0f25;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .cover-art img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+        
+        .cover-art:hover img {
+            transform: scale(1.05);
+        }
+        
+        .cover-art::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, transparent 60%, rgba(0, 0, 0, 0.7) 100%);
+            pointer-events: none;
+        }
+        
+        .track-info {
+            flex: 1;
+            min-width: 300px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .info-item {
+            margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px 20px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            backdrop-filter: blur(5px);
+        }
+        
+        .info-item i {
+            font-size: 1.2rem;
+            color: #4d9eff;
+        }
+        
+        .info-text {
+            flex: 1;
+        }
+        
+        .info-text h3 {
+            font-size: 0.9rem;
+            opacity: 0.7;
+            margin-bottom: 5px;
+        }
+        
+        .info-text p {
+            font-size: 1.2rem;
+            font-weight: 500;
+        }
+        
+        .detail-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 10px;
+        }
+        
+        .detail-btn a {
+            text-decoration: none;
+            color: #fff;
+            background: linear-gradient(to right, #4d9eff, #6a5af9);
+            padding: 12px 30px;
+            border-radius: 30px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(77, 158, 255, 0.4);
+        }
+        
+        .detail-btn a:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(77, 158, 255, 0.6);
+        }
+        
+        .audio-player {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
+        }
+        
+        .player-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .progress-container {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            cursor: pointer;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(to right, #4d9eff, #6a5af9);
+            border-radius: 4px;
+            transition: width 0.1s linear;
+        }
+        
+        .time-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-top: 5px;
+        }
+        
+        .control-buttons {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+        }
+        
+        .control-btn {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 1.5rem;
+            cursor: pointer;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .control-btn.play-pause {
+            background: linear-gradient(to right, #4d9eff, #6a5af9);
+            box-shadow: 0 5px 15px rgba(77, 158, 255, 0.4);
+            font-size: 1.8rem;
+        }
+        
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: scale(1.1);
+        }
+        
+        .control-btn:active {
+            transform: scale(0.95);
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            display: none;
+        }
+        
+        .loading-spinner {
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top: 4px solid #4d9eff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .stars {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .star {
+            position: absolute;
+            background: #fff;
+            border-radius: 50%;
+            animation: twinkle var(--duration) linear infinite;
+            opacity: 0;
+        }
+        
+        @keyframes twinkle {
+            0% { opacity: 0; }
+            50% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 20px;
+            background: rgba(5, 10, 25, 0.7);
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+        
+        @media (max-width: 768px) {
+            .player-container {
+                flex-direction: column;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .control-buttons {
+                gap: 15px;
+            }
+            
+            .control-btn {
+                width: 50px;
+                height: 50px;
+                font-size: 1.2rem;
+            }
+            
+            .control-btn.play-pause {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 星空背景 -->
+    <div class="stars"></div>
+    
+    <div class="container">
+        <div class="header">
+            <h1>星空下的约定</h1>
+            <p>浅蓝色的夜溢进窗来 我还在星空下等你</p>
+        </div>
+        
+        <div class="content">
+            <div class="player-container">
+                <div class="cover-art">
+                    <img id="cover" src="http://imagev2.xmcdn.com/group58/M02/4A/49/wKgLglzxE5TBIvexAAY3k79yQMc168.jpg!op_type=3&columns=640&rows=640" alt="专辑封面">
+                </div>
+                
+                <div class="track-info">
+                    <div class="info-item">
+                        <i class="fas fa-user"></i>
+                        <div class="info-text">
+                            <h3>音乐人</h3>
+                            <p id="nickname">音乐人王可鑫</p>
+                        </div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <i class="fas fa-music"></i>
+                        <div class="info-text">
+                            <h3>分类</h3>
+                            <p id="category">音乐</p>
+                        </div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <i class="fas fa-headphones"></i>
+                        <div class="info-text">
+                            <h3>曲目</h3>
+                            <p id="title">星空下的约定 | 浅蓝色的夜溢进窗来 我还在星空下等你</p>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-btn">
+                        <a id="detail-link" href="https://www.ximalaya.com/sound/327303442" target="_blank">
+                            <i class="fas fa-info-circle"></i> 查看详情
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="audio-player">
+                <div class="player-controls">
+                    <div class="progress-container" id="progress-container">
+                        <div class="progress-bar" id="progress-bar"></div>
+                    </div>
+                    <div class="time-info">
+                        <span id="current-time">0:00</span>
+                        <span id="duration">0:00</span>
+                    </div>
+                    <div class="control-buttons">
+                        <button class="control-btn" id="prev-btn">
+                            <i class="fas fa-step-backward"></i>
+                        </button>
+                        <button class="control-btn play-pause" id="play-pause-btn">
+                            <i class="fas fa-play"></i>
+                        </button>
+                        <button class="control-btn" id="next-btn">
+                            <i class="fas fa-step-forward"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="loading" id="loading">
+                <div class="loading-spinner"></div>
+                <p>正在加载下一首音乐...</p>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>@2025 Ajeossi | 大自然助眠 | 享受星空下的美好时光</p>
+        </div>
+    </div>
+    
+    <audio id="audio-player"></audio>
+    
+    <script>
+        // 创建星空背景
+        function createStars() {
+            const starsContainer = document.querySelector('.stars');
+            const starsCount = 150;
+            
+            for (let i = 0; i < starsCount; i++) {
+                const star = document.createElement('div');
+                star.classList.add('star');
+                
+                // 随机大小 (1-3px)
+                const size = Math.random() * 2 + 1;
+                star.style.width = `${size}px`;
+                star.style.height = `${size}px`;
+                
+                // 随机位置
+                star.style.left = `${Math.random() * 100}%`;
+                star.style.top = `${Math.random() * 100}%`;
+                
+                // 随机动画时长 (2-5秒)
+                const duration = Math.random() * 3 + 2;
+                star.style.setProperty('--duration', `${duration}s`);
+                
+                // 随机延迟
+                star.style.animationDelay = `${Math.random() * 5}s`;
+                
+                starsContainer.appendChild(star);
+            }
+        }
+        
+        // 初始化播放器
+        document.addEventListener('DOMContentLoaded', function() {
+            createStars();
+            
+            const audio = document.getElementById('audio-player');
+            const playPauseBtn = document.getElementById('play-pause-btn');
+            const progressBar = document.getElementById('progress-bar');
+            const progressContainer = document.getElementById('progress-container');
+            const currentTimeEl = document.getElementById('current-time');
+            const durationEl = document.getElementById('duration');
+            const loading = document.getElementById('loading');
+            const nextBtn = document.getElementById('next-btn');
+            
+            let currentTrack = null;
+            
+            // 格式化时间 (秒 -> mm:ss)
+            function formatTime(seconds) {
+                const minutes = Math.floor(seconds / 60);
+                const secs = Math.floor(seconds % 60);
+                return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
+            }
+            
+            // 更新进度条
+            function updateProgress(e) {
+                const { duration, currentTime } = audio;
+                if (isNaN(duration)) return;
+                
+                // 更新进度条宽度
+                const progressPercent = (currentTime / duration) * 100;
+                progressBar.style.width = `${progressPercent}%`;
+                
+                // 更新时间显示
+                currentTimeEl.textContent = formatTime(currentTime);
+                durationEl.textContent = formatTime(duration);
+            }
+            
+            // 设置进度条
+            function setProgress(e) {
+                const width = this.clientWidth;
+                const clickX = e.offsetX;
+                const duration = audio.duration;
+                
+                audio.currentTime = (clickX / width) * duration;
+            }
+            
+            // 播放/暂停切换
+            function togglePlayPause() {
+                if (audio.paused) {
+                    audio.play();
+                    playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
+                } else {
+                    audio.pause();
+                    playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+                }
+            }
+            
+            // 加载并播放音乐
+            function loadAndPlayMusic() {
+                loading.style.display = 'block';
+                
+                // API 地址
+                const apiUrl = 'https://api.cenguigui.cn/api/music/ximalaya_daziran.php';
+                
+                // 获取音乐数据
+                fetch(apiUrl)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.code === 200) {
+                            currentTrack = data;
+                            
+                            // 更新UI
+                            document.getElementById('nickname').textContent = data.nickname;
+                            document.getElementById('category').textContent = data.categoryName;
+                            document.getElementById('title').textContent = data.title;
+                            document.getElementById('cover').src = data.cover;
+                            document.getElementById('detail-link').href = data.link;
+                            
+                            // 设置音频源
+                            audio.src = data.url;
+                            audio.load();
+                            
+                            // 播放音频
+                            audio.play().then(() => {
+                                playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
+                                loading.style.display = 'none';
+                            }).catch(e => {
+                                console.error('播放失败:', e);
+                                loading.style.display = 'none';
+                                // 如果播放失败，2秒后重试
+                                setTimeout(loadAndPlayMusic, 2000);
+                            });
+                        } else {
+                            throw new Error(data.msg || '获取音乐失败');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('获取音乐出错:', error);
+                        loading.style.display = 'none';
+                        // 如果出错，2秒后重试
+                        setTimeout(loadAndPlayMusic, 2000);
+                    });
+            }
+            
+            // 下一首
+            function nextTrack() {
+                loadAndPlayMusic();
+            }
+            
+            // 事件监听器
+            playPauseBtn.addEventListener('click', togglePlayPause);
+            nextBtn.addEventListener('click', nextTrack);
+            audio.addEventListener('timeupdate', updateProgress);
+            audio.addEventListener('ended', nextTrack);
+            progressContainer.addEventListener('click', setProgress);
+            
+            // 初始化加载第一首音乐
+            loadAndPlayMusic();
+        });
+    </script>
+</body>
+</html>
