@@ -1,9 +1,13 @@
 <!DOCTYPE html>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>星空下的约定</title>
+	<link rel="icon" href="./Aje128.png" type="image/png" sizes="32x32">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -20,7 +24,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 20px;
+            padding: 8px;
             overflow-x: hidden;
         }
         
@@ -33,11 +37,12 @@
             box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
             position: relative;
             backdrop-filter: blur(10px);
+			line-height: 1.0;   /* 默认 1.5，改小会更紧凑 */
         }
         
         .header {
             text-align: center;
-            padding: 30px 20px;
+            padding: 8px 8px;
             background: rgba(5, 10, 25, 0.7);
             position: relative;
             overflow: hidden;
@@ -73,14 +78,14 @@
         .content {
             display: flex;
             flex-direction: column;
-            padding: 30px;
+            padding: 5px;
         }
         
         .player-container {
             display: flex;
             flex-wrap: wrap;
-            gap: 30px;
-            margin-bottom: 30px;
+            gap: 5px;
+            margin-bottom: 10px;
         }
         
         .cover-art {
@@ -130,11 +135,11 @@
         .info-item {
             margin-bottom: 20px;
             background: rgba(255, 255, 255, 0.1);
-            padding: 15px 20px;
+            padding: 8px 10px;
             border-radius: 12px;
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 8px;
             backdrop-filter: blur(5px);
         }
         
@@ -158,43 +163,17 @@
             font-weight: 500;
         }
         
-        .detail-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-top: 10px;
-        }
-        
-        .detail-btn a {
-            text-decoration: none;
-            color: #fff;
-            background: linear-gradient(to right, #4d9eff, #6a5af9);
-            padding: 12px 30px;
-            border-radius: 30px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            transition: all 0.3s ease;
-            box-shadow: 0 5px 15px rgba(77, 158, 255, 0.4);
-        }
-        
-        .detail-btn a:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(77, 158, 255, 0.6);
-        }
-        
         .audio-player {
             background: rgba(255, 255, 255, 0.08);
             border-radius: 15px;
-            padding: 25px;
+            padding: 10px;
             box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
         }
         
         .player-controls {
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 8px;
         }
         
         .progress-container {
@@ -227,7 +206,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 30px;
+            gap: 20px;
         }
         
         .control-btn {
@@ -251,6 +230,14 @@
             font-size: 1.8rem;
         }
         
+        /* 新增：详情按钮样式 */
+        .control-btn.detail-btn {
+            background: linear-gradient(to right, #4d9eff, #6a5af9);
+            font-size: 1.2rem;
+            width: 50px;
+            height: 50px;
+        }
+        
         .control-btn:hover {
             background: rgba(255, 255, 255, 0.1);
             transform: scale(1.1);
@@ -262,7 +249,7 @@
         
         .loading {
             text-align: center;
-            padding: 20px;
+            padding: 10px;
             display: none;
         }
         
@@ -307,7 +294,7 @@
         
         .footer {
             text-align: center;
-            padding: 20px;
+            padding: 5px;
             background: rgba(5, 10, 25, 0.7);
             font-size: 0.9rem;
             opacity: 0.7;
@@ -333,7 +320,14 @@
             }
             
             .control-btn.play-pause {
-                font-size: 1.5rem;
+                font-size: 1.8rem;
+            }
+            
+            /* 移动端调整详情按钮大小 */
+            .control-btn.detail-btn {
+                width: 45px;
+                height: 45px;
+                font-size: 1rem;
             }
         }
     </style>
@@ -358,7 +352,7 @@
                     <div class="info-item">
                         <i class="fas fa-user"></i>
                         <div class="info-text">
-                            <h3>音乐人</h3>
+                            <h3></h3>
                             <p id="nickname">音乐人王可鑫</p>
                         </div>
                     </div>
@@ -366,7 +360,7 @@
                     <div class="info-item">
                         <i class="fas fa-music"></i>
                         <div class="info-text">
-                            <h3>分类</h3>
+                            <h3></h3>
                             <p id="category">音乐</p>
                         </div>
                     </div>
@@ -374,15 +368,9 @@
                     <div class="info-item">
                         <i class="fas fa-headphones"></i>
                         <div class="info-text">
-                            <h3>曲目</h3>
+                            <h3></h3>
                             <p id="title">星空下的约定 | 浅蓝色的夜溢进窗来 我还在星空下等你</p>
                         </div>
-                    </div>
-                    
-                    <div class="detail-btn">
-                        <a id="detail-link" href="https://www.ximalaya.com/sound/327303442" target="_blank">
-                            <i class="fas fa-info-circle"></i> 查看详情
-                        </a>
                     </div>
                 </div>
             </div>
@@ -406,6 +394,10 @@
                         <button class="control-btn" id="next-btn">
                             <i class="fas fa-step-forward"></i>
                         </button>
+                        <!-- 新增：详情按钮 -->
+                        <button class="control-btn detail-btn" id="detail-btn" title="查看详情">
+                            <i class="fas fa-info"></i>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -417,7 +409,7 @@
         </div>
         
         <div class="footer">
-            <p>@2025 Ajeossi | 大自然助眠 | 享受星空下的美好时光</p>
+            <p>©2025 Ajeossi | 大自然助眠 </p>
         </div>
     </div>
     
@@ -465,6 +457,7 @@
             const durationEl = document.getElementById('duration');
             const loading = document.getElementById('loading');
             const nextBtn = document.getElementById('next-btn');
+            const detailBtn = document.getElementById('detail-btn'); // 新增：获取详情按钮
             
             let currentTrack = null;
             
@@ -528,7 +521,6 @@
                             document.getElementById('category').textContent = data.categoryName;
                             document.getElementById('title').textContent = data.title;
                             document.getElementById('cover').src = data.cover;
-                            document.getElementById('detail-link').href = data.link;
                             
                             // 设置音频源
                             audio.src = data.url;
@@ -561,9 +553,17 @@
                 loadAndPlayMusic();
             }
             
+            // 新增：详情按钮点击事件
+            function openDetail() {
+                if (currentTrack && currentTrack.link) {
+                    window.open(currentTrack.link, '_blank');
+                }
+            }
+            
             // 事件监听器
             playPauseBtn.addEventListener('click', togglePlayPause);
             nextBtn.addEventListener('click', nextTrack);
+            detailBtn.addEventListener('click', openDetail); // 新增：详情按钮事件
             audio.addEventListener('timeupdate', updateProgress);
             audio.addEventListener('ended', nextTrack);
             progressContainer.addEventListener('click', setProgress);
