@@ -9,8 +9,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>番茄听书</title>
     <link rel="icon" href="../Aje128.png" type="image/png" sizes="32x32">
+    <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css?v=8.15.1744">
+    <link rel="stylesheet" href="style.css?v=8.13.1447">
 </head>
 <body>
     <div class="container">
@@ -108,7 +109,7 @@
                     <span id="current-time">00:00</span>
                     <div class="progress-bar-container">
                         <div class="progress-bar" id="progress-bar">
-						  <!-- 新增缓冲条 -->
+                          <!-- 新增缓冲条 -->
                              <div class="buffer" id="buffer"></div>
                             <div class="progress" id="progress"></div>
                         </div>
@@ -137,7 +138,7 @@
                             <div class="speed-option" data-speed="1.25">1.25x</div>
                             <div class="speed-option" data-speed="1.5">1.5x</div>
                             <div class="speed-option" data-speed="1.75">1.75x</div>
-							<div class="speed-option" data-speed="2.0">2.0x</div>
+                            <div class="speed-option" data-speed="2.0">2.0x</div>
                             <div class="speed-option" data-speed="2.5">2.5x</div>
                             <div class="speed-option" data-speed="3.0">3.0x</div>
                         </div>
@@ -165,7 +166,14 @@
         </div>
     </div>
 
-    <script src="script.js?v=8.15.1744"></script>
+    <script src="script.js?v=8.13.1447"></script>
+    <script>
+        // 注册Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js')
+                .then(reg => console.log('Service Worker 注册成功:', reg.scope))
+                .catch(err => console.warn('Service Worker 注册失败:', err));
+        }
+    </script>
 </body>
 </html>
-
