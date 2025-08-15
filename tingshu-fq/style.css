@@ -531,7 +531,17 @@ body {
     50%  { transform: scale(1.2); }
     100% { transform: scale(1);   }
 }
-
+/* 媒体会话适配 */
+@media (display-mode: standalone) {
+    body {
+        padding-top: env(safe-area-inset-top);
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+    
+    .header {
+        padding-top: env(safe-area-inset-top);
+    }
+}
 /* 时间字体增大 */
 .time-container {
     display: flex;
@@ -1048,3 +1058,4 @@ body {
 .proxy-error {
     background-color: rgba(231, 76, 60, 0.7);
 }
+
