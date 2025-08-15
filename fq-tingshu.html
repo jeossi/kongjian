@@ -1,0 +1,1977 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>番茄听书</title>
+    <link rel="icon" href="../Aje128.png" type="image/png" sizes="32x32">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* 新增样式 */
+        .sleep-timer-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-left: 10px;
+        }
+        
+        .sleep-timer-btn {
+            background: rgba(255, 107, 107, 0.2);
+            color: var(--text-primary);
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+            transition: var(--transition);
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .sleep-timer-btn:hover {
+            background: rgba(255, 107, 107, 0.3);
+        }
+        
+        .timer-menu {
+            position: fixed;
+            bottom: auto;
+            top: 45%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--bg-tertiary);
+            border-radius: 10px;
+            padding: 10px 0;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            min-width: 120px;
+            z-index: 1000;
+        }
+        
+        .timer-menu.show {
+            display: block;
+        }
+        
+        .timer-option {
+            padding: 8px 15px;
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: center;
+            font-size: 16px;
+        }
+        
+        .timer-option:hover {
+            background: rgba(255, 107, 107, 0.2);
+        }
+        
+        .timer-active {
+            background: rgba(255, 107, 107, 0.2);
+            color: var(--accent-color);
+            font-weight: bold;
+        }
+        
+        /* 保持原有样式不变 */
+        :root {
+            --bg-primary: #121212;
+            --bg-secondary: #1e1e1e;
+            --bg-tertiary: #2a2a2a;
+            --text-primary: #ffffff;
+            --text-secondary: #b3b3b3;
+            --accent-color: #ff6b6b;
+            --accent-hover: #ff5252;
+            --progress-color: #ff6b6b;
+            --progress-bg: #444;
+            --card-radius: 12px;
+            --transition: all 0.3s ease;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--bg-primary), #000);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 0;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* 搜索页面样式 */
+        #search-page {
+            display: block;
+        }
+        
+        #player-page {
+            display: none;
+        }
+        
+        /* 头部样式 */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #333;
+            margin-bottom: 10px;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .logo-icon {
+            color: var(--accent-color);
+            font-size: 32px;
+        }
+        
+        .logo-text {
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(90deg, #ff6b6b, #ffa502);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .header-buttons {
+            display: flex;
+            gap: 15px;
+        }
+        
+        /* 收藏面板 */
+        .favorite-panel {
+            position: absolute;
+            top: 100px;
+            right: 20px;
+            background:#1a222d;
+            backdrop-filter: blur(10px);
+            border-radius: var(--card-radius);
+            padding: 20px;
+            z-index: 100;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            display: none;
+            width: 320px;
+            max-height: 500px;
+            overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .favorite-panel:hover {
+            border-color: rgba(255, 107, 107, 0.3);
+        }
+        
+        .favorite-panel h3 {
+            margin-bottom: 15px;
+            color: var(--accent-color);
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+        }
+        
+        .favorite-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            background: var(--bg-secondary);
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+        }
+        
+        .favorite-item:hover {
+            background: rgba(255, 107, 107, 0.1);
+        }
+        
+        .favorite-cover {
+            width: 50px;
+            height: 70px;
+            object-fit: cover;
+            border-radius: 5px;
+            margin-right: 15px;
+        }
+        
+        .favorite-info {
+            flex: 1;
+        }
+        
+        .favorite-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--text-primary);
+        }
+        
+        .favorite-author {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+        
+        .remove-favorite {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 16px;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 50%;
+            transition: var(--transition);
+        }
+        
+        .remove-favorite:hover {
+            background: rgba(255, 107, 107, 0.2);
+            color: var(--accent-color);
+        }
+        
+        .no-favorites {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-secondary);
+        }
+        
+        /* 搜索区域样式 */
+        .search-container {
+            position: relative;
+            margin: 10px 0 10px;
+        }
+        
+        .search-box {
+            height: 36px;
+            display: flex;
+            background: var(--bg-tertiary);
+            border-radius: 30px;
+            padding: 5px 5px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .search-box input {
+            height: 100%;
+            flex: 1;
+            background: transparent;
+            border: none;
+            padding: 5px 5px;
+            font-size: 18px;
+            color: var(--text-primary);
+            outline: none;
+        }
+        
+        .search-btn {
+            height: 100%;
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 1px 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: 600;
+        }
+        
+        .search-btn:hover {
+            background: var(--accent-hover);
+            transform: translateY(-2px);
+        }
+        
+        .hot-search {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--bg-tertiary);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 15px;
+            z-index: 10;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            display: none;
+        }
+        
+        .hot-search h3 {
+            margin-bottom: 15px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        
+        .hot-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .tag {
+            background: var(--bg-secondary);
+            padding: 3px 8px;
+            border-radius: 50px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .tag:hover {
+            background: var(--accent-color);
+            transform: translateY(-3px);
+        }
+        
+        /* 结果区域样式 */
+        .results-container {
+            margin-top: 20px;
+        }
+        
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+        }
+        
+        .result-card {
+            background: var(--bg-secondary);
+            border-radius: var(--card-radius);
+            overflow: hidden;
+            transition: var(--transition);
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        
+        .result-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .book-cover {
+            width: 100%;
+            height: 250px;
+            object-fit: contain;
+            object-position: left;
+            background-color: var(--bg-secondary);
+            padding: 5px;
+        }
+        
+        .book-info {
+            padding: 20px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .book-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--accent-color);
+        }
+        
+        .book-author, .book-type, .book-status {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 5px;
+        }
+        
+        .book-intro {
+            display: -webkit-box;
+            -webkit-line-clamp: 5;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-size: 15px;
+            margin-top: 15px;
+            line-height: 1.5;
+            color: #ddd;
+            flex: 1;
+        }
+        
+        .book-intro.expanded {
+            display: block;
+            -webkit-line-clamp: unset;
+        }
+        
+        .expand-btn {
+            background: transparent;
+            border: none;
+            color: var(--accent-color);
+            text-align: left;
+            padding: 5px 0;
+            cursor: pointer;
+            font-size: 14px;
+            transition: var(--transition);
+        }
+        
+        .expand-btn:hover {
+            color: var(--accent-hover);
+        }
+        
+        .book-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .book-btn:hover {
+            background: rgba(255, 107, 107, 0.2);
+        }
+        
+        .book-btn.favorited {
+            color: #ffd700;
+        }
+        
+        /* 播放页面样式 */
+        .player-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 6px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid #333;
+        }
+        
+        .back-btn {
+            background: transparent;
+            border: none;
+            color: var(--accent-color);
+            font-size: 32px;
+            cursor: pointer;
+            margin-right: 30px;
+            transition: var(--transition);
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+        
+        .back-btn:hover {
+            background: rgba(255, 107, 107, 0.2);
+            transform: scale(1.1);
+        }
+        
+        .book-details {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex: 1;
+            justify-content: flex-start;
+        }
+        
+        .book-large-cover {
+            width: 200px;
+            height: 200px;
+            border-radius: 10px;
+            object-fit: cover;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+            margin-left: 1%;
+        }
+        
+        .book-meta {
+            text-align: left;
+            margin-top: 10px;
+        }
+        
+        .book-meta-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: var(--accent-color);
+        }
+        
+        .book-meta-author, .book-meta-category {
+            font-size: 18px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+        
+        /* 播放器样式 */
+        .player-container {
+            background: var(--bg-tertiary);
+            border-radius: var(--card-radius);
+            padding: 5px;
+            margin-bottom: 10px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+        
+        .proxy-indicator {
+            position: absolute;
+            top: -40px;
+            right: 10px;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 14px;
+            z-index: 100;
+        }
+        
+        .proxy-success { background-color: #2ecc71; }
+        .proxy-warning { background-color: #f1c40f; animation: pulse 1s infinite; }
+        .proxy-error   { background-color: #e74c3c; }
+        @keyframes pulse {
+            0%   { transform: scale(1);   }
+            50%  { transform: scale(1.2); }
+            100% { transform: scale(1);   }
+        }
+        
+        .time-container {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 18px;
+            color: var(--text-primary);
+            align-items: center;
+        }
+        
+        .progress-bar-container {
+            flex: 1;
+            margin: 0 10px;
+        }
+        
+        .progress-bar {
+            height: 6px;
+            background: var(--progress-bg);
+            border-radius: 3px;
+            cursor: pointer;
+            position: relative;
+            max-width: 95%;
+            margin: 0 auto;
+        }
+        
+        .buffer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+            width: 0%;
+            z-index: 1;
+        }
+        
+        .progress {
+            height: 100%;
+            background: var(--progress-color);
+            border-radius: 3px;
+            width: 0%; 
+            position: relative;
+            z-index: 2;
+        }
+        
+        .controls-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: nowrap;
+            width: 100%;
+            margin: 0 auto;
+            gap: 15px;
+            white-space: nowrap;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            padding: 10px 0;
+            min-width: min-content;
+        }
+        
+        .controls-row::-webkit-scrollbar {
+            height: 5px;
+        }
+        
+        .controls-row::-webkit-scrollbar-track {
+            background: transparent;
+            display: none;
+        }
+        
+        .controls-row::-webkit-scrollbar-thumb {
+            background: var(--accent-color);
+            border-radius: 5px;
+        }
+        
+        .main-controls {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: nowrap;
+        }
+        
+        .control-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            font-size: 28px;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            padding: 0;
+            flex-shrink: 0;
+        }
+        
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .play-btn {
+            background: var(--accent-color);
+            width: 40px;
+            height: 40px;
+            font-size: 28px;
+        }
+        
+        .play-btn:hover {
+            background: var(--accent-hover);
+            transform: scale(1.05);
+        }
+        
+        .volume-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+        
+        .volume-bar {
+            width: 120px;
+            height: 6px;
+            background: var(--progress-bg);
+            border-radius: 2px;
+            position: relative;
+            flex-shrink: 0;
+        }
+        
+        .volume-level {
+            height: 100%;
+            background: var(--progress-color);
+            border-radius: 2px;
+            width: 60%;
+        }
+        
+        .speed-control {
+            position: relative;
+            display: inline-block;
+            flex-shrink: 0;
+        }
+        
+        .speed-btn {
+            background: rgba(255, 107, 107, 0.2);
+            color: var(--text-primary);
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+            transition: var(--transition);
+            width: 40px;
+            height: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 5px;
+            line-height: 1.2;
+        }
+        
+        .speed-btn:hover {
+            background: rgba(255, 107, 107, 0.3);
+        }
+        
+        .speed-menu {
+            position: fixed;
+            bottom: auto;
+            top: 45%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--bg-tertiary);
+            border-radius: 10px;
+            padding: 10px 0;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            display: none;
+            min-width: 100px;
+            z-index: 1000;
+        }
+        
+        .speed-menu.show {
+            display: block;
+        }
+        
+        .speed-option {
+            padding: 8px 15px;
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: center;
+            font-size: 16px;
+        }
+        
+        .speed-option:hover {
+            background: rgba(255, 107, 107, 0.2);
+        }
+        
+        /* 章节列表样式 */
+        .chapters-container {
+            background: var(--bg-secondary);
+            border-radius: var(--card-radius);
+            padding: 6px;
+            max-height: 400px;
+            overflow-y: auto;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .chapter-title {
+            font-size: 20px;
+            margin-bottom: 6px;
+            color: var(--accent-color);
+            padding-bottom: 10px;
+            border-bottom: 1px solid #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .chapter-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .chapter-item {
+            padding: 6px 8px 6px 65px;
+            border-bottom: 1px solid #333;
+            cursor: pointer;
+            transition: var(--transition);
+            border-radius: 5px;
+            position: relative;
+        }
+        
+        .chapter-item:hover {
+            background: rgba(255, 107, 107, 0.1);
+        }
+        
+        .chapter-item.active {
+            background: rgba(255, 107, 107, 0.2);
+            color: var(--accent-color);
+            font-weight: 600;
+            padding-left: 100px;
+        }
+        
+        .chapter-item.active::before {
+            content: "\f028";
+            font-family: "Font Awesome 5 Free";
+            font-weight: 900;
+            position: absolute;
+            left: 45px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--accent-color);
+            font-size: 16px;
+        }
+        
+        .chapter-number {
+            position: absolute;
+            left: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            width: 30px;
+            text-align: right;
+            padding-right: 5px;
+            z-index: 1;
+        }
+        
+        .chapter-item.active .chapter-number {
+            left: 5px;
+        }
+        
+        /* 加载动画 */
+        .loader {
+            display: none;
+            text-align: center;
+            padding: 30px;
+        }
+        
+        .loader-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255, 255, 255, 0.1);
+            border-top: 5px solid var(--accent-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* 错误提示 */
+        .error-message {
+            color: #ff6b6b;
+            text-align: center;
+            padding: 20px;
+            margin: 20px 0;
+            background: rgba(255, 107, 107, 0.1);
+            border-radius: 10px;
+        }
+        
+        /* 提示消息样式 */
+        .toast-message {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 4px;
+            z-index: 9999;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .toast-message.show {
+            opacity: 1;
+        }
+        
+        /* 手动复制容器样式 */
+        .manual-copy-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        
+        .manual-copy-box {
+            background: var(--bg-secondary);
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 90%;
+            width: 500px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .manual-copy-box h3 {
+            margin-bottom: 15px;
+            color: var(--accent-color);
+        }
+        
+        .copy-textarea {
+            width: 100%;
+            height: 120px;
+            padding: 10px;
+            margin-bottom: 15px;
+            background: var(--bg-tertiary);
+            border: 1px solid #444;
+            border-radius: 5px;
+            color: var(--text-primary);
+            resize: none;
+            font-family: inherit;
+        }
+        
+        .close-copy-btn {
+            width: 100%;
+            padding: 10px;
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: var(--transition);
+        }
+        
+        .close-copy-btn:hover {
+            background: var(--accent-hover);
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 10px;
+            }
+        
+            .book-details {
+                 flex-direction: column;
+            align-items: flex-start;
+            text-align: left;
+            }
+        
+            .controls-row {
+                flex-direction: row;
+                gap: 15px;
+                overflow-x: auto;
+                justify-content: flex-start;
+                flex-wrap: nowrap;
+                padding: 10px 0;
+            }
+        
+            .main-controls {
+                flex-wrap: nowrap;
+                gap: 15px;
+                justify-content: center;
+                width: 100%;
+            }
+        
+            .volume-controls, .speed-control {
+                display: flex;
+                align-items: center;
+                margin: 0;
+                flex: 1;
+                justify-content: center;
+            }
+        
+            .volume-bar {
+                width: 80px;
+            }
+        
+            .speed-btn {
+                font-size: 16px;
+                min-width: 40px;
+                width: 40px;
+                height: 40px;
+            }
+        
+            .chapter-item {
+                padding-left: 65px;
+            }
+        
+            .chapter-item.active {
+                padding-left: 85px;
+            }
+        
+            .chapter-number {
+                width: 30px;
+            }
+        
+            .speed-menu {
+                position: fixed;
+                top: 45%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                z-index: 9999;
+            }
+            .book-large-cover {
+                align-self: flex-start;
+                margin-left: 1%;
+            }
+            
+            .favorite-panel {
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                width: 90%;
+                max-width: 400px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .main-controls {
+                gap: 5px;
+                width: 100%;
+                justify-content: space-between;
+            }
+        
+            .control-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 28px;
+            }
+        
+            .play-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 28px;
+            }
+        
+            .volume-bar {
+                width: 60px;
+            }
+        
+            .speed-btn {
+                min-width: 40px;
+                height: 40px;
+                font-size: 16px;
+            }
+        
+            .controls-row {
+                gap: 15px;
+            }
+            
+            .volume-controls {
+                min-width: 100px;
+            }
+        }
+        
+        /* 代理状态指示器 */
+        .proxy-success {
+            background-color: rgba(46, 204, 113, 0.7);
+        }
+        
+        .proxy-warning {
+            background-color: rgba(241, 196, 15, 0.7);
+        }
+        
+        .proxy-error {
+            background-color: rgba(231, 76, 60, 0.7);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 搜索页面 -->
+        <div id="search-page">
+            <div class="header">
+                <div class="logo">
+                    <i class="fas fa-book-open logo-icon"></i>
+                    <div class="logo-text">番茄听书</div>
+                </div>
+                <div class="header-buttons">
+                    <button class="favorite-btn" id="favorite-button">我的收藏</button>
+                </div>
+            </div>
+
+            <div class="favorite-panel" id="favorite-panel">
+                <h3>我的收藏</h3>
+                <div class="favorite-list" id="favorite-list">
+                    <!-- 收藏列表将在这里动态生成 -->
+                </div>
+            </div>
+
+            <div class="search-container">
+                <div class="search-box">
+                    <input type="text" id="search-input" placeholder="输入书名、分类或作者..." autocomplete="off">
+                    <button class="search-btn" id="search-button">
+                        <i class="fas fa-search"></i> 搜索
+                    </button>
+                </div>
+                <div class="hot-search" id="hot-search-panel">
+                    <h3>热门搜索</h3>
+                    <div class="hot-tags">
+                        <div class="tag">都市</div>
+                        <div class="tag">兵王</div>
+                        <div class="tag">赘婿</div>
+                        <div class="tag">灵异</div>
+                        <div class="tag">悬疑</div>
+                        <div class="tag">穿越</div>
+                        <div class="tag">玄幻</div>
+                        <div class="tag">奇幻仙侠</div>
+                        <div class="tag">传统玄幻</div>
+                        <div class="tag">言情</div>
+                        <div class="tag">现代言情</div>
+                        <div class="tag">古代言情</div>
+                        <div class="tag">先婚后爱</div>
+                        <div class="tag">多女主</div>
+                        <div class="tag">神医</div>
+                        <div class="tag">医术</div>
+                        <div class="tag">重生</div>
+                        <div class="tag">民俗秘闻</div>
+                        <div class="tag">宫斗宅斗</div>
+                        <div class="tag">励志成功</div>
+                        <div class="tag">名人传</div>
+                        <div class="tag">学霸</div>
+                        <div class="tag">儿童</div>
+                        <div class="tag">现言日常</div>
+                        <div class="tag">脑洞</div>
+                        <div class="tag">历史古代</div>
+                        <div class="tag">历史脑洞</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="loader" id="search-loader">
+                <div class="loader-spinner"></div>
+                <div>正在加载书籍数据...</div>
+            </div>
+
+            <div class="results-container">
+                <div class="results-grid" id="results-grid">
+                    <!-- 搜索结果将在这里动态生成 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 播放页面 -->
+        <div id="player-page">
+            <div class="player-header">
+                <button class="back-btn" id="back-button">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <div class="book-details">
+                    <img src="https://via.placeholder.com/150x200/1e1e1e/ff6b6b?text=Book+Cover" alt="Book Cover" class="book-large-cover" id="player-book-cover">
+                    <div class="book-meta">
+                        <div class="book-meta-title" id="player-book-title">龙潜都市</div>
+                        <div class="book-meta-author" id="player-book-author">播音: 亦朵儿，帝九紫</div>
+                        <div class="book-meta-category" id="player-book-category">分类: 赘婿</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="player-container">
+                <div class="proxy-indicator" id="proxy-indicator">代理: 准备中...</div>
+                <div class="time-container">
+                    <span id="current-time">00:00</span>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" id="progress-bar">
+                            <div class="buffer" id="buffer"></div>
+                            <div class="progress" id="progress"></div>
+                        </div>
+                    </div>
+                    <span id="total-time">00:00</span>
+                </div>
+
+                <div class="controls-row">
+                    <button class="control-btn" id="prev-btn">
+                        <i class="fas fa-step-backward"></i>
+                    </button>
+                    <button class="control-btn play-btn" id="play-btn">
+                        <i class="fas fa-play"></i>
+                    </button>
+                    <button class="control-btn" id="next-btn">
+                        <i class="fas fa-step-forward"></i>
+                    </button>
+
+                    <div class="speed-control">
+                        <button class="speed-btn" id="speed-btn">
+                            <span>倍速</span>
+                        </button>
+                        <div class="speed-menu" id="speed-menu">
+                            <div class="speed-option" data-speed="0.5">0.5x</div>
+                            <div class="speed-option" data-speed="1.0">1.0x</div>
+                            <div class="speed-option" data-speed="1.25">1.25x</div>
+                            <div class="speed-option" data-speed="1.5">1.5x</div>
+                            <div class="speed-option" data-speed="1.75">1.75x</div>
+                            <div class="speed-option" data-speed="2.0">2.0x</div>
+                            <div class="speed-option" data-speed="2.5">2.5x</div>
+                            <div class="speed-option" data-speed="3.0">3.0x</div>
+                        </div>
+                    </div>
+                    
+                    <div class="sleep-timer-container">
+                        <button class="sleep-timer-btn" id="sleep-timer-btn" title="睡眠定时器">
+                            <i class="fas fa-bed"></i>
+                        </button>
+                        <div class="timer-menu" id="timer-menu">
+                            <div class="timer-option" data-minutes="0">关闭</div>
+                            <div class="timer-option" data-minutes="15">15分钟</div>
+                            <div class="timer-option" data-minutes="30">30分钟</div>
+                            <div class="timer-option" data-minutes="60">60分钟</div>
+                            <div class="timer-option" data-minutes="90">90分钟</div>
+                            <div class="timer-option" data-minutes="120">120分钟</div>
+                        </div>
+                    </div>
+                    
+                    <div class="volume-controls">
+                        <button class="control-btn" id="volume-btn">
+                            <i class="fas fa-volume-up"></i>
+                        </button>
+                        <div class="volume-bar" id="volume-bar">
+                            <div class="volume-level" id="volume-level"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chapters-container">
+                <div class="chapter-title">
+                    <i class="fas fa-list"></i> 章节列表
+                    <div style="margin-left: auto; font-size: 16px;">
+                        共 <span id="chapter-count">0</span> 章
+                    </div>
+                </div>
+                <ul class="chapter-list" id="chapter-list">
+                    <!-- 章节列表将在这里动态生成 -->
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ================= 全局状态 =================
+        const state = {
+            currentPage: 'search',
+            currentBook: null,
+            currentChapterIndex: 0,
+            chapters: [],
+            audio: new Audio(),
+            isPlaying: false,
+            searchResults: [],
+            playbackRate: 1.0,
+            retryCount: 0,
+            maxRetry: 1,
+            retryTimer: null,
+            proxy: 'https://ajeo.cc/',
+            isAudioLoaded: false,
+            sleepTimer: null,
+            sleepTimerMinutes: 0
+        };
+
+        // 防抖锁
+        let isLoadingAudio = false;
+
+        // ================= DOM 节点 =================
+        const dom = {
+            searchPage: document.getElementById('search-page'),
+            playerPage: document.getElementById('player-page'),
+            searchInput: document.getElementById('search-input'),
+            searchButton: document.getElementById('search-button'),
+            hotSearchPanel: document.getElementById('hot-search-panel'),
+            resultsGrid: document.getElementById('results-grid'),
+            searchLoader: document.getElementById('search-loader'),
+            backButton: document.getElementById('back-button'),
+            playerBookCover: document.getElementById('player-book-cover'),
+            playerBookTitle: document.getElementById('player-book-title'),
+            playerBookAuthor: document.getElementById('player-book-author'),
+            playerBookCategory: document.getElementById('player-book-category'),
+            chapterList: document.getElementById('chapter-list'),
+            currentTime: document.getElementById('current-time'),
+            totalTime: document.getElementById('total-time'),
+            progressBar: document.getElementById('progress-bar'),
+            progress: document.getElementById('progress'),
+            buffer: document.getElementById('buffer'),
+            playButton: document.getElementById('play-btn'),
+            prevButton: document.getElementById('prev-btn'),
+            nextButton: document.getElementById('next-btn'),
+            volumeButton: document.getElementById('volume-btn'),
+            volumeBar: document.getElementById('volume-bar'),
+            volumeLevel: document.getElementById('volume-level'),
+            speedBtn: document.getElementById('speed-btn'),
+            speedMenu: document.getElementById('speed-menu'),
+            proxyIndicator: document.getElementById('proxy-indicator'),
+            favoriteButton: document.getElementById('favorite-button'),
+            favoritePanel: document.getElementById('favorite-panel'),
+            favoriteList: document.getElementById('favorite-list'),
+            sleepTimerBtn: document.getElementById('sleep-timer-btn'),
+            timerMenu: document.getElementById('timer-menu'),
+            chapterCount: document.getElementById('chapter-count')
+        };
+
+        // ================= 事件绑定 =================
+        function setupEventListeners() {
+            dom.searchInput.addEventListener('focus', () => dom.hotSearchPanel.style.display = 'block');
+            dom.searchInput.addEventListener('blur', () => setTimeout(() => dom.hotSearchPanel.style.display = 'none', 200));
+            document.querySelectorAll('.tag').forEach(tag => tag.addEventListener('click', () => {
+                dom.searchInput.value = tag.textContent;
+                performSearch();
+                dom.hotSearchPanel.style.display = 'none';
+            }));
+            dom.searchButton.addEventListener('click', performSearch);
+            dom.searchInput.addEventListener('keypress', e => { if (e.key === 'Enter') performSearch(); });
+            dom.backButton.addEventListener('click', () => { showPage('search'); cleanupAudio(); });
+            dom.playButton.addEventListener('click', togglePlay);
+            dom.prevButton.addEventListener('click', playPrevChapter);
+            dom.nextButton.addEventListener('click', playNextChapter);
+            dom.progressBar.addEventListener('click', e => {
+                const percent = (e.clientX - dom.progressBar.getBoundingClientRect().left) / dom.progressBar.offsetWidth;
+                state.audio.currentTime = percent * state.audio.duration;
+            });
+            dom.volumeButton.addEventListener('click', toggleMute);
+            dom.speedBtn.addEventListener('click', e => { e.stopPropagation(); dom.speedMenu.classList.toggle('show'); });
+            document.querySelectorAll('.speed-option').forEach(opt => opt.addEventListener('click', () => {
+                const speed = parseFloat(opt.dataset.speed);
+                state.audio.playbackRate = speed; state.playbackRate = speed;
+                dom.speedBtn.innerHTML = `<span>${speed}x</span>`;
+                dom.speedMenu.classList.remove('show');
+            }));
+            document.addEventListener('click', e => {
+                if (!dom.speedBtn.contains(e.target) && !dom.speedMenu.contains(e.target)) dom.speedMenu.classList.remove('show');
+            });
+            state.audio.addEventListener('timeupdate', updateProgressBar);
+            state.audio.addEventListener('progress', updateBufferBar);
+            state.audio.addEventListener('ended', playNextChapter);
+            state.audio.addEventListener('loadedmetadata', () => {
+                dom.totalTime.textContent = formatTime(state.audio.duration);
+                restorePlaybackPosition();
+                updateBufferBar();
+            });
+            state.audio.addEventListener('error', () => {
+                if (state.isAudioLoaded || state.audio.currentTime > 0) {
+                    console.warn('播放中出错，停止重试');
+                    updateProxyIndicator('error');
+                    return;
+                }
+                if (state.retryCount < state.maxRetry) {
+                    state.retryCount++;
+                    updateProxyIndicator('retry');
+                    state.retryTimer = setTimeout(() => {
+                        const chapter = state.chapters[state.currentChapterIndex];
+                        if (chapter) playChapterAudio(chapter);
+                    }, 3000);
+                } else {
+                    updateProxyIndicator('error');
+                }
+            });
+            state.audio.addEventListener('playing', () => {
+                state.isAudioLoaded = true;
+                console.log('音频成功开始播放');
+            });
+            dom.favoriteButton.addEventListener('click', toggleFavoritePanel);
+            document.addEventListener('click', e => {
+                if (!dom.favoriteButton.contains(e.target) && !dom.favoritePanel.contains(e.target)) {
+                    dom.favoritePanel.style.display = 'none';
+                }
+            });
+            dom.sleepTimerBtn.addEventListener('click', e => {
+                e.stopPropagation();
+                dom.timerMenu.classList.toggle('show');
+            });
+            document.querySelectorAll('.timer-option').forEach(opt => opt.addEventListener('click', setSleepTimer));
+            document.addEventListener('click', e => {
+                if (!dom.sleepTimerBtn.contains(e.target) && !dom.timerMenu.contains(e.target)) {
+                    dom.timerMenu.classList.remove('show');
+                }
+            });
+        }
+        function setVolumeFromEvent(e) {
+            const rect = dom.volumeBar.getBoundingClientRect();
+            const x = (e.clientX ?? e.touches[0].clientX) - rect.left;
+            const percent = Math.max(0, Math.min(1, x / rect.width));
+            state.audio.volume = percent;
+            updateVolumeUI();
+        }
+        dom.volumeBar.addEventListener('click', setVolumeFromEvent);
+        dom.volumeBar.addEventListener('touchstart', e => {
+            e.preventDefault();
+            setVolumeFromEvent(e);
+        });
+        dom.volumeBar.addEventListener('touchmove', e => {
+            e.preventDefault();
+            setVolumeFromEvent(e);
+        });
+
+        // ================= 页面切换 =================
+        function showPage(page) {
+            if (page === 'search') {
+                dom.searchPage.style.display = 'block';
+                dom.playerPage.style.display = 'none';
+                state.currentPage = 'search';
+            } else {
+                dom.searchPage.style.display = 'none';
+                dom.playerPage.style.display = 'block';
+                state.currentPage = 'player';
+            }
+        }
+
+        // ================= 代理指示器 =================
+        function updateProxyIndicator(status) {
+            dom.proxyIndicator.className = 'proxy-indicator';
+            switch (status) {
+                case 'success':
+                    dom.proxyIndicator.classList.add('proxy-success');
+                    dom.proxyIndicator.innerHTML = '<i class="fas fa-check"></i>';
+                    break;
+                case 'retry':
+                    dom.proxyIndicator.classList.add('proxy-warning');
+                    dom.proxyIndicator.innerHTML = '<i class="fas fa-redo-alt"></i>';
+                    break;
+                case 'error':
+                    dom.proxyIndicator.classList.add('proxy-error');
+                    dom.proxyIndicator.innerHTML = '<i class="fas fa-times"></i>';
+                    break;
+                default:
+                    dom.proxyIndicator.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>';
+            }
+        }
+
+        // ================= 缓冲条更新 =================
+        function updateBufferBar() {
+            if (!state.audio || !state.audio.buffered || state.audio.buffered.length === 0) {
+                dom.buffer.style.width = '0%';
+                return;
+            }
+            try {
+                const bufferedEnd = state.audio.buffered.end(state.audio.buffered.length - 1);
+                const bufferedPercent = (bufferedEnd / state.audio.duration) * 100;
+                dom.buffer.style.width = `${bufferedPercent}%`;
+            } catch (e) {
+                console.warn('更新缓冲条时出错:', e);
+            }
+        }
+
+        // ================= 搜索 =================
+        async function performSearch() {
+            const query = dom.searchInput.value.trim() || '都市';
+            dom.searchLoader.style.display = 'block';
+            dom.resultsGrid.innerHTML = '';
+            try {
+                const res = await fetch(`https://api.cenguigui.cn/api/tingshu/?name=${encodeURIComponent(query)}&page=1`);
+                const data = await res.json();
+                if (data.code === 200 && data.data) {
+                    state.searchResults = data.data;
+                    renderSearchResults(data.data);
+                } else throw new Error('未找到搜索结果');
+            } catch (err) {
+                dom.resultsGrid.innerHTML = `
+                    <div class="error-message">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <p>搜索失败: ${err.message}</p>
+                        <button class="search-btn" onclick="performSearch()" style="margin-top:10px;padding:5px 15px">重新加载</button>
+                    </div>`;
+            } finally {
+                dom.searchLoader.style.display = 'none';
+            }
+        }
+        function renderSearchResults(books) {
+            dom.resultsGrid.innerHTML = '';
+            books.forEach(b => {
+                const card = document.createElement('div');
+                card.className = 'result-card';
+                const isFavorited = isBookFavorited(b.book_id);
+                card.innerHTML = `
+                    <img src="${b.cover}" alt="${b.title}" class="book-cover">
+                    <div class="book-info">
+                        <div class="book-title">${b.title}</div>
+                        <div class="book-author">播音: ${b.author}</div>
+                        <div class="book-type">分类: ${b.type}</div>
+                        <div class="book-status">${b.CntPay}</div>
+                        <div class="book-intro">${b.intro}</div>
+                        <button class="expand-btn">展开</button>
+                        <div class="book-buttons">
+                            <button class="book-btn favorite-book-btn ${isFavorited ? 'favorited' : ''}" 
+                                data-bookid="${b.book_id}" title="${isFavorited ? '已收藏' : '收藏'}">
+                                <i class="${isFavorited ? 'fas' : 'far'} fa-star"></i> 收藏
+                            </button>
+                            <button class="book-btn share-book-btn" data-bookid="${b.book_id}" title="分享">
+                                <i class="fas fa-share-alt"></i> 分享
+                            </button>
+                        </div>
+                    </div>`;
+                card.addEventListener('click', (e) => {
+                    if (!e.target.closest('.book-btn') && !e.target.closest('.expand-btn')) {
+                        loadBookDetails(b.book_id);
+                    }
+                });
+                card.querySelector('.favorite-book-btn').addEventListener('click', toggleFavorite);
+                card.querySelector('.share-book-btn').addEventListener('click', shareBook);
+                card.querySelector('.expand-btn').addEventListener('click', toggleExpand);
+                dom.resultsGrid.appendChild(card);
+            });
+        }
+
+        // ================= 书籍详情 =================
+        async function loadBookDetails(bookId) {
+            try {
+                const res = await fetch(`https://api.cenguigui.cn/api/tingshu/?book_id=${bookId}`);
+                const data = await res.json();
+                if (data.code === 200 && data.data) {
+                    state.currentBook = data;
+                    state.chapters = data.data;
+                    state.retryCount = 0;
+                    state.isAudioLoaded = false;
+                    renderPlayerPage();
+                    showPage('player');
+                    if (state.chapters.length) {
+                        const savedProgress = getSavedProgress(bookId);
+                        if (savedProgress) {
+                            state.currentChapterIndex = savedProgress.chapterIndex;
+                            playChapter(state.currentChapterIndex);
+                        } else {
+                            state.currentChapterIndex = 0;
+                            playChapter(0);
+                        }
+                    }
+                } else throw new Error('加载书籍详情失败');
+            } catch (err) { 
+                showToast(`加载失败: ${err.message}`);
+                console.error(err); 
+            }
+        }
+        function renderPlayerPage() {
+            if (!state.currentBook) return;
+            const { book_name, author, category, book_pic } = state.currentBook;
+            dom.playerBookCover.src = book_pic;
+            dom.playerBookTitle.textContent = book_name;
+            dom.playerBookAuthor.textContent = `播音: ${author}`;
+            dom.playerBookCategory.textContent = `分类: ${category}`;
+            dom.chapterList.innerHTML = '';
+            dom.chapterCount.textContent = state.chapters.length;
+            
+            state.chapters.forEach((c, i) => {
+                const li = document.createElement('li');
+                li.className = 'chapter-item' + (i === state.currentChapterIndex ? ' active' : '');
+                li.innerHTML = `<span class="chapter-number">${i + 1}</span>${c.title}`;
+                li.addEventListener('click', () => playChapter(i));
+                dom.chapterList.appendChild(li);
+            });
+            setTimeout(() => {
+                const activeChapter = dom.chapterList.querySelector('.chapter-item.active');
+                if (activeChapter) {
+                    activeChapter.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+            }, 300);
+        }
+
+        // ================= 代理 & 播放 =================
+        function proxyUrl(url) { return state.proxy + encodeURIComponent(url); }
+
+        // 统一的音频释放函数
+        function cleanupAudio() {
+            // 停止并清空事件
+            state.audio.pause();
+            state.isPlaying = false;
+            state.isAudioLoaded = false;
+            // 释放旧的 URL
+            if (state.audio.src && state.audio.src.startsWith('blob:')) {
+                URL.revokeObjectURL(state.audio.src);
+            }
+            state.audio.removeAttribute('src');
+            state.audio.load();
+            clearTimeout(state.retryTimer);
+            state.retryCount = 0;
+            console.log('Audio resources cleaned up');
+        }
+
+        async function playChapterAudio(chapter) {
+            if (isLoadingAudio || state.isAudioLoaded) return;
+            isLoadingAudio = true;
+
+            try {
+                updateProxyIndicator('init');
+                const res = await fetch(`https://api.cenguigui.cn/api/tingshu/?item_id=${chapter.item_id}`);
+                const data = await res.json();
+                if (data.code === 200 && data.data?.url) {
+                    const audioUrl = proxyUrl(data.data.url);
+
+                    // 先清理旧资源
+                    cleanupAudio();
+
+                    state.audio.src = audioUrl;
+                    state.audio.load();
+                    state.audio.playbackRate = state.playbackRate;
+                    state.isAudioLoaded = false;
+
+                    state.audio.oncanplay = async () => {
+                        try {
+                            await state.audio.play();
+                            state.isPlaying = true;
+                            dom.playButton.innerHTML = '<i class="fas fa-pause"></i>';
+                            updateProxyIndicator('success');
+                            state.retryCount = 0;
+                            state.isAudioLoaded = true;
+                            
+                            // 更新锁屏控制信息
+                            updateMediaSession();
+                        } catch (playErr) {
+                            console.error('播放失败:', playErr);
+                            tryRetry();
+                        }
+                    };
+                    state.audio.onerror = () => {
+                        if (!state.isAudioLoaded) tryRetry();
+                    };
+                } else {
+                    throw new Error('获取音频URL失败');
+                }
+            } catch (err) {
+                console.error(err);
+                tryRetry();
+            } finally {
+                isLoadingAudio = false;
+            }
+        }
+
+        function playChapter(index) {
+            if (index === state.currentChapterIndex && state.isAudioLoaded) return;
+            cleanupAudio();
+            state.audio.currentTime = 0;
+            updateProgressBar();
+            state.currentChapterIndex = index;
+            updateProxyIndicator('retry');
+            document.querySelectorAll('.chapter-item').forEach((li, i) =>
+                li.classList.toggle('active', i === index)
+            );
+            if (state.chapters[index]) playChapterAudio(state.chapters[index]);
+        }
+
+        function tryRetry() {
+            if (state.retryCount < state.maxRetry) {
+                state.retryCount++;
+                updateProxyIndicator('retry');
+                state.retryTimer = setTimeout(() => {
+                    const chapter = state.chapters[state.currentChapterIndex];
+                    if (chapter) playChapterAudio(chapter);
+                }, 3000);
+            } else updateProxyIndicator('error');
+        }
+
+        // ================= 音频控制 =================
+        function playAudio() {
+            state.audio.play().then(() => {
+                state.isPlaying = true;
+                dom.playButton.innerHTML = '<i class="fas fa-pause"></i>';
+                // 更新锁屏控制状态
+                if ('mediaSession' in navigator) {
+                    navigator.mediaSession.playbackState = "playing";
+                }
+            }).catch((err) => {
+                console.error('播放失败:', err);
+                tryRetry();
+            });
+        }
+        function pauseAudio() {
+            state.audio.pause();
+            state.isPlaying = false;
+            dom.playButton.innerHTML = '<i class="fas fa-play"></i>';
+            savePlaybackPosition();
+            // 更新锁屏控制状态
+            if ('mediaSession' in navigator) {
+                navigator.mediaSession.playbackState = "paused";
+            }
+        }
+        function togglePlay() {
+            state.isPlaying ? pauseAudio() : playAudio();
+        }
+        function playPrevChapter() {
+            if (state.currentChapterIndex > 0) playChapter(state.currentChapterIndex - 1);
+        }
+        function playNextChapter() {
+            if (state.currentChapterIndex < state.chapters.length - 1) playChapter(state.currentChapterIndex + 1);
+            else {
+                pauseAudio();
+                state.audio.currentTime = 0;
+                updateProgressBar();
+            }
+        }
+        function updateProgressBar() {
+            if (state.audio.duration) dom.progress.style.width = (state.audio.currentTime / state.audio.duration * 100) + '%';
+            dom.currentTime.textContent = formatTime(state.audio.currentTime);
+        }
+        function updateVolumeUI() {
+            const v = state.audio.volume;
+            dom.volumeLevel.style.width = v * 100 + '%';
+            dom.volumeButton.innerHTML = `<i class="fas fa-volume-${state.audio.muted || v === 0 ? 'mute' : v < .5 ? 'down' : 'up'}"></i>`;
+        }
+        function toggleMute() {
+            state.audio.muted = !state.audio.muted;
+            updateVolumeUI();
+        }
+        function formatTime(sec) {
+            if (isNaN(sec)) return '00:00';
+            const m = Math.floor(sec / 60), s = Math.floor(sec % 60);
+            return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        }
+
+        // ================= 睡眠定时器 =================
+        function setSleepTimer(e) {
+            const minutes = parseInt(e.currentTarget.dataset.minutes);
+            state.sleepTimerMinutes = minutes;
+            
+            // 清除现有定时器
+            if (state.sleepTimer) {
+                clearTimeout(state.sleepTimer);
+                state.sleepTimer = null;
+            }
+            
+            // 更新UI
+            document.querySelectorAll('.timer-option').forEach(opt => {
+                if (parseInt(opt.dataset.minutes) === minutes) {
+                    opt.classList.add('timer-active');
+                } else {
+                    opt.classList.remove('timer-active');
+                }
+            });
+            
+            if (minutes > 0) {
+                // 设置新定时器
+                state.sleepTimer = setTimeout(() => {
+                    pauseAudio();
+                    showToast(`睡眠定时器已结束播放`);
+                    state.sleepTimer = null;
+                    state.sleepTimerMinutes = 0;
+                    document.querySelectorAll('.timer-option').forEach(opt => {
+                        opt.classList.remove('timer-active');
+                    });
+                }, minutes * 60 * 1000);
+                
+                showToast(`已设置${minutes}分钟后停止播放`);
+            } else {
+                showToast(`已关闭睡眠定时器`);
+            }
+            
+            dom.timerMenu.classList.remove('show');
+        }
+
+        // ================= MediaSession API =================
+        function setupMediaSession() {
+            if ('mediaSession' in navigator) {
+                // 设置媒体会话动作处理程序
+                navigator.mediaSession.setActionHandler('play', () => {
+                    playAudio();
+                });
+                
+                navigator.mediaSession.setActionHandler('pause', () => {
+                    pauseAudio();
+                });
+                
+                navigator.mediaSession.setActionHandler('previoustrack', () => {
+                    playPrevChapter();
+                });
+                
+                navigator.mediaSession.setActionHandler('nexttrack', () => {
+                    playNextChapter();
+                });
+                
+                // 尝试设置seekto操作
+                try {
+                    navigator.mediaSession.setActionHandler('seekto', (details) => {
+                        if (details.fastSeek && 'fastSeek' in state.audio) {
+                            state.audio.fastSeek(details.seekTime);
+                        } else {
+                            state.audio.currentTime = details.seekTime;
+                        }
+                    });
+                } catch (error) {
+                    console.log('不支持seekto操作');
+                }
+            }
+        }
+        
+        function updateMediaSession() {
+            if (!('mediaSession' in navigator)) return;
+            
+            const chapter = state.chapters[state.currentChapterIndex];
+            const book = state.currentBook;
+            
+            if (!chapter || !book) return;
+            
+            navigator.mediaSession.metadata = new MediaMetadata({
+                title: chapter.title,
+                artist: book.author,
+                album: book.book_name,
+                artwork: [
+                    { src: book.book_pic, sizes: '150x200', type: 'image/jpeg' },
+                    { src: book.book_pic, sizes: '300x400', type: 'image/jpeg' }
+                ]
+            });
+            
+            navigator.mediaSession.playbackState = state.isPlaying ? "playing" : "paused";
+        }
+
+        // ================= 收藏功能 =================
+        function toggleFavorite(e) {
+            e.stopPropagation();
+            const btn = e.currentTarget;
+            const bookId = btn.dataset.bookid;
+            const storedFavorites = localStorage.getItem('bookFavorites');
+            let favorites = storedFavorites ? JSON.parse(storedFavorites) : [];
+            const bookIndex = favorites.findIndex(f => f.book_id === bookId);
+            if (bookIndex !== -1) {
+                favorites.splice(bookIndex, 1);
+                btn.innerHTML = '<i class="far fa-star"></i> 收藏';
+                btn.classList.remove('favorited');
+            } else {
+                const book = state.searchResults.find(b => b.book_id === bookId);
+                if (book) {
+                    favorites.push({
+                        book_id: book.book_id,
+                        title: book.title,
+                        cover: book.cover,
+                        author: book.author
+                    });
+                    btn.innerHTML = '<i class="fas fa-star"></i> 收藏';
+                    btn.classList.add('favorited');
+                }
+            }
+            localStorage.setItem('bookFavorites', JSON.stringify(favorites));
+            renderFavorites();
+        }
+        function isBookFavorited(bookId) {
+            const storedFavorites = localStorage.getItem('bookFavorites');
+            if (!storedFavorites) return false;
+            return JSON.parse(storedFavorites).some(f => f.book_id === bookId);
+        }
+        function toggleFavoritePanel(e) {
+            e.stopPropagation();
+            renderFavorites();
+            dom.favoritePanel.style.display = dom.favoritePanel.style.display === 'block' ? 'none' : 'block';
+        }
+        function renderFavorites() {
+            const storedFavorites = localStorage.getItem('bookFavorites');
+            const favorites = storedFavorites ? JSON.parse(storedFavorites) : [];
+            dom.favoriteList.innerHTML = '';
+            if (favorites.length === 0) {
+                dom.favoriteList.innerHTML = '<div class="no-favorites">暂无收藏书籍</div>';
+                return;
+            }
+            favorites.forEach(book => {
+                const item = document.createElement('div');
+                item.className = 'favorite-item';
+                item.innerHTML = `
+                    <img src="${book.cover}" alt="${book.title}" class="favorite-cover">
+                    <div class="favorite-info">
+                        <div class="favorite-title">${book.title}</div>
+                        <div class="favorite-author">${book.author}</div>
+                    </div>
+                    <button class="remove-favorite" data-bookid="${book.book_id}">
+                        <i class="fas fa-times"></i>
+                    </button>`;
+                item.addEventListener('click', () => loadBookDetails(book.book_id));
+                item.querySelector('.remove-favorite').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    removeFavorite(book.book_id);
+                });
+                dom.favoriteList.appendChild(item);
+            });
+        }
+        function removeFavorite(bookId) {
+            const storedFavorites = localStorage.getItem('bookFavorites');
+            let favorites = storedFavorites ? JSON.parse(storedFavorites) : [];
+            favorites = favorites.filter(f => f.book_id !== bookId);
+            localStorage.setItem('bookFavorites', JSON.stringify(favorites));
+            renderFavorites();
+            document.querySelectorAll(`.favorite-book-btn[data-bookid="${bookId}"]`).forEach(btn => {
+                btn.innerHTML = '<i class="far fa-star"></i> 收藏';
+                btn.classList.remove('favorited');
+            });
+        }
+        function shareBook(e) {
+            e.stopPropagation();
+            const bookId = e.currentTarget.dataset.bookid;
+            const book = state.searchResults.find(b => b.book_id === bookId);
+            if (book) {
+                const shareText = `【Ajeo提示】请前往浏览器粘贴【链接】收听 \n  ${book.title} \n 【链接】：\n ${window.location.href.split('#')[0]}#book_id=${bookId}`;
+                const copyToClipboardFallback = (text) => {
+                    const textarea = document.createElement('textarea');
+                    textarea.value = text;
+                    textarea.style.position = 'fixed';
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    try {
+                        const successful = document.execCommand('copy');
+                        if (!successful) throw new Error('复制失败');
+                    } catch (err) {
+                        console.error('使用execCommand复制失败:', err);
+                        throw err;
+                    } finally {
+                        document.body.removeChild(textarea);
+                    }
+                };
+                try {
+                    if (navigator.clipboard) {
+                        navigator.clipboard.writeText(shareText).then(() => {
+                            showToast('已复制，请到微信粘贴分享');
+                        }).catch(() => {
+                            copyToClipboardFallback(shareText);
+                            showToast('已复制，请到微信粘贴分享');
+                        });
+                    } else {
+                        copyToClipboardFallback(shareText);
+                        showToast('已复制，请到微信粘贴分享');
+                    }
+                } catch (err) {
+                    console.error('复制失败:', err);
+                    promptManualCopy(shareText);
+                }
+            }
+        }
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'toast-message';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.classList.add('show'), 10);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => document.body.removeChild(toast), 300);
+            }, 3000);
+        }
+        function promptManualCopy(text) {
+            const container = document.createElement('div');
+            container.className = 'manual-copy-container';
+            container.innerHTML = `
+                <div class="manual-copy-box">
+                    <h3>请手动复制以下链接</h3>
+                    <textarea readonly class="copy-textarea">${text}</textarea>
+                    <button class="search-btn close-copy-btn">关闭</button>
+                </div>`;
+            document.body.appendChild(container);
+            const textarea = container.querySelector('.copy-textarea');
+            textarea.select();
+            container.querySelector('.close-copy-btn').addEventListener('click', () => {
+                document.body.removeChild(container);
+            });
+        }
+
+        // ================= 进度保存 =================
+        function savePlaybackPosition() {
+            if (!state.currentBook || !state.audio.duration) return;
+            const progress = {
+                bookId: state.currentBook.book_id,
+                chapterIndex: state.currentChapterIndex,
+                currentTime: state.audio.currentTime,
+                timestamp: Date.now()
+            };
+            localStorage.setItem(`bookProgress_${state.currentBook.book_id}`, JSON.stringify(progress));
+        }
+        function restorePlaybackPosition() {
+            if (!state.currentBook) return;
+            const saved = localStorage.getItem(`bookProgress_${state.currentBook.book_id}`);
+            if (!saved) return;
+            const progress = JSON.parse(saved);
+            if (progress && progress.chapterIndex === state.currentChapterIndex) {
+                state.audio.currentTime = progress.currentTime;
+                updateProgressBar();
+            }
+        }
+        function getSavedProgress(bookId) {
+            const saved = localStorage.getItem(`bookProgress_${bookId}`);
+            return saved ? JSON.parse(saved) : null;
+        }
+
+        // ================= 展开按钮 =================
+        function toggleExpand(e) {
+            e.stopPropagation();
+            const btn = e.currentTarget;
+            const intro = btn.previousElementSibling;
+            if (intro.classList.contains('expanded')) {
+                intro.classList.remove('expanded');
+                btn.textContent = '展开';
+            } else {
+                intro.classList.add('expanded');
+                btn.textContent = '收起';
+            }
+        }
+
+        // ================= 初始化 =================
+        function initApp() {
+            setupEventListeners();
+            setupMediaSession();
+            performSearch();
+            state.audio.volume = .7;
+            updateVolumeUI();
+            updateProxyIndicator('init');
+            const hash = window.location.hash;
+            if (hash.startsWith('#book_id=')) {
+                const bookId = hash.split('=')[1];
+                loadBookDetails(bookId);
+            }
+        }
+        window.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
