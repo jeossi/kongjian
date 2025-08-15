@@ -12,7 +12,9 @@ const state = {
     maxRetry: 1,
     retryTimer: null,
     proxy: 'https://ajeo.cc/',
-    isAudioLoaded: false
+    isAudioLoaded: false,
+    audioContext: null, // 新增：用于保持音频上下文激活
+    sourceNode: null    // 新增：用于音频节点连接
 };
 
 // 防抖锁
@@ -83,23 +85,31 @@ function setupEventListeners() {
         if (!dom.speedBtn.contains(e.target) && !dom.speedMenu.contains(e.target)) dom.speedMenu.classList.remove('show');
     });
     state.audio.addEventListener('timeupdate', updateProgressBar);
-	state.audio.addEventListener('timeupdate', () => {
-    updateProgressBar();
-    // 实时同步锁屏进度
-    if (navigator.mediaSession && !isNaN(state.audio.duration)) {
-        navigator.mediaSession.setPositionState({
-            duration: state.audio.duration,
-            playbackRate: state.audio.playbackRate,
-            position: state.audio.currentTime
-        });
-    }
-  });
+    state.audio.addEventListener('timeupdate', () => {
+        updateProgressBar();
+        // 实时同步锁屏进度
+        if (navigator.mediaSession && !isNaN(state.audio.duration)) {
+            navigator.mediaSession.setPositionState({
+                duration: state.audio.duration,
+                playbackRate: state.audio.playbackRate,
+                position: state.audio.currentTime
+            });
+        }
+    });
     state.audio.addEventListener('progress', updateBufferBar);
     state.audio.addEventListener('ended', playNextChapter);
     state.audio.addEventListener('loadedmetadata', () => {
         dom.totalTime.textContent = formatTime(state.audio.duration);
         restorePlaybackPosition();
         updateBufferBar();
+        // 确保在获取到duration后更新锁屏进度
+        if (navigator.mediaSession && !isNaN(state.audio.duration)) {
+            navigator.mediaSession.setPositionState({
+                duration: state.audio.duration,
+                playbackRate: state.audio.playbackRate,
+                position: state.audio.currentTime
+            });
+        }
     });
     state.audio.addEventListener('error', () => {
         if (state.isAudioLoaded || state.audio.currentTime > 0) {
@@ -126,6 +136,14 @@ function setupEventListeners() {
     document.addEventListener('click', e => {
         if (!dom.favoriteButton.contains(e.target) && !dom.favoritePanel.contains(e.target)) {
             dom.favoritePanel.style.display = 'none';
+        }
+    });
+    
+    // 新增：处理页面可见性变化
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible' && state.isPlaying) {
+            // 页面重新可见时恢复播放
+            playAudio();
         }
     });
 }
@@ -324,6 +342,12 @@ function cleanupAudio() {
     clearTimeout(state.retryTimer);
     state.retryCount = 0;
     console.log('Audio resources cleaned up');
+    
+    // 清理 AudioContext
+    if (state.sourceNode) {
+        state.sourceNode.disconnect();
+        state.sourceNode = null;
+    }
 }
 
 async function playChapterAudio(chapter) {
@@ -345,6 +369,26 @@ async function playChapterAudio(chapter) {
             state.audio.playbackRate = state.playbackRate;
             state.isAudioLoaded = false;
 
+            // 创建 AudioContext 以保持后台播放
+            if (!state.audioContext) {
+                try {
+                    state.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                } catch (e) {
+                    console.error('AudioContext not supported:', e);
+                }
+            }
+            
+            // 连接音频节点
+            if (state.audioContext) {
+                state.sourceNode = state.audioContext.createMediaElementSource(state.audio);
+                state.sourceNode.connect(state.audioContext.destination);
+                
+                // 恢复音频上下文（如果被挂起）
+                if (state.audioContext.state === 'suspended') {
+                    await state.audioContext.resume();
+                }
+            }
+
             state.audio.oncanplay = async () => {
                 try {
                     await state.audio.play();
@@ -353,6 +397,9 @@ async function playChapterAudio(chapter) {
                     updateProxyIndicator('success');
                     state.retryCount = 0;
                     state.isAudioLoaded = true;
+                    
+                    // 更新锁屏界面信息
+                    updateMediaMetadata();
                 } catch (playErr) {
                     console.error('播放失败:', playErr);
                     tryRetry();
@@ -401,6 +448,11 @@ function playAudio() {
     state.audio.play().then(() => {
         state.isPlaying = true;
         dom.playButton.innerHTML = '<i class="fas fa-pause"></i>';
+        
+        // 恢复音频上下文（如果被挂起）
+        if (state.audioContext && state.audioContext.state === 'suspended') {
+            state.audioContext.resume();
+        }
     }).catch((err) => {
         console.error('播放失败:', err);
         tryRetry();
@@ -643,13 +695,13 @@ function initApp() {
         loadBookDetails(bookId);
     }
 
-    /* =====  新增：MediaSession 完整实现  ===== */
+    /* =====  MediaSession 完整实现  ===== */
     if ('mediaSession' in navigator) {
         navigator.mediaSession.setActionHandler('play',       () => playAudio());
         navigator.mediaSession.setActionHandler('pause',      () => pauseAudio());
         navigator.mediaSession.setActionHandler('previoustrack', () => playPrevChapter());
         navigator.mediaSession.setActionHandler('nexttrack',  () => playNextChapter());
-        // 可选：拖动锁屏进度条
+        // 拖动锁屏进度条
         navigator.mediaSession.setActionHandler('seekto', (details) => {
             if (details.seekTime !== undefined) {
                 state.audio.currentTime = details.seekTime;
@@ -663,8 +715,6 @@ function initApp() {
     state.audio.addEventListener('pause',          updateMediaMetadata);
     state.audio.addEventListener('ended',          updateMediaMetadata);
 }
-
-
 
 // 更新锁屏界面信息（MediaSession 元数据 + 进度）
 function updateMediaMetadata() {
@@ -685,7 +735,7 @@ function updateMediaMetadata() {
     });
 
     // 2. 仅在拿到有效 duration 后才同步进度
-    if (!isNaN(state.audio.duration) && state.audio.duration > 0) {
+    if (!isNaN(state.audio.duration) {
         navigator.mediaSession.setPositionState({
             duration: state.audio.duration,
             playbackRate: state.audio.playbackRate,
