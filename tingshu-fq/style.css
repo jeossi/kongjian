@@ -1,26 +1,4 @@
-/* 新增后台播放指示器样式 */
-.background-indicator {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    color: #4CAF50;
-    font-size: 18px;
-    cursor: pointer;
-    opacity: 0.7;
-    transition: opacity 0.3s;
-    z-index: 10;
-}
-
-.background-indicator.active {
-    color: #4CAF50;
-    opacity: 1;
-}
-
-.background-indicator:hover {
-    opacity: 1;
-}
-
-/* 修改现有样式 */
+/* 新增样式 */
 .favorite-btn-text {
     display: inline-block;
     margin-left: 5px;
@@ -28,6 +6,44 @@
 
 .book-btn-text {
     margin-left: 5px;
+}
+
+/* 修改现有样式 */
+.favorite-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: var(--text-primary);
+    border-radius: 18px;
+    cursor: pointer;
+    transition: var(--transition);
+    padding: 8px 15px;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    height: 36px;
+}
+
+.favorite-btn:hover {
+    background: rgba(255, 107, 107, 0.2);
+    color: var(--accent-color);
+}
+
+.book-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: var(--text-primary);
+    border-radius: 18px;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px 12px;
+    gap: 5px;
+    height: 36px;
+    white-space: nowrap;
 }
 
 /* 保持原有样式不变 */
@@ -439,8 +455,9 @@ body {
 }
 
 .book-meta {
-    text-align: left;
+	text-align: left;
     margin-top: 10px;
+
 }
 
 .book-meta-title {
@@ -466,30 +483,25 @@ body {
     position: relative;
 }
 
-/* 代理指示器样式调整 */
+/* 代理指示器上移 */
 .proxy-indicator {
     position: absolute;
-    top: 10px;
-    left: 10px;
-    font-size: 12px;
-    padding: 3px 8px;
-    border-radius: 12px;
-    background: rgba(0, 0, 0, 0.5);
-    color: white;
+    top: -40px;
+    right: 10px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 14px;
+    z-index: 100;
 }
 
-.proxy-success {
-    color: #4CAF50;
-}
-
-.proxy-warning {
-    color: #FFC107;
-}
-
-.proxy-error {
-    color: #F44336;
-}
-
+.proxy-success { background-color: #2ecc71; }
+.proxy-warning { background-color: #f1c40f; animation: pulse 1s infinite; }
+.proxy-error   { background-color: #e74c3c; }
 @keyframes pulse {
     0%   { transform: scale(1);   }
     50%  { transform: scale(1.2); }
@@ -537,7 +549,7 @@ body {
     height: 100%;
     background: var(--progress-color);
     border-radius: 3px;
-    width: 0%; 
+	width: 0%; 
 }
 .progress {
     position: relative;
@@ -545,7 +557,7 @@ body {
 }
 
 .controls-row {
-    display: flex;
+	display: flex;
     justify-content: center;
     align-items: center;
     flex-wrap: nowrap;
@@ -566,8 +578,8 @@ body {
 }
 
 .controls-row::-webkit-scrollbar-track {
-    background: transparent;
-    display: none;
+	background: transparent;
+	display: none;
 }
 
 .controls-row::-webkit-scrollbar-thumb {
@@ -675,6 +687,7 @@ body {
     background: var(--bg-tertiary);
     border-radius: 10px;
     padding: 10px 0;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
     display: none;
     min-width: 100px;
     z-index: 1000;
@@ -689,7 +702,7 @@ body {
     cursor: pointer;
     transition: var(--transition);
     text-align: center;
-    font-size: 16px;
+	font-size: 16px;
 }
 
 .speed-option:hover {
@@ -986,7 +999,7 @@ body {
 
     .speed-btn {
         min-width: 40px;
-        height: 40px;
+		height: 40px;
         font-size: 16px;
     }
 
