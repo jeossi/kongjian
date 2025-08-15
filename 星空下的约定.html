@@ -1,13 +1,9 @@
 <!DOCTYPE html>
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>星空下的约定</title>
-	<link rel="icon" href="./Aje128.png" type="image/png" sizes="32x32">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -37,7 +33,7 @@
             box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
             position: relative;
             backdrop-filter: blur(10px);
-			line-height: 1.0;   /* 默认 1.5，改小会更紧凑 */
+            line-height: 1.0;
         }
         
         .header {
@@ -166,8 +162,9 @@
         .audio-player {
             background: rgba(255, 255, 255, 0.08);
             border-radius: 15px;
-            padding: 10px;
+            padding: 2px;
             box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
+			margin-top: -20px;   /* 负值向上移动 */
         }
         
         .player-controls {
@@ -206,7 +203,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 20px;
+            gap: 40px;
         }
         
         .control-btn {
@@ -230,12 +227,17 @@
             font-size: 1.8rem;
         }
         
-        /* 新增：详情按钮样式 */
         .control-btn.detail-btn {
             background: linear-gradient(to right, #4d9eff, #6a5af9);
             font-size: 1.2rem;
-            width: 50px;
-            height: 50px;
+            width: 30px;
+            height: 30px;
+        }
+        
+        /* 循环按钮激活状态 */
+        .control-btn.loop-btn.active {
+            background: linear-gradient(to right, #ff6b6b, #ff9e7d);
+            box-shadow: 0 0 15px rgba(255, 107, 107, 0.6);
         }
         
         .control-btn:hover {
@@ -300,6 +302,15 @@
             opacity: 0.7;
         }
         
+        .mode-indicator {
+            text-align: center;
+            padding: 5px;
+            font-size: 0.9rem;
+            color: #4d9eff;
+            height: 20px;
+            margin-top: 5px;
+        }
+        
         @media (max-width: 768px) {
             .player-container {
                 flex-direction: column;
@@ -310,7 +321,7 @@
             }
             
             .control-buttons {
-                gap: 15px;
+                gap: 30px;
             }
             
             .control-btn {
@@ -323,10 +334,9 @@
                 font-size: 1.8rem;
             }
             
-            /* 移动端调整详情按钮大小 */
             .control-btn.detail-btn {
-                width: 45px;
-                height: 45px;
+                width: 30px;
+                height: 30px;
                 font-size: 1rem;
             }
         }
@@ -385,8 +395,9 @@
                         <span id="duration">0:00</span>
                     </div>
                     <div class="control-buttons">
-                        <button class="control-btn" id="prev-btn">
-                            <i class="fas fa-step-backward"></i>
+                        <!-- 将上一首按钮改为单曲循环按钮 -->
+                        <button class="control-btn loop-btn" id="loop-btn" title="单曲循环">
+                            <i class="fas fa-redo"></i>
                         </button>
                         <button class="control-btn play-pause" id="play-pause-btn">
                             <i class="fas fa-play"></i>
@@ -394,11 +405,11 @@
                         <button class="control-btn" id="next-btn">
                             <i class="fas fa-step-forward"></i>
                         </button>
-                        <!-- 新增：详情按钮 -->
                         <button class="control-btn detail-btn" id="detail-btn" title="查看详情">
                             <i class="fas fa-info"></i>
                         </button>
                     </div>
+                    <div class="mode-indicator" id="mode-indicator"></div>
                 </div>
             </div>
             
@@ -457,9 +468,12 @@
             const durationEl = document.getElementById('duration');
             const loading = document.getElementById('loading');
             const nextBtn = document.getElementById('next-btn');
-            const detailBtn = document.getElementById('detail-btn'); // 新增：获取详情按钮
+            const detailBtn = document.getElementById('detail-btn');
+            const loopBtn = document.getElementById('loop-btn'); // 单曲循环按钮
+            const modeIndicator = document.getElementById('mode-indicator'); // 模式指示器
             
             let currentTrack = null;
+            let isLoop = false; // 单曲循环状态
             
             // 格式化时间 (秒 -> mm:ss)
             function formatTime(seconds) {
@@ -499,6 +513,20 @@
                 } else {
                     audio.pause();
                     playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+                }
+            }
+            
+            // 切换单曲循环模式
+            function toggleLoop() {
+                isLoop = !isLoop;
+                loopBtn.classList.toggle('active', isLoop);
+                modeIndicator.textContent = isLoop ? '单曲循环模式已开启' : '';
+                
+                // 3秒后清除提示
+                if (isLoop) {
+                    setTimeout(() => {
+                        modeIndicator.textContent = '';
+                    }, 3000);
                 }
             }
             
@@ -553,7 +581,7 @@
                 loadAndPlayMusic();
             }
             
-            // 新增：详情按钮点击事件
+            // 详情按钮点击事件
             function openDetail() {
                 if (currentTrack && currentTrack.link) {
                     window.open(currentTrack.link, '_blank');
@@ -563,9 +591,19 @@
             // 事件监听器
             playPauseBtn.addEventListener('click', togglePlayPause);
             nextBtn.addEventListener('click', nextTrack);
-            detailBtn.addEventListener('click', openDetail); // 新增：详情按钮事件
+            detailBtn.addEventListener('click', openDetail);
+            loopBtn.addEventListener('click', toggleLoop); // 单曲循环按钮事件
             audio.addEventListener('timeupdate', updateProgress);
-            audio.addEventListener('ended', nextTrack);
+            audio.addEventListener('ended', function() {
+                if (isLoop) {
+                    // 单曲循环模式：重新播放当前歌曲
+                    audio.currentTime = 0;
+                    audio.play();
+                } else {
+                    // 普通模式：播放下一首
+                    nextTrack();
+                }
+            });
             progressContainer.addEventListener('click', setProgress);
             
             // 初始化加载第一首音乐
