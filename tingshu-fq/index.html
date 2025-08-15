@@ -9,9 +9,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>番茄听书</title>
     <link rel="icon" href="../Aje128.png" type="image/png" sizes="32x32">
-    <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css?v=8.13.1447">
+    <link rel="stylesheet" href="style.css?v=8.15.1744">
 </head>
 <body>
     <div class="container">
@@ -105,12 +104,15 @@
 
             <div class="player-container">
                 <div class="proxy-indicator" id="proxy-indicator">代理: 准备中...</div>
+                <!-- 添加后台播放指示器 -->
+                <div class="background-indicator" id="background-indicator">
+                    <i class="fas fa-headphones"></i>
+                </div>
                 <div class="time-container">
                     <span id="current-time">00:00</span>
                     <div class="progress-bar-container">
                         <div class="progress-bar" id="progress-bar">
-                          <!-- 新增缓冲条 -->
-                             <div class="buffer" id="buffer"></div>
+                            <div class="buffer" id="buffer"></div>
                             <div class="progress" id="progress"></div>
                         </div>
                     </div>
@@ -143,13 +145,14 @@
                             <div class="speed-option" data-speed="3.0">3.0x</div>
                         </div>
                     </div>
-                     <div class="progress-bar-container">
-             <div class="volume-controls">
-                        <button class="control-btn" id="volume-btn">
-                            <i class="fas fa-volume-up"></i>
-                        </button>
-                        <div class="volume-bar" id="volume-bar">
-                            <div class="volume-level" id="volume-level"></div>
+                    <div class="progress-bar-container">
+                        <div class="volume-controls">
+                            <button class="control-btn" id="volume-btn">
+                                <i class="fas fa-volume-up"></i>
+                            </button>
+                            <div class="volume-bar" id="volume-bar">
+                                <div class="volume-level" id="volume-level"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -166,14 +169,6 @@
         </div>
     </div>
 
-    <script src="script.js?v=8.13.1447"></script>
-    <script>
-        // 注册Service Worker
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js')
-                .then(reg => console.log('Service Worker 注册成功:', reg.scope))
-                .catch(err => console.warn('Service Worker 注册失败:', err));
-        }
-    </script>
+    <script src="script.js?v=8.15.1744"></script>
 </body>
 </html>
