@@ -482,26 +482,50 @@ body {
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
     position: relative;
 }
-
-/* 代理指示器上移 */
-.proxy-indicator {
+/* 后台播放指示器样式 */
+.background-indicator {
     position: absolute;
-    top: -40px;
+    top: 10px;
     right: 10px;
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #fff;
-    font-size: 14px;
-    z-index: 100;
+    color: #4CAF50;
+    font-size: 18px;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.3s;
 }
 
-.proxy-success { background-color: #2ecc71; }
-.proxy-warning { background-color: #f1c40f; animation: pulse 1s infinite; }
-.proxy-error   { background-color: #e74c3c; }
+.background-indicator.active {
+    color: #4CAF50;
+    opacity: 1;
+}
+
+.background-indicator:hover {
+    opacity: 1;
+}
+/* 代理指示器样式调整 */
+.proxy-indicator {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    font-size: 12px;
+    padding: 3px 8px;
+    border-radius: 12px;
+    background: rgba(0, 0, 0, 0.5);
+    color: white;
+}
+
+.proxy-success {
+    color: #4CAF50;
+}
+
+.proxy-warning {
+    color: #FFC107;
+}
+
+.proxy-error {
+    color: #F44336;
+}
+
 @keyframes pulse {
     0%   { transform: scale(1);   }
     50%  { transform: scale(1.2); }
