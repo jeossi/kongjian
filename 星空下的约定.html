@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>星空下的约定</title>
+    <title>星空下的约定 - 多标签切换</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -38,7 +38,7 @@
         
         .header {
             text-align: center;
-            padding: 8px 8px;
+            padding: 20px 15px;
             background: rgba(5, 10, 25, 0.7);
             position: relative;
             overflow: hidden;
@@ -70,6 +70,48 @@
             position: relative;
             z-index: 1;
         }
+		#title {
+    font-size: 1.1rem;
+    font-weight: 500;
+    line-height: 1.5; 
+       }
+        
+        /* 标签栏样式 */
+        .tabs-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 15px;
+            background: rgba(5, 10, 25, 0.6);
+            border-bottom: 1px solid rgba(77, 158, 255, 0.3);
+        }
+        
+        .tab {
+            padding: 8px 15px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            text-align: center;
+            flex: 1;
+            min-width: 100px;
+            max-width: 130px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .tab:hover {
+            background: rgba(77, 158, 255, 0.3);
+        }
+        
+        .tab.active {
+            background: linear-gradient(to right, #4d9eff, #6a5af9);
+            box-shadow: 0 0 10px rgba(77, 158, 255, 0.5);
+            font-weight: 500;
+        }
         
         .content {
             display: flex;
@@ -83,28 +125,29 @@
             gap: 5px;
             margin-bottom: 10px;
         }
-        
-        .cover-art {
-            flex: 1;
-            min-width: 300px;
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-            position: relative;
-            aspect-ratio: 1/1;
-            background: #0a0f25;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .cover-art img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.5s ease;
-        }
-        
+
+         .cover-art {
+    flex: none; 
+    width: 100%;
+    max-width: 300px;
+    height: 250px; 
+    margin: 0 auto;
+    overflow: hidden;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    background: #0a0f25;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cover-art img {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+}      
         .cover-art:hover img {
             transform: scale(1.05);
         }
@@ -164,7 +207,7 @@
             border-radius: 15px;
             padding: 2px;
             box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
-			margin-top: -20px;   /* 负值向上移动 */
+            margin-top: -1px;
         }
         
         .player-controls {
@@ -339,6 +382,32 @@
                 height: 30px;
                 font-size: 1rem;
             }
+            
+            .tabs-container {
+                gap: 5px;
+                padding: 8px 10px;
+            }
+            
+            .tab {
+                padding: 6px 2px;
+                font-size: 1rem;
+                min-width: 80px;
+                max-width: 100px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .tabs-container {
+                gap: 4px;
+                padding: 6px 8px;
+            }
+            
+            .tab {
+                padding: 5px 2px;
+                font-size: 0.9rem;
+                min-width: 70px;
+                max-width: 90px;
+            }
         }
     </style>
 </head>
@@ -352,6 +421,16 @@
             <p>浅蓝色的夜溢进窗来 我还在星空下等你</p>
         </div>
         
+        <!-- 标签栏 -->
+        <div class="tabs-container">
+            <div class="tab active" data-api="duanzi">随机段子</div>
+            <div class="tab" data-api="gushi">讲个故事</div>            
+            <div class="tab" data-api="rain">雨声助眠</div>
+            <div class="tab" data-api="gangqin">钢琴助眠</div>
+            <div class="tab" data-api="daziran">大自然助眠</div>
+			<div class="tab" data-api="naobo">脑波助眠</div>
+        </div>
+        
         <div class="content">
             <div class="player-container">
                 <div class="cover-art">
@@ -363,7 +442,7 @@
                         <i class="fas fa-user"></i>
                         <div class="info-text">
                             <h3></h3>
-                            <p id="nickname">音乐人王可鑫</p>
+                            <p id="category">随机段子</p>
                         </div>
                     </div>
                     
@@ -371,7 +450,7 @@
                         <i class="fas fa-music"></i>
                         <div class="info-text">
                             <h3></h3>
-                            <p id="category">音乐</p>
+                            <p id="nickname">音乐人王可鑫</p>
                         </div>
                     </div>
                     
@@ -395,7 +474,6 @@
                         <span id="duration">0:00</span>
                     </div>
                     <div class="control-buttons">
-                        <!-- 将上一首按钮改为单曲循环按钮 -->
                         <button class="control-btn loop-btn" id="loop-btn" title="单曲循环">
                             <i class="fas fa-redo"></i>
                         </button>
@@ -415,12 +493,12 @@
             
             <div class="loading" id="loading">
                 <div class="loading-spinner"></div>
-                <p>正在加载下一首音乐...</p>
+                <p>正在加载音乐...</p>
             </div>
         </div>
         
         <div class="footer">
-            <p>©2025 Ajeossi | 大自然助眠 </p>
+            <p>©2025 Ajeossi | 星空下的音乐之旅 </p>
         </div>
     </div>
     
@@ -469,11 +547,34 @@
             const loading = document.getElementById('loading');
             const nextBtn = document.getElementById('next-btn');
             const detailBtn = document.getElementById('detail-btn');
-            const loopBtn = document.getElementById('loop-btn'); // 单曲循环按钮
-            const modeIndicator = document.getElementById('mode-indicator'); // 模式指示器
+            const loopBtn = document.getElementById('loop-btn');
+            const modeIndicator = document.getElementById('mode-indicator');
+            const tabs = document.querySelectorAll('.tab');
+            const categoryEl = document.getElementById('category');
             
             let currentTrack = null;
-            let isLoop = false; // 单曲循环状态
+            let isLoop = false;
+            let currentApi = 'duanzi'; // 默认API
+            
+            // API 映射
+            const apiMap = {
+                'duanzi': 'https://www.hhlqilongzhu.cn/api/ximalaya/ximalaya_duanzi.php',
+                'gushi': 'https://www.hhlqilongzhu.cn/api/ximalaya/ximalaya_gushi.php',
+                'gangqin': 'https://www.hhlqilongzhu.cn/api/ximalaya/ximalaya_gangqin.php',
+                'rain': 'https://www.hhlqilongzhu.cn/api/ximalaya/ximalaya_rain.php',
+                'naobo': 'https://www.hhlqilongzhu.cn/api/ximalaya/ximalaya_naobo.php',
+                'daziran': 'https://api.cenguigui.cn/api/music/ximalaya_daziran.php'
+            };
+            
+            // API 名称映射
+            const apiNameMap = {
+                'duanzi': '随机段子',
+                'gushi': '讲个故事',
+                'gangqin': '钢琴助眠',
+                'rain': '雨声助眠',
+                'naobo': '脑波助眠',
+                'daziran': '大自然助眠'
+            };
             
             // 格式化时间 (秒 -> mm:ss)
             function formatTime(seconds) {
@@ -534,11 +635,8 @@
             function loadAndPlayMusic() {
                 loading.style.display = 'block';
                 
-                // API 地址
-                const apiUrl = 'https://api.cenguigui.cn/api/music/ximalaya_daziran.php';
-                
                 // 获取音乐数据
-                fetch(apiUrl)
+                fetch(apiMap[currentApi])
                     .then(response => response.json())
                     .then(data => {
                         if (data.code === 200) {
@@ -546,7 +644,7 @@
                             
                             // 更新UI
                             document.getElementById('nickname').textContent = data.nickname;
-                            document.getElementById('category').textContent = data.categoryName;
+                            categoryEl.textContent = apiNameMap[currentApi];
                             document.getElementById('title').textContent = data.title;
                             document.getElementById('cover').src = data.cover;
                             
@@ -588,11 +686,29 @@
                 }
             }
             
+            // 标签切换事件
+            function switchTab() {
+                // 移除所有active类
+                tabs.forEach(tab => tab.classList.remove('active'));
+                
+                // 为当前标签添加active类
+                this.classList.add('active');
+                
+                // 更新当前API
+                currentApi = this.dataset.api;
+                
+                // 更新分类名称
+                categoryEl.textContent = apiNameMap[currentApi];
+                
+                // 加载新分类的音乐
+                loadAndPlayMusic();
+            }
+            
             // 事件监听器
             playPauseBtn.addEventListener('click', togglePlayPause);
             nextBtn.addEventListener('click', nextTrack);
             detailBtn.addEventListener('click', openDetail);
-            loopBtn.addEventListener('click', toggleLoop); // 单曲循环按钮事件
+            loopBtn.addEventListener('click', toggleLoop);
             audio.addEventListener('timeupdate', updateProgress);
             audio.addEventListener('ended', function() {
                 if (isLoop) {
@@ -605,6 +721,11 @@
                 }
             });
             progressContainer.addEventListener('click', setProgress);
+            
+            // 为每个标签添加点击事件
+            tabs.forEach(tab => {
+                tab.addEventListener('click', switchTab);
+            });
             
             // 初始化加载第一首音乐
             loadAndPlayMusic();
