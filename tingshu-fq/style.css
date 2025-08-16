@@ -1,52 +1,4 @@
-/* 新增样式 */
-.favorite-btn-text {
-    display: inline-block;
-    margin-left: 5px;
-}
-
-.book-btn-text {
-    margin-left: 5px;
-}
-
-/* 修改现有样式 */
-.favorite-btn {
-    background: rgba(255, 255, 255, 0.1);
-    border: none;
-    color: var(--text-primary);
-    border-radius: 18px;
-    cursor: pointer;
-    transition: var(--transition);
-    padding: 8px 15px;
-    font-size: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-    height: 36px;
-}
-
-.favorite-btn:hover {
-    background: rgba(255, 107, 107, 0.2);
-    color: var(--accent-color);
-}
-
-.book-btn {
-    background: rgba(255, 255, 255, 0.1);
-    border: none;
-    color: var(--text-primary);
-    border-radius: 18px;
-    cursor: pointer;
-    transition: var(--transition);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 5px 12px;
-    gap: 5px;
-    height: 36px;
-    white-space: nowrap;
-}
-
-/* 保持原有样式不变 */
+/* 全局样式 */
 :root {
     --bg-primary: #121212;
     --bg-secondary: #1e1e1e;
@@ -82,7 +34,7 @@ body {
     padding: 20px;
 }
 
-/* 搜索页面样式 */
+/* 页面布局 */
 #search-page {
     display: block;
 }
@@ -126,7 +78,6 @@ body {
 }
 
 /* 收藏面板 */
-
 .favorite-panel {
     position: absolute;
     top: 100px;
@@ -146,7 +97,7 @@ body {
 }
 
 .favorite-panel:hover {
-    border-color: rgba(255, 107, 107, 0.3); /* 悬停时边框变色 */
+    border-color: rgba(255, 107, 107, 0.3);
 }
 
 .favorite-panel h3 {
@@ -415,14 +366,13 @@ body {
     border-bottom: 1px solid #333;
 }
 
-/* 返回按钮优化 - 更大更美观 */
 .back-btn {
     background: transparent;
     border: none;
     color: var(--accent-color);
     font-size: 32px;
     cursor: pointer;
-    margin-right: 30px; /* 增大右边距以增加与图片的距离 */
+    margin-right: 30px;
     transition: var(--transition);
     width: 50px;
     height: 50px;
@@ -442,7 +392,7 @@ body {
     gap: 10px;
     align-items: center;
     flex: 1;
-    justify-content: flex-start; /*靠左对齐 */
+    justify-content: flex-start;
 }
 
 .book-large-cover {
@@ -451,13 +401,12 @@ body {
     border-radius: 10px;
     object-fit: cover;
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
-    margin-left: 1%; /*与箭头保持50px间距 */
+    margin-left: 1%;
 }
 
 .book-meta {
-	text-align: left;
+    text-align: left;
     margin-top: 10px;
-
 }
 
 .book-meta-title {
@@ -483,7 +432,6 @@ body {
     position: relative;
 }
 
-/* 代理指示器上移 */
 .proxy-indicator {
     position: absolute;
     top: -40px;
@@ -508,7 +456,6 @@ body {
     100% { transform: scale(1);   }
 }
 
-/* 时间字体增大 */
 .time-container {
     display: flex;
     justify-content: space-between;
@@ -532,32 +479,29 @@ body {
     max-width: 95%;
     margin: 0 auto;
 }
-/* 缓冲条样式 */
+
 .buffer {
     position: absolute;
     top: 0;
     left: 0;
     height: 100%;
-    background: rgba(255, 255, 255, 0.2); /* 半透明的浅色缓冲条 */
+    background: rgba(255, 255, 255, 0.2);
     border-radius: 3px;
     width: 0%;
-    z-index: 1; /* 在进度条下方 */
+    z-index: 1;
 }
 
-/* 调整进度条位置 */
 .progress {
     height: 100%;
     background: var(--progress-color);
     border-radius: 3px;
-	width: 0%; 
-}
-.progress {
+    width: 0%; 
     position: relative;
-    z-index: 2;  /* 在缓冲条上方 */
+    z-index: 2;
 }
 
 .controls-row {
-	display: flex;
+    display: flex;
     justify-content: center;
     align-items: center;
     flex-wrap: nowrap;
@@ -565,10 +509,10 @@ body {
     margin: 0 auto;
     gap: 15px;
     white-space: nowrap;
-    overflow-x: auto;            /* 允许横向滚动 */
+    overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;       /* Firefox */
-    -ms-overflow-style: none;    /* IE/Edge */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
     padding: 10px 0;
     min-width: min-content;
 }
@@ -578,8 +522,8 @@ body {
 }
 
 .controls-row::-webkit-scrollbar-track {
-	background: transparent;
-	display: none;
+    background: transparent;
+    display: none;
 }
 
 .controls-row::-webkit-scrollbar-thumb {
@@ -702,11 +646,75 @@ body {
     cursor: pointer;
     transition: var(--transition);
     text-align: center;
-	font-size: 16px;
+    font-size: 16px;
 }
 
 .speed-option:hover {
     background: rgba(255, 107, 107, 0.2);
+}
+
+/* 睡眠定时器样式 */
+.sleep-timer-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-left: 10px;
+}
+
+.sleep-timer-btn {
+    background: rgba(255, 107, 107, 0.2);
+    color: var(--text-primary);
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 16px;
+    transition: var(--transition);
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sleep-timer-btn:hover {
+    background: rgba(255, 107, 107, 0.3);
+}
+
+.timer-menu {
+    position: fixed;
+    bottom: auto;
+    top: 45%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--bg-tertiary);
+    border-radius: 10px;
+    padding: 10px 0;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    display: none;
+    min-width: 120px;
+    z-index: 1000;
+}
+
+.timer-menu.show {
+    display: block;
+}
+
+.timer-option {
+    padding: 8px 15px;
+    cursor: pointer;
+    transition: var(--transition);
+    text-align: center;
+    font-size: 16px;
+}
+
+.timer-option:hover {
+    background: rgba(255, 107, 107, 0.2);
+}
+
+.timer-active {
+    background: rgba(255, 107, 107, 0.2);
+    color: var(--accent-color);
+    font-weight: bold;
 }
 
 /* 章节列表样式 */
@@ -814,7 +822,6 @@ body {
     background: rgba(255, 107, 107, 0.1);
     border-radius: 10px;
 }
-/* 添加在style.css末尾 */
 
 /* 提示消息样式 */
 .toast-message {
@@ -999,7 +1006,7 @@ body {
 
     .speed-btn {
         min-width: 40px;
-		height: 40px;
+        height: 40px;
         font-size: 16px;
     }
 
