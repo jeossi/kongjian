@@ -13,12 +13,10 @@ const state = {
     retryTimer: null,
     proxy: 'https://ajeo.cc/',
     isAudioLoaded: false,
-    audioContext: null, // 新增：用于保持音频上下文激活
-    sourceNode: null    // 新增：用于音频节点连接
+    sleepTimer: null,
+    sleepTimerMinutes: 0,
+    backgroundPlayback: false // 新增：后台播放状态
 };
-
-// 防抖锁
-let isLoadingAudio = false;
 
 // ================= DOM 节点 =================
 const dom = {
@@ -51,120 +49,13 @@ const dom = {
     proxyIndicator: document.getElementById('proxy-indicator'),
     favoriteButton: document.getElementById('favorite-button'),
     favoritePanel: document.getElementById('favorite-panel'),
-    favoriteList: document.getElementById('favorite-list')
+    favoriteList: document.getElementById('favorite-list'),
+    sleepTimerBtn: document.getElementById('sleep-timer-btn'),
+    timerMenu: document.getElementById('timer-menu'),
+    chapterCount: document.getElementById('chapter-count')
 };
 
-// ================= 事件绑定 =================
-function setupEventListeners() {
-    dom.searchInput.addEventListener('focus', () => dom.hotSearchPanel.style.display = 'block');
-    dom.searchInput.addEventListener('blur', () => setTimeout(() => dom.hotSearchPanel.style.display = 'none', 200));
-    document.querySelectorAll('.tag').forEach(tag => tag.addEventListener('click', () => {
-        dom.searchInput.value = tag.textContent;
-        performSearch();
-        dom.hotSearchPanel.style.display = 'none';
-    }));
-    dom.searchButton.addEventListener('click', performSearch);
-    dom.searchInput.addEventListener('keypress', e => { if (e.key === 'Enter') performSearch(); });
-    dom.backButton.addEventListener('click', () => { showPage('search'); cleanupAudio(); });
-    dom.playButton.addEventListener('click', togglePlay);
-    dom.prevButton.addEventListener('click', playPrevChapter);
-    dom.nextButton.addEventListener('click', playNextChapter);
-    dom.progressBar.addEventListener('click', e => {
-        const percent = (e.clientX - dom.progressBar.getBoundingClientRect().left) / dom.progressBar.offsetWidth;
-        state.audio.currentTime = percent * state.audio.duration;
-    });
-    dom.volumeButton.addEventListener('click', toggleMute);
-    dom.speedBtn.addEventListener('click', e => { e.stopPropagation(); dom.speedMenu.classList.toggle('show'); });
-    document.querySelectorAll('.speed-option').forEach(opt => opt.addEventListener('click', () => {
-        const speed = parseFloat(opt.dataset.speed);
-        state.audio.playbackRate = speed; state.playbackRate = speed;
-        dom.speedBtn.innerHTML = `<span>${speed}x</span>`;
-        dom.speedMenu.classList.remove('show');
-    }));
-    document.addEventListener('click', e => {
-        if (!dom.speedBtn.contains(e.target) && !dom.speedMenu.contains(e.target)) dom.speedMenu.classList.remove('show');
-    });
-    state.audio.addEventListener('timeupdate', updateProgressBar);
-    state.audio.addEventListener('timeupdate', () => {
-        updateProgressBar();
-        // 实时同步锁屏进度
-        if (navigator.mediaSession && !isNaN(state.audio.duration)) {
-            navigator.mediaSession.setPositionState({
-                duration: state.audio.duration,
-                playbackRate: state.audio.playbackRate,
-                position: state.audio.currentTime
-            });
-        }
-    });
-    state.audio.addEventListener('progress', updateBufferBar);
-    state.audio.addEventListener('ended', playNextChapter);
-    state.audio.addEventListener('loadedmetadata', () => {
-        dom.totalTime.textContent = formatTime(state.audio.duration);
-        restorePlaybackPosition();
-        updateBufferBar();
-        // 确保在获取到duration后更新锁屏进度
-        if (navigator.mediaSession && !isNaN(state.audio.duration)) {
-            navigator.mediaSession.setPositionState({
-                duration: state.audio.duration,
-                playbackRate: state.audio.playbackRate,
-                position: state.audio.currentTime
-            });
-        }
-    });
-    state.audio.addEventListener('error', () => {
-        if (state.isAudioLoaded || state.audio.currentTime > 0) {
-            console.warn('播放中出错，停止重试');
-            updateProxyIndicator('error');
-            return;
-        }
-        if (state.retryCount < state.maxRetry) {
-            state.retryCount++;
-            updateProxyIndicator('retry');
-            state.retryTimer = setTimeout(() => {
-                const chapter = state.chapters[state.currentChapterIndex];
-                if (chapter) playChapterAudio(chapter);
-            }, 3000);
-        } else {
-            updateProxyIndicator('error');
-        }
-    });
-    state.audio.addEventListener('playing', () => {
-        state.isAudioLoaded = true;
-        console.log('音频成功开始播放');
-    });
-    dom.favoriteButton.addEventListener('click', toggleFavoritePanel);
-    document.addEventListener('click', e => {
-        if (!dom.favoriteButton.contains(e.target) && !dom.favoritePanel.contains(e.target)) {
-            dom.favoritePanel.style.display = 'none';
-        }
-    });
-    
-    // 新增：处理页面可见性变化
-    document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'visible' && state.isPlaying) {
-            // 页面重新可见时恢复播放
-            playAudio();
-        }
-    });
-}
-function setVolumeFromEvent(e) {
-    const rect = dom.volumeBar.getBoundingClientRect();
-    const x = (e.clientX ?? e.touches[0].clientX) - rect.left;
-    const percent = Math.max(0, Math.min(1, x / rect.width));
-    state.audio.volume = percent;
-    updateVolumeUI();
-}
-dom.volumeBar.addEventListener('click', setVolumeFromEvent);
-dom.volumeBar.addEventListener('touchstart', e => {
-    e.preventDefault();
-    setVolumeFromEvent(e);
-});
-dom.volumeBar.addEventListener('touchmove', e => {
-    e.preventDefault();
-    setVolumeFromEvent(e);
-});
-
-// ================= 页面切换 =================
+// ================= 页面导航 =================
 function showPage(page) {
     if (page === 'search') {
         dom.searchPage.style.display = 'block';
@@ -177,43 +68,7 @@ function showPage(page) {
     }
 }
 
-// ================= 代理指示器 =================
-function updateProxyIndicator(status) {
-    dom.proxyIndicator.className = 'proxy-indicator';
-    switch (status) {
-        case 'success':
-            dom.proxyIndicator.classList.add('proxy-success');
-            dom.proxyIndicator.innerHTML = '<i class="fas fa-check"></i>';
-            break;
-        case 'retry':
-            dom.proxyIndicator.classList.add('proxy-warning');
-            dom.proxyIndicator.innerHTML = '<i class="fas fa-redo-alt"></i>';
-            break;
-        case 'error':
-            dom.proxyIndicator.classList.add('proxy-error');
-            dom.proxyIndicator.innerHTML = '<i class="fas fa-times"></i>';
-            break;
-        default:
-            dom.proxyIndicator.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>';
-    }
-}
-
-// ================= 缓冲条更新 =================
-function updateBufferBar() {
-    if (!state.audio || !state.audio.buffered || state.audio.buffered.length === 0) {
-        dom.buffer.style.width = '0%';
-        return;
-    }
-    try {
-        const bufferedEnd = state.audio.buffered.end(state.audio.buffered.length - 1);
-        const bufferedPercent = (bufferedEnd / state.audio.duration) * 100;
-        dom.buffer.style.width = `${bufferedPercent}%`;
-    } catch (e) {
-        console.warn('更新缓冲条时出错:', e);
-    }
-}
-
-// ================= 搜索 =================
+// ================= 搜索功能 =================
 async function performSearch() {
     const query = dom.searchInput.value.trim() || '都市';
     dom.searchLoader.style.display = 'block';
@@ -236,6 +91,7 @@ async function performSearch() {
         dom.searchLoader.style.display = 'none';
     }
 }
+
 function renderSearchResults(books) {
     dom.resultsGrid.innerHTML = '';
     books.forEach(b => {
@@ -273,7 +129,7 @@ function renderSearchResults(books) {
     });
 }
 
-// ================= 书籍详情 =================
+// ================= 书籍功能 =================
 async function loadBookDetails(bookId) {
     try {
         const res = await fetch(`https://api.cenguigui.cn/api/tingshu/?book_id=${bookId}`);
@@ -301,6 +157,7 @@ async function loadBookDetails(bookId) {
         console.error(err); 
     }
 }
+
 function renderPlayerPage() {
     if (!state.currentBook) return;
     const { book_name, author, category, book_pic } = state.currentBook;
@@ -309,6 +166,8 @@ function renderPlayerPage() {
     dom.playerBookAuthor.textContent = `播音: ${author}`;
     dom.playerBookCategory.textContent = `分类: ${category}`;
     dom.chapterList.innerHTML = '';
+    dom.chapterCount.textContent = state.chapters.length;
+    
     state.chapters.forEach((c, i) => {
         const li = document.createElement('li');
         li.className = 'chapter-item' + (i === state.currentChapterIndex ? ' active' : '');
@@ -324,9 +183,7 @@ function renderPlayerPage() {
     }, 300);
 }
 
-// ================= 代理 & 播放 =================
-function proxyUrl(url) { return state.proxy + encodeURIComponent(url); }
-
+// ================= 音频播放器 =================
 // 统一的音频释放函数
 function cleanupAudio() {
     // 停止并清空事件
@@ -342,18 +199,11 @@ function cleanupAudio() {
     clearTimeout(state.retryTimer);
     state.retryCount = 0;
     console.log('Audio resources cleaned up');
-    
-    // 清理 AudioContext
-    if (state.sourceNode) {
-        state.sourceNode.disconnect();
-        state.sourceNode = null;
-    }
 }
 
-async function playChapterAudio(chapter) {
-    if (isLoadingAudio || state.isAudioLoaded) return;
-    isLoadingAudio = true;
+function proxyUrl(url) { return state.proxy + encodeURIComponent(url); }
 
+async function playChapterAudio(chapter) {
     try {
         updateProxyIndicator('init');
         const res = await fetch(`https://api.cenguigui.cn/api/tingshu/?item_id=${chapter.item_id}`);
@@ -369,26 +219,6 @@ async function playChapterAudio(chapter) {
             state.audio.playbackRate = state.playbackRate;
             state.isAudioLoaded = false;
 
-            // 创建 AudioContext 以保持后台播放
-            if (!state.audioContext) {
-                try {
-                    state.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                } catch (e) {
-                    console.error('AudioContext not supported:', e);
-                }
-            }
-            
-            // 连接音频节点
-            if (state.audioContext) {
-                state.sourceNode = state.audioContext.createMediaElementSource(state.audio);
-                state.sourceNode.connect(state.audioContext.destination);
-                
-                // 恢复音频上下文（如果被挂起）
-                if (state.audioContext.state === 'suspended') {
-                    await state.audioContext.resume();
-                }
-            }
-
             state.audio.oncanplay = async () => {
                 try {
                     await state.audio.play();
@@ -398,8 +228,8 @@ async function playChapterAudio(chapter) {
                     state.retryCount = 0;
                     state.isAudioLoaded = true;
                     
-                    // 更新锁屏界面信息
-                    updateMediaMetadata();
+                    // 更新锁屏控制信息
+                    updateMediaSession();
                 } catch (playErr) {
                     console.error('播放失败:', playErr);
                     tryRetry();
@@ -414,8 +244,6 @@ async function playChapterAudio(chapter) {
     } catch (err) {
         console.error(err);
         tryRetry();
-    } finally {
-        isLoadingAudio = false;
     }
 }
 
@@ -443,58 +271,143 @@ function tryRetry() {
     } else updateProxyIndicator('error');
 }
 
-// ================= 音频控制 =================
 function playAudio() {
     state.audio.play().then(() => {
         state.isPlaying = true;
         dom.playButton.innerHTML = '<i class="fas fa-pause"></i>';
-        
-        // 恢复音频上下文（如果被挂起）
-        if (state.audioContext && state.audioContext.state === 'suspended') {
-            state.audioContext.resume();
+        // 更新锁屏控制状态
+        if ('mediaSession' in navigator) {
+            navigator.mediaSession.playbackState = "playing";
         }
     }).catch((err) => {
         console.error('播放失败:', err);
         tryRetry();
     });
 }
+
 function pauseAudio() {
     state.audio.pause();
     state.isPlaying = false;
     dom.playButton.innerHTML = '<i class="fas fa-play"></i>';
     savePlaybackPosition();
+    // 更新锁屏控制状态
+    if ('mediaSession' in navigator) {
+        navigator.mediaSession.playbackState = "paused";
+    }
 }
+
 function togglePlay() {
     state.isPlaying ? pauseAudio() : playAudio();
 }
+
 function playPrevChapter() {
     if (state.currentChapterIndex > 0) playChapter(state.currentChapterIndex - 1);
 }
+
 function playNextChapter() {
-    if (state.currentChapterIndex < state.chapters.length - 1) playChapter(state.currentChapterIndex + 1);
-    else {
+    if (state.currentChapterIndex < state.chapters.length - 1) {
+        playChapter(state.currentChapterIndex + 1);
+    } else {
         pauseAudio();
         state.audio.currentTime = 0;
         updateProgressBar();
     }
 }
+
 function updateProgressBar() {
     if (state.audio.duration) dom.progress.style.width = (state.audio.currentTime / state.audio.duration * 100) + '%';
     dom.currentTime.textContent = formatTime(state.audio.currentTime);
 }
+
+function updateBufferBar() {
+    if (!state.audio || !state.audio.buffered || state.audio.buffered.length === 0) {
+        dom.buffer.style.width = '0%';
+        return;
+    }
+    try {
+        const bufferedEnd = state.audio.buffered.end(state.audio.buffered.length - 1);
+        const bufferedPercent = (bufferedEnd / state.audio.duration) * 100;
+        dom.buffer.style.width = `${bufferedPercent}%`;
+    } catch (e) {
+        console.warn('更新缓冲条时出错:', e);
+    }
+}
+
 function updateVolumeUI() {
     const v = state.audio.volume;
     dom.volumeLevel.style.width = v * 100 + '%';
     dom.volumeButton.innerHTML = `<i class="fas fa-volume-${state.audio.muted || v === 0 ? 'mute' : v < .5 ? 'down' : 'up'}"></i>`;
 }
+
 function toggleMute() {
     state.audio.muted = !state.audio.muted;
     updateVolumeUI();
 }
+
 function formatTime(sec) {
     if (isNaN(sec)) return '00:00';
     const m = Math.floor(sec / 60), s = Math.floor(sec % 60);
     return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+}
+
+function updateProxyIndicator(status) {
+    dom.proxyIndicator.className = 'proxy-indicator';
+    switch (status) {
+        case 'success':
+            dom.proxyIndicator.classList.add('proxy-success');
+            dom.proxyIndicator.innerHTML = '<i class="fas fa-check"></i>';
+            break;
+        case 'retry':
+            dom.proxyIndicator.classList.add('proxy-warning');
+            dom.proxyIndicator.innerHTML = '<i class="fas fa-redo-alt"></i>';
+            break;
+        case 'error':
+            dom.proxyIndicator.classList.add('proxy-error');
+            dom.proxyIndicator.innerHTML = '<i class="fas fa-times"></i>';
+            break;
+        default:
+            dom.proxyIndicator.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>';
+    }
+}
+
+// ================= 睡眠定时器 =================
+function setSleepTimer(e) {
+    const minutes = parseInt(e.currentTarget.dataset.minutes);
+    state.sleepTimerMinutes = minutes;
+    
+    // 清除现有定时器
+    if (state.sleepTimer) {
+        clearTimeout(state.sleepTimer);
+        state.sleepTimer = null;
+    }
+    
+    // 更新UI
+    document.querySelectorAll('.timer-option').forEach(opt => {
+        if (parseInt(opt.dataset.minutes) === minutes) {
+            opt.classList.add('timer-active');
+        } else {
+            opt.classList.remove('timer-active');
+        }
+    });
+    
+    if (minutes > 0) {
+        // 设置新定时器
+        state.sleepTimer = setTimeout(() => {
+            pauseAudio();
+            showToast(`睡眠定时器已结束播放`);
+            state.sleepTimer = null;
+            state.sleepTimerMinutes = 0;
+            document.querySelectorAll('.timer-option').forEach(opt => {
+                opt.classList.remove('timer-active');
+            });
+        }, minutes * 60 * 1000);
+        
+        showToast(`已设置${minutes}分钟后停止播放`);
+    } else {
+        showToast(`已关闭睡眠定时器`);
+    }
+    
+    dom.timerMenu.classList.remove('show');
 }
 
 // ================= 收藏功能 =================
@@ -525,16 +438,19 @@ function toggleFavorite(e) {
     localStorage.setItem('bookFavorites', JSON.stringify(favorites));
     renderFavorites();
 }
+
 function isBookFavorited(bookId) {
     const storedFavorites = localStorage.getItem('bookFavorites');
     if (!storedFavorites) return false;
     return JSON.parse(storedFavorites).some(f => f.book_id === bookId);
 }
+
 function toggleFavoritePanel(e) {
     e.stopPropagation();
     renderFavorites();
     dom.favoritePanel.style.display = dom.favoritePanel.style.display === 'block' ? 'none' : 'block';
 }
+
 function renderFavorites() {
     const storedFavorites = localStorage.getItem('bookFavorites');
     const favorites = storedFavorites ? JSON.parse(storedFavorites) : [];
@@ -563,6 +479,7 @@ function renderFavorites() {
         dom.favoriteList.appendChild(item);
     });
 }
+
 function removeFavorite(bookId) {
     const storedFavorites = localStorage.getItem('bookFavorites');
     let favorites = storedFavorites ? JSON.parse(storedFavorites) : [];
@@ -574,6 +491,7 @@ function removeFavorite(bookId) {
         btn.classList.remove('favorited');
     });
 }
+
 function shareBook(e) {
     e.stopPropagation();
     const bookId = e.currentTarget.dataset.bookid;
@@ -614,6 +532,8 @@ function shareBook(e) {
         }
     }
 }
+
+// ================= 工具函数 =================
 function showToast(message) {
     const toast = document.createElement('div');
     toast.className = 'toast-message';
@@ -625,6 +545,7 @@ function showToast(message) {
         setTimeout(() => document.body.removeChild(toast), 300);
     }, 3000);
 }
+
 function promptManualCopy(text) {
     const container = document.createElement('div');
     container.className = 'manual-copy-container';
@@ -653,6 +574,7 @@ function savePlaybackPosition() {
     };
     localStorage.setItem(`bookProgress_${state.currentBook.book_id}`, JSON.stringify(progress));
 }
+
 function restorePlaybackPosition() {
     if (!state.currentBook) return;
     const saved = localStorage.getItem(`bookProgress_${state.currentBook.book_id}`);
@@ -663,6 +585,7 @@ function restorePlaybackPosition() {
         updateProgressBar();
     }
 }
+
 function getSavedProgress(bookId) {
     const saved = localStorage.getItem(`bookProgress_${bookId}`);
     return saved ? JSON.parse(saved) : null;
@@ -682,9 +605,116 @@ function toggleExpand(e) {
     }
 }
 
+// ================= 事件绑定 =================
+function setupEventListeners() {
+    dom.searchInput.addEventListener('focus', () => dom.hotSearchPanel.style.display = 'block');
+    dom.searchInput.addEventListener('blur', () => setTimeout(() => dom.hotSearchPanel.style.display = 'none', 200));
+    document.querySelectorAll('.tag').forEach(tag => tag.addEventListener('click', () => {
+        dom.searchInput.value = tag.textContent;
+        performSearch();
+        dom.hotSearchPanel.style.display = 'none';
+    }));
+    dom.searchButton.addEventListener('click', performSearch);
+    dom.searchInput.addEventListener('keypress', e => { if (e.key === 'Enter') performSearch(); });
+    dom.backButton.addEventListener('click', () => { showPage('search'); cleanupAudio(); });
+    dom.playButton.addEventListener('click', togglePlay);
+    dom.prevButton.addEventListener('click', playPrevChapter);
+    dom.nextButton.addEventListener('click', playNextChapter);
+    dom.progressBar.addEventListener('click', e => {
+        const percent = (e.clientX - dom.progressBar.getBoundingClientRect().left) / dom.progressBar.offsetWidth;
+        state.audio.currentTime = percent * state.audio.duration;
+    });
+    dom.volumeButton.addEventListener('click', toggleMute);
+    dom.speedBtn.addEventListener('click', e => { e.stopPropagation(); dom.speedMenu.classList.toggle('show'); });
+    document.querySelectorAll('.speed-option').forEach(opt => opt.addEventListener('click', () => {
+        const speed = parseFloat(opt.dataset.speed);
+        state.audio.playbackRate = speed; state.playbackRate = speed;
+        dom.speedBtn.innerHTML = `<span>${speed}x</span>`;
+        dom.speedMenu.classList.remove('show');
+    }));
+    document.addEventListener('click', e => {
+        if (!dom.speedBtn.contains(e.target) && !dom.speedMenu.contains(e.target)) dom.speedMenu.classList.remove('show');
+    });
+    state.audio.addEventListener('timeupdate', updateProgressBar);
+    state.audio.addEventListener('progress', updateBufferBar);
+    state.audio.addEventListener('ended', playNextChapter);
+    state.audio.addEventListener('loadedmetadata', () => {
+        dom.totalTime.textContent = formatTime(state.audio.duration);
+        restorePlaybackPosition();
+        updateBufferBar();
+    });
+    state.audio.addEventListener('error', () => {
+        if (state.isAudioLoaded || state.audio.currentTime > 0) {
+            console.warn('播放中出错，停止重试');
+            updateProxyIndicator('error');
+            return;
+        }
+        tryRetry();
+    });
+    state.audio.addEventListener('playing', () => {
+        state.isAudioLoaded = true;
+        console.log('音频成功开始播放');
+    });
+    dom.favoriteButton.addEventListener('click', toggleFavoritePanel);
+    document.addEventListener('click', e => {
+        if (!dom.favoriteButton.contains(e.target) && !dom.favoritePanel.contains(e.target)) {
+            dom.favoritePanel.style.display = 'none';
+        }
+    });
+    dom.sleepTimerBtn.addEventListener('click', e => {
+        e.stopPropagation();
+        dom.timerMenu.classList.toggle('show');
+    });
+    document.querySelectorAll('.timer-option').forEach(opt => opt.addEventListener('click', setSleepTimer));
+    document.addEventListener('click', e => {
+        if (!dom.sleepTimerBtn.contains(e.target) && !dom.timerMenu.contains(e.target)) {
+            dom.timerMenu.classList.remove('show');
+        }
+    });
+    
+    // 修复熄屏播放问题：监听可见性变化
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden' && state.isPlaying) {
+            // 进入后台时设置标志
+            state.backgroundPlayback = true;
+        } else if (document.visibilityState === 'visible' && state.backgroundPlayback) {
+            // 返回前台时更新播放器状态
+            state.backgroundPlayback = false;
+            updateMediaSession();
+        }
+    });
+    
+    // 修复熄屏播放问题：监听页面唤醒
+    document.addEventListener('resume', () => {
+        if (state.isPlaying) {
+            state.audio.play().catch(e => {
+                console.log('恢复播放失败:', e);
+            });
+        }
+    }, false);
+}
+
+function setVolumeFromEvent(e) {
+    const rect = dom.volumeBar.getBoundingClientRect();
+    const x = (e.clientX ?? e.touches[0].clientX) - rect.left;
+    const percent = Math.max(0, Math.min(1, x / rect.width));
+    state.audio.volume = percent;
+    updateVolumeUI();
+}
+dom.volumeBar.addEventListener('click', setVolumeFromEvent);
+dom.volumeBar.addEventListener('touchstart', e => {
+    e.preventDefault();
+    setVolumeFromEvent(e);
+});
+dom.volumeBar.addEventListener('touchmove', e => {
+    e.preventDefault();
+    setVolumeFromEvent(e);
+});
+
 // ================= 初始化 =================
 function initApp() {
     setupEventListeners();
+    setupMediaSession();
     performSearch();
     state.audio.volume = .7;
     updateVolumeUI();
@@ -694,54 +724,8 @@ function initApp() {
         const bookId = hash.split('=')[1];
         loadBookDetails(bookId);
     }
-
-    /* =====  MediaSession 完整实现  ===== */
-    if ('mediaSession' in navigator) {
-        navigator.mediaSession.setActionHandler('play',       () => playAudio());
-        navigator.mediaSession.setActionHandler('pause',      () => pauseAudio());
-        navigator.mediaSession.setActionHandler('previoustrack', () => playPrevChapter());
-        navigator.mediaSession.setActionHandler('nexttrack',  () => playNextChapter());
-        // 拖动锁屏进度条
-        navigator.mediaSession.setActionHandler('seekto', (details) => {
-            if (details.seekTime !== undefined) {
-                state.audio.currentTime = details.seekTime;
-            }
-        });
-    }
-
-    // 当章节切换/播放状态变化时更新 MediaSession 元数据
-    state.audio.addEventListener('loadedmetadata', updateMediaMetadata);
-    state.audio.addEventListener('play',           updateMediaMetadata);
-    state.audio.addEventListener('pause',          updateMediaMetadata);
-    state.audio.addEventListener('ended',          updateMediaMetadata);
+    
+    // 修复熄屏播放问题：确保页面隐藏时也能播放
+    state.audio.setAttribute('crossorigin', 'anonymous');
 }
-
-// 更新锁屏界面信息（MediaSession 元数据 + 进度）
-function updateMediaMetadata() {
-    // 没有书籍信息或章节信息时直接返回
-    if (!state.currentBook || !state.chapters.length) return;
-
-    const { book_name, author, book_pic } = state.currentBook;
-    const chapter = state.chapters[state.currentChapterIndex];
-    if (!chapter) return;
-
-    // 1. 设置基础元数据（标题、作者、封面等）
-    const artwork = [{ src: book_pic, sizes: '300x300', type: 'image/png' }];
-    navigator.mediaSession.metadata = new MediaMetadata({
-        title: chapter.title || book_name,
-        artist: author,
-        album: book_name,
-        artwork
-    });
-
-    // 2. 仅在拿到有效 duration 后才同步进度
-    if (!isNaN(state.audio.duration) {
-        navigator.mediaSession.setPositionState({
-            duration: state.audio.duration,
-            playbackRate: state.audio.playbackRate,
-            position: state.audio.currentTime
-        });
-    }
-}
-
 window.addEventListener('DOMContentLoaded', initApp);
