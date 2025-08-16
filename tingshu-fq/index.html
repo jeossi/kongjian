@@ -2,16 +2,14 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>番茄听书</title>
-	<link rel="manifest" href="manifest.json">
     <link rel="icon" href="../Aje128.png" type="image/png" sizes="32x32">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css?v=8.15.2042">
+    <link rel="stylesheet" href="style.css?v=8.16.0835">
 </head>
 <body>
     <div class="container">
@@ -109,8 +107,7 @@
                     <span id="current-time">00:00</span>
                     <div class="progress-bar-container">
                         <div class="progress-bar" id="progress-bar">
-						  <!-- 新增缓冲条 -->
-                             <div class="buffer" id="buffer"></div>
+                            <div class="buffer" id="buffer"></div>
                             <div class="progress" id="progress"></div>
                         </div>
                     </div>
@@ -138,13 +135,27 @@
                             <div class="speed-option" data-speed="1.25">1.25x</div>
                             <div class="speed-option" data-speed="1.5">1.5x</div>
                             <div class="speed-option" data-speed="1.75">1.75x</div>
-							<div class="speed-option" data-speed="2.0">2.0x</div>
+                            <div class="speed-option" data-speed="2.0">2.0x</div>
                             <div class="speed-option" data-speed="2.5">2.5x</div>
                             <div class="speed-option" data-speed="3.0">3.0x</div>
                         </div>
                     </div>
-                     <div class="progress-bar-container">
-             <div class="volume-controls">
+                    
+                    <div class="sleep-timer-container">
+                        <button class="sleep-timer-btn" id="sleep-timer-btn" title="睡眠定时器">
+                            <i class="fas fa-bed"></i>
+                        </button>
+                        <div class="timer-menu" id="timer-menu">
+                            <div class="timer-option" data-minutes="0">关闭</div>
+                            <div class="timer-option" data-minutes="15">15分钟</div>
+                            <div class="timer-option" data-minutes="30">30分钟</div>
+                            <div class="timer-option" data-minutes="60">60分钟</div>
+                            <div class="timer-option" data-minutes="90">90分钟</div>
+                            <div class="timer-option" data-minutes="120">120分钟</div>
+                        </div>
+                    </div>
+                    
+                    <div class="volume-controls">
                         <button class="control-btn" id="volume-btn">
                             <i class="fas fa-volume-up"></i>
                         </button>
@@ -158,6 +169,9 @@
             <div class="chapters-container">
                 <div class="chapter-title">
                     <i class="fas fa-list"></i> 章节列表
+                    <div style="margin-left: auto; font-size: 16px;">
+                        共 <span id="chapter-count">0</span> 章
+                    </div>
                 </div>
                 <ul class="chapter-list" id="chapter-list">
                     <!-- 章节列表将在这里动态生成 -->
@@ -166,7 +180,7 @@
         </div>
     </div>
 
-    <script src="script.js?v=8.15.2042"></script>
+    <script src="script.js?v=8.16.0835"></script>
+    <script src="media-session.js?v=8.16.0835"></script>
 </body>
 </html>
-
