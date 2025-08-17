@@ -1,4 +1,4 @@
-// 修复版 script.js（修复熄屏下播放进度显示不同步问题）
+// 修复版 script.js（修复熄屏下播放进度显示不同步问题 + 添加搜索结果计数）
 const hotKeywords = [
   "王佳音","鱼蛋","窝窝","艺凌","洋澜","任夏","魏佳艺","韩小欠","单依纯","DJ","林宥嘉",
   "喝茶","古筝","助眠","热歌","热门","新歌","飙升","流行",
@@ -39,6 +39,7 @@ const collectionBtn     = document.getElementById('collectionBtn');
 const collectionPanel   = document.getElementById('collectionPanel');
 const closeCollectionPanel = document.getElementById('closeCollectionPanel');
 const collectionList    = document.getElementById('collectionList');
+const resultCountEl     = document.getElementById('resultCount'); // 新增结果计数元素
 
 let currentSong = null;
 let currentSearchResults = [];
@@ -178,6 +179,10 @@ function renderHotTags() {
 function searchMusic(keyword, callback = null) {
   currentSearchKeyword = keyword;
   baseApiUrl = `https://www.hhlqilongzhu.cn/api/joox/juhe_music.php?msg=${encodeURIComponent(keyword)}&type=json&n=`;
+  
+  // 更新结果计数为"搜索中"
+  resultCountEl.textContent = '搜索中...';
+  
   resultsList.innerHTML = '<div class="result-item" style="justify-content:center;color:#888"><i class="fas fa-spinner fa-spin"></i> 搜索中...</div>';
   fetch(baseApiUrl)
     .then(r => r.json())
@@ -188,6 +193,8 @@ function searchMusic(keyword, callback = null) {
       isFromShareLink = false;
     })
     .catch(() => {
+      // 搜索失败时更新计数
+      resultCountEl.textContent = '共0条';
       resultsList.innerHTML = '<div class="result-item" style="justify-content:center;color:#888"><i class="fas fa-exclamation-triangle"></i> 搜索失败，请稍后重试</div>';
       isFromShareLink = false;
     });
@@ -195,6 +202,10 @@ function searchMusic(keyword, callback = null) {
 
 function renderSearchResults(results) {
   currentSearchResults = results || [];
+  
+  // 更新结果计数
+  resultCountEl.textContent = `共${currentSearchResults.length}条`;
+  
   resultsList.innerHTML = '';
   if (!currentSearchResults.length) {
     resultsList.innerHTML = '<div class="result-item" style="justify-content:center;color:#888"><i class="fas fa-music"></i> 未找到相关歌曲</div>';
