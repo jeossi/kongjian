@@ -12,8 +12,7 @@ const state = {
     maxRetry: 1,
     retryTimer: null,
     proxy: 'https://ajeo.cc/',
-    isAudioLoaded: false,
-    mediaSessionInitialized: false
+    isAudioLoaded: false // 新增状态标记
 };
 
 // 防抖锁
@@ -38,7 +37,7 @@ const dom = {
     totalTime: document.getElementById('total-time'),
     progressBar: document.getElementById('progress-bar'),
     progress: document.getElementById('progress'),
-    buffer: document.getElementById('buffer'),
+    buffer: document.getElementById('buffer'), // 新增缓冲条元素
     playButton: document.getElementById('play-btn'),
     prevButton: document.getElementById('prev-btn'),
     nextButton: document.getElementById('next-btn'),
@@ -84,15 +83,19 @@ function setupEventListeners() {
         if (!dom.speedBtn.contains(e.target) && !dom.speedMenu.contains(e.target)) dom.speedMenu.classList.remove('show');
     });
     state.audio.addEventListener('timeupdate', updateProgressBar);
-    state.audio.addEventListener('progress', updateBufferBar);
-    state.audio.addEventListener('ended', handleAudioEnded);
+    state.audio.addEventListener('progress', updateBufferBar); // 新增缓冲条更新
+    state.audio.addEventListener('ended', playNextChapter);
     state.audio.addEventListener('loadedmetadata', () => {
         dom.totalTime.textContent = formatTime(state.audio.duration);
+        // 恢复播放进度
         restorePlaybackPosition();
+        // 更新缓冲条
         updateBufferBar();
-        updateMediaPositionState();
+        // 更新媒体会话位置状态
+        updateMediaSessionPosition();
     });
     
+    // 改进的错误处理逻辑
     state.audio.addEventListener('error', () => {
         if (state.isAudioLoaded || state.audio.currentTime > 0) {
             console.warn('播放中出错，停止重试');
@@ -112,20 +115,25 @@ function setupEventListeners() {
         }
     });
     
+    // 新增：当音频成功开始播放时标记
     state.audio.addEventListener('playing', () => {
         state.isAudioLoaded = true;
         console.log('音频成功开始播放');
-        updateMediaPlaybackState();
+        // 更新媒体会话播放状态
+        if ('mediaSession' in navigator) {
+            navigator.mediaSession.playbackState = "playing";
+        }
     });
     
+    // 收藏按钮事件
     dom.favoriteButton.addEventListener('click', toggleFavoritePanel);
     document.addEventListener('click', e => {
         if (!dom.favoriteButton.contains(e.target) && !dom.favoritePanel.contains(e.target)) {
             dom.favoritePanel.style.display = 'none';
         }
     });
-
-    // 音量控制事件
+    
+    // 设置音量控制事件
     dom.volumeBar.addEventListener('click', setVolumeFromEvent);
     dom.volumeBar.addEventListener('touchstart', e => {
         e.preventDefault();
@@ -218,7 +226,6 @@ async function performSearch() {
         dom.searchLoader.style.display = 'none';
     }
 }
-
 function renderSearchResults(books) {
     dom.resultsGrid.innerHTML = '';
     books.forEach(b => {
@@ -245,12 +252,14 @@ function renderSearchResults(books) {
                 </div>
             </div>`;
         
+        // 卡片点击事件 - 排除按钮点击
         card.addEventListener('click', (e) => {
             if (!e.target.closest('.book-btn') && !e.target.closest('.expand-btn')) {
                 loadBookDetails(b.book_id);
             }
         });
         
+        // 按钮事件
         card.querySelector('.favorite-book-btn').addEventListener('click', toggleFavorite);
         card.querySelector('.share-book-btn').addEventListener('click', shareBook);
         card.querySelector('.expand-btn').addEventListener('click', toggleExpand);
@@ -267,13 +276,15 @@ async function loadBookDetails(bookId) {
             state.currentBook = data;
             state.chapters = data.data;
             state.retryCount = 0;
-            state.isAudioLoaded = false;
+            state.isAudioLoaded = false; // 重置音频加载状态
             renderPlayerPage();
             showPage('player');
             if (state.chapters.length) {
+                // 检查是否有保存的进度
                 const savedProgress = getSavedProgress(bookId);
                 if (savedProgress) {
                     state.currentChapterIndex = savedProgress.chapterIndex;
+                    // 播放保存的章节
                     playChapter(state.currentChapterIndex);
                 } else {
                     state.currentChapterIndex = 0;
@@ -295,6 +306,14 @@ function renderPlayerPage() {
     dom.playerBookAuthor.textContent = `播音: ${author}`;
     dom.playerBookCategory.textContent = `分类: ${category}`;
     dom.chapterList.innerHTML = '';
+
+    // 添加：更新章节总数
+    const totalChapters = state.chapters.length;
+    const chapterCountEl = document.getElementById('chapter-count');
+    if (chapterCountEl) {
+        chapterCountEl.textContent = `共${totalChapters}章`;
+    }
+
     state.chapters.forEach((c, i) => {
         const li = document.createElement('li');
         li.className = 'chapter-item' + (i === state.currentChapterIndex ? ' active' : '');
@@ -302,7 +321,7 @@ function renderPlayerPage() {
         li.addEventListener('click', () => playChapter(i));
         dom.chapterList.appendChild(li);
     });
-    
+
     setTimeout(() => {
         const activeChapter = dom.chapterList.querySelector('.chapter-item.active');
         if (activeChapter) {
@@ -310,17 +329,14 @@ function renderPlayerPage() {
         }
     }, 300);
 }
-
 // ================= 代理 & 播放 =================
 function proxyUrl(url) { return state.proxy + encodeURIComponent(url); }
-
 async function playChapterAudio(chapter) {
     if (isLoadingAudio || state.isAudioLoaded) return;
     isLoadingAudio = true;
 
     try {
         updateProxyIndicator('init');
-        updateMediaMetadata(); // 提前更新元数据
 
         const res = await fetch(`https://api.cenguigui.cn/api/tingshu/?item_id=${chapter.item_id}`);
         const data = await res.json();
@@ -328,20 +344,21 @@ async function playChapterAudio(chapter) {
         if (data.code === 200 && data.data?.url) {
             const audioUrl = proxyUrl(data.data.url);
 
+            // 避免重复设置 src
             if (state.audio.src !== audioUrl) {
                 state.audio.src = audioUrl;
-                state.audio.load();
+                state.audio.load(); // 只加载一次
             }
 
             state.audio.playbackRate = state.playbackRate;
             state.isAudioLoaded = false;
 
+            // 等待音频可以播放
             state.audio.oncanplay = async () => {
                 try {
-                    if (state.isPlaying) {
-                        await state.audio.play();
-                        dom.playButton.innerHTML = '<i class="fas fa-pause"></i>';
-                    }
+                    await state.audio.play();
+                    state.isPlaying = true;
+                    dom.playButton.innerHTML = '<i class="fas fa-pause"></i>';
                     updateProxyIndicator('success');
                     state.retryCount = 0;
                     state.isAudioLoaded = true;
@@ -366,41 +383,31 @@ async function playChapterAudio(chapter) {
         isLoadingAudio = false;
     }
 }
-
 function playChapter(index) {
     if (index === state.currentChapterIndex && state.isAudioLoaded) return;
 
-    // 保存当前播放位置
-    savePlaybackPosition();
-    
-    // 记录当前播放状态但不暂停音频
-    const wasPlaying = state.isPlaying;
-    
+    pauseAudio();
     clearTimeout(state.retryTimer);
     state.retryCount = 0;
     state.isAudioLoaded = false;
 
+    state.audio.currentTime = 0;
+    updateProgressBar();
+
     state.currentChapterIndex = index;
     updateProxyIndicator('retry');
 
-    // 更新章节列表UI
     document.querySelectorAll('.chapter-item').forEach((li, i) =>
         li.classList.toggle('active', i === index)
     );
-
-    // 立即更新媒体元数据（关键修改）
-    updateMediaMetadata();
     
-    // 保持播放按钮状态
-    if (wasPlaying) {
-        dom.playButton.innerHTML = '<i class="fas fa-pause"></i>';
-    }
+    // 更新媒体会话元数据
+    updateMediaSessionMetadata();
 
     if (state.chapters[index]) {
         playChapterAudio(state.chapters[index]);
     }
 }
-
 function tryRetry() {
     if (state.retryCount < state.maxRetry) {
         state.retryCount++;
@@ -412,120 +419,37 @@ function tryRetry() {
     } else updateProxyIndicator('error');
 }
 
-// ================= 音频结束处理 =================
-function handleAudioEnded() {
-    if (state.currentChapterIndex < state.chapters.length - 1) {
-        // 自动播放下一章
-        playChapter(state.currentChapterIndex + 1);
-    } else {
-        // 最后一章结束
-        pauseAudio();
-        state.audio.currentTime = 0;
-        updateProgressBar();
-    }
-}
-
-// ================= MediaSession API 功能 =================
-function initMediaSession() {
-    if (!('mediaSession' in navigator)) return;
-    
-    navigator.mediaSession.setActionHandler('play', () => {
-        playAudio();
-    });
-    
-    navigator.mediaSession.setActionHandler('pause', () => {
-        pauseAudio();
-    });
-    
-    navigator.mediaSession.setActionHandler('previoustrack', () => {
-        playPrevChapter();
-    });
-    
-    navigator.mediaSession.setActionHandler('nexttrack', () => {
-        playNextChapter();
-    });
-    
-    navigator.mediaSession.setActionHandler('seekbackward', (details) => {
-        state.audio.currentTime = Math.max(0, state.audio.currentTime - (details.seekOffset || 10));
-    });
-    
-    navigator.mediaSession.setActionHandler('seekforward', (details) => {
-        state.audio.currentTime = Math.min(state.audio.duration, state.audio.currentTime + (details.seekOffset || 10));
-    });
-    
-    navigator.mediaSession.setActionHandler('seekto', (details) => {
-        if (details.fastSeek && 'fastSeek' in state.audio) {
-            state.audio.fastSeek(details.seekTime);
-        } else {
-            state.audio.currentTime = details.seekTime;
-        }
-    });
-    
-    state.mediaSessionInitialized = true;
-}
-
-function updateMediaMetadata() {
-    if (!('mediaSession' in navigator) || !state.currentBook || !state.chapters[state.currentChapterIndex]) return;
-    
-    const currentChapter = state.chapters[state.currentChapterIndex];
-    const { book_name, author, book_pic } = state.currentBook;
-    
-    navigator.mediaSession.metadata = new MediaMetadata({
-        title: currentChapter.title,
-        artist: author,
-        album: book_name,
-        artwork: [
-            { src: book_pic, sizes: '300x400', type: 'image/jpeg' },
-            { src: book_pic, sizes: '150x200', type: 'image/jpeg' },
-            { src: book_pic, sizes: '75x100', type: 'image/jpeg' }
-        ]
-    });
-}
-
-function updateMediaPlaybackState() {
-    if (!('mediaSession' in navigator)) return;
-    
-    navigator.mediaSession.playbackState = state.isPlaying ? 'playing' : 'paused';
-}
-
-function updateMediaPositionState() {
-    if (!('mediaSession' in navigator) || isNaN(state.audio.duration)) return;
-    
-    navigator.mediaSession.setPositionState({
-        duration: state.audio.duration,
-        playbackRate: state.audio.playbackRate,
-        position: state.audio.currentTime
-    });
-}
-
 // ================= 音频控制 =================
 function playAudio() {
     state.audio.play().then(() => {
         state.isPlaying = true;
         dom.playButton.innerHTML = '<i class="fas fa-pause"></i>';
-        updateMediaPlaybackState();
+        // 更新媒体会话播放状态
+        if ('mediaSession' in navigator) {
+            navigator.mediaSession.playbackState = "playing";
+        }
     }).catch((err) => {
         console.error('播放失败:', err);
         tryRetry();
     });
 }
-
 function pauseAudio() {
     state.audio.pause();
     state.isPlaying = false;
     dom.playButton.innerHTML = '<i class="fas fa-play"></i>';
-    updateMediaPlaybackState();
+    // 保存播放进度
     savePlaybackPosition();
+    // 更新媒体会话播放状态
+    if ('mediaSession' in navigator) {
+        navigator.mediaSession.playbackState = "paused";
+    }
 }
-
 function togglePlay() {
     state.isPlaying ? pauseAudio() : playAudio();
 }
-
 function playPrevChapter() {
     if (state.currentChapterIndex > 0) playChapter(state.currentChapterIndex - 1);
 }
-
 function playNextChapter() {
     if (state.currentChapterIndex < state.chapters.length - 1) playChapter(state.currentChapterIndex + 1);
     else {
@@ -534,27 +458,21 @@ function playNextChapter() {
         updateProgressBar();
     }
 }
-
 function updateProgressBar() {
-    if (state.audio.duration) {
-        const percent = (state.audio.currentTime / state.audio.duration * 100);
-        dom.progress.style.width = `${percent}%`;
-        updateMediaPositionState();
-    }
+    if (state.audio.duration) dom.progress.style.width = (state.audio.currentTime / state.audio.duration * 100) + '%';
     dom.currentTime.textContent = formatTime(state.audio.currentTime);
+    // 更新媒体会话位置状态
+    updateMediaSessionPosition();
 }
-
 function updateVolumeUI() {
     const v = state.audio.volume;
     dom.volumeLevel.style.width = v * 100 + '%';
     dom.volumeButton.innerHTML = `<i class="fas fa-volume-${state.audio.muted || v === 0 ? 'mute' : v < .5 ? 'down' : 'up'}"></i>`;
 }
-
 function toggleMute() {
     state.audio.muted = !state.audio.muted;
     updateVolumeUI();
 }
-
 function formatTime(sec) {
     if (isNaN(sec)) return '00:00';
     const m = Math.floor(sec / 60), s = Math.floor(sec % 60);
@@ -573,10 +491,12 @@ function toggleFavorite(e) {
     const bookIndex = favorites.findIndex(f => f.book_id === bookId);
     
     if (bookIndex !== -1) {
+        // 移除收藏
         favorites.splice(bookIndex, 1);
         btn.innerHTML = '<i class="far fa-star"></i> 收藏';
         btn.classList.remove('favorited');
     } else {
+        // 添加收藏
         const book = state.searchResults.find(b => b.book_id === bookId);
         if (book) {
             favorites.push({
@@ -649,6 +569,7 @@ function removeFavorite(bookId) {
     localStorage.setItem('bookFavorites', JSON.stringify(favorites));
     renderFavorites();
     
+    // 更新搜索结果中的收藏状态
     document.querySelectorAll(`.favorite-book-btn[data-bookid="${bookId}"]`).forEach(btn => {
         btn.innerHTML = '<i class="far fa-star"></i> 收藏';
         btn.classList.remove('favorited');
@@ -663,6 +584,7 @@ function shareBook(e) {
     if (book) {
         const shareText = `【Ajeo提示】请前往浏览器粘贴【链接】收听 \n  ${book.title} \n 【链接】：\n ${window.location.href.split('#')[0]}#book_id=${bookId}`;
         
+        // 创建一个临时的textarea元素来复制文本
         const copyToClipboardFallback = (text) => {
             const textarea = document.createElement('textarea');
             textarea.value = text;
@@ -684,25 +606,77 @@ function shareBook(e) {
         };
         
         try {
+            // 优先使用现代API
             if (navigator.clipboard) {
                 navigator.clipboard.writeText(shareText).then(() => {
                     showToast('已复制，请到微信粘贴分享');
                 }).catch(() => {
+                    // 如果现代API失败，使用回退方案
                     copyToClipboardFallback(shareText);
                     showToast('已复制，请到微信粘贴分享');
                 });
             } else {
+                // 不支持clipboard API，直接使用回退方案
                 copyToClipboardFallback(shareText);
                 showToast('已复制，请到微信粘贴分享');
             }
         } catch (err) {
             console.error('复制失败:', err);
+            // 如果所有方法都失败，显示手动复制提示
             promptManualCopy(shareText);
         }
     }
 }
 
-// ================= 辅助函数 =================
+// ================= 媒体会话 API =================
+function setupMediaSessionHandlers() {
+    if ('mediaSession' in navigator) {
+        // 设置媒体操作处理程序
+        navigator.mediaSession.setActionHandler('play', () => {
+            playAudio();
+        });
+
+        navigator.mediaSession.setActionHandler('pause', () => {
+            pauseAudio();
+        });
+
+        navigator.mediaSession.setActionHandler('previoustrack', () => {
+            playPrevChapter();
+        });
+
+        navigator.mediaSession.setActionHandler('nexttrack', () => {
+            playNextChapter();
+        });
+    }
+}
+
+function updateMediaSessionMetadata() {
+    if (!('mediaSession' in navigator) || !state.currentBook || !state.chapters[state.currentChapterIndex]) return;
+    
+    const chapter = state.chapters[state.currentChapterIndex];
+    const book = state.currentBook;
+    
+    navigator.mediaSession.metadata = new MediaMetadata({
+        title: chapter.title,
+        artist: book.book_name,
+        album: book.author,
+        artwork: [
+            { src: book.book_pic, sizes: '200x200', type: 'image/jpeg' }
+        ]
+    });
+}
+
+function updateMediaSessionPosition() {
+    if ('mediaSession' in navigator && state.audio.duration && !isNaN(state.audio.duration)) {
+        navigator.mediaSession.setPositionState({
+            duration: state.audio.duration,
+            playbackRate: state.playbackRate,
+            position: state.audio.currentTime
+        });
+    }
+}
+
+// 添加新的辅助函数
 function showToast(message) {
     const toast = document.createElement('div');
     toast.className = 'toast-message';
@@ -795,17 +769,17 @@ function toggleExpand(e) {
 // ================= 初始化 =================
 function initApp() {
     setupEventListeners();
+    setupMediaSessionHandlers(); // 初始化媒体会话处理程序
     performSearch();
     state.audio.volume = .7;
     updateVolumeUI();
     updateProxyIndicator('init');
-    initMediaSession();
     
+    // 检查URL中是否有书籍ID
     const hash = window.location.hash;
     if (hash.startsWith('#book_id=')) {
         const bookId = hash.split('=')[1];
         loadBookDetails(bookId);
     }
 }
-
 window.addEventListener('DOMContentLoaded', initApp);
