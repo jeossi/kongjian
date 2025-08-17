@@ -54,7 +54,7 @@ let isFromShareLink = false;
 let currentSearchKeyword = "";
 
 const PROXY_SERVER = 'https://ajeo.cc/';
-const FALLBACK_IMAGE = '../mm.jpg';
+const FALLBACK_IMAGE = '../Aje128.png';
 
 /* ---------- 通用工具 ---------- */
 function getSecureImageUrl(originalUrl) {
@@ -273,9 +273,35 @@ async function updatePlayer(detail) {
       audioUrl = currentBlobUrl;
     } catch { /* ignore */ }
   }
+  
   audioPlayer.src = audioUrl || '';
   audioPlayer.load();
-  try { await audioPlayer.play(); } catch { /* ignore */ }
+  
+  try {
+    // 等待元数据加载
+    await new Promise((resolve) => {
+      if (audioPlayer.readyState >= 1) {
+        resolve();
+      } else {
+        audioPlayer.onloadedmetadata = resolve;
+      }
+    });
+    
+    // 设置MediaSession位置状态（解决熄屏显示问题）
+    if ('mediaSession' in navigator && !isNaN(audioPlayer.duration)) {
+      navigator.mediaSession.setPositionState({
+        duration: audioPlayer.duration,
+        playbackRate: audioPlayer.playbackRate,
+        position: audioPlayer.currentTime
+      });
+    }
+    
+    // 播放音频
+    await audioPlayer.play();
+  } catch (e) { 
+    console.error('播放失败', e);
+  }
+  
   playBtn.style.display = 'none';
   pauseBtn.style.display = 'flex';
   currentLyrics = detail.lyric || '';
@@ -402,7 +428,7 @@ document.addEventListener('DOMContentLoaded', () => {
     durationEl.textContent = formatTime(duration);
     syncLyrics(currentTime);
     
-    // 更新MediaSession进度
+    // 更新MediaSession进度（解决熄屏进度显示问题）
     if ('mediaSession' in navigator && !isNaN(audioPlayer.duration)) {
       navigator.mediaSession.setPositionState({
         duration: audioPlayer.duration,
