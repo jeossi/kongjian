@@ -1,4 +1,4 @@
-// 修复版 script.js（修复熄屏播放问题）
+// 修复版 script.js（熄屏播放优化完整版）
 const hotKeywords = [
   "王佳音","鱼蛋","窝窝","艺凌","洋澜","任夏","魏佳艺","韩小欠","单依纯","DJ","林宥嘉",
   "喝茶","古筝","助眠","热歌","热门","新歌","飙升","流行",
@@ -54,7 +54,7 @@ let isFromShareLink = false;
 let currentSearchKeyword = "";
 
 const PROXY_SERVER = 'https://ajeo.cc/';
-const FALLBACK_IMAGE = '../mm.jpg';
+const FALLBACK_IMAGE = '../Aje128.png';
 
 /* ---------- 通用工具 ---------- */
 function getSecureImageUrl(originalUrl) {
@@ -220,109 +220,95 @@ function renderSearchResults(results) {
   if (currentSong) highlightCurrentSong(currentSong);
 }
 
-/* ---------- 播放控制 ---------- */
-function playSong(song) {
-  // 保存当前播放状态
-  const wasPlaying = !audioPlayer.paused;
-  
-  // 暂停当前音频但不清除src
+/* ---------- 播放控制（熄屏优化） ---------- */
+let isUpdating = false; // 防止并发切换
+let updateTimeout = null;
+
+async function playSong(song) {
+  if (isUpdating) return;
+  isUpdating = true;
+
+  // 清除之前的超时
+  if (updateTimeout) clearTimeout(updateTimeout);
+
+  // 1. 暂停当前音频，保持src不变
   audioPlayer.pause();
-  
-  // 释放之前的Blob URL
-  if (currentBlobUrl) {
-    URL.revokeObjectURL(currentBlobUrl);
-    currentBlobUrl = null;
-  }
-  
-  // 立即更新UI
+
+  // 2. 立即更新UI和MediaSession元数据（除音频外）
   currentSong = song;
   songTitle.textContent = song.title;
   songArtist.textContent = song.singer;
   lyricsContent.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 加载中...';
-  
-  // 高亮当前歌曲
-  highlightCurrentSong(song);
-  
-  // 设置MediaSession元数据
+
+  // 更新MediaSession元数据
   if ('mediaSession' in navigator) {
     navigator.mediaSession.metadata = new MediaMetadata({
       title: song.title,
       artist: song.singer,
-      // 如果有封面图可以在这里设置
-      // artwork: [{ src: 'https://example.com/album-cover.jpg' }]
+      album: '聚合音乐点播',
+      artwork: [{ src: FALLBACK_IMAGE, sizes: '512x512', type: 'image/jpeg' }]
     });
+    navigator.mediaSession.playbackState = 'playing'; // 保持播放状态
   }
-  
-  // 获取歌曲详情
-  fetch(`${baseApiUrl}${song.n}`)
-    .then(r => r.json())
-    .then(data => data && data.data && updatePlayer(data.data, wasPlaying))
-    .catch(() => { lyricsContent.textContent = '加载歌曲详情失败'; });
-}
 
-function highlightCurrentSong(song) {
-  document.querySelectorAll('.result-item').forEach(i => i.classList.remove('current-song'));
-  const item = document.querySelector(`.result-item[data-n="${song.n}"]`);
-  if (item) {
-    item.classList.add('current-song');
-    item.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }
-}
+  // 3. 获取新音频详情
+  try {
+    const resp = await fetch(`${baseApiUrl}${song.n}`);
+    const data = await resp.json();
+    if (!data || !data.data) throw new Error('无数据');
 
-async function updatePlayer(detail, shouldPlay = true) {
-  // 更新专辑封面
-  if (detail.cover) {
-    albumCover.innerHTML = `<div class="album-image-container"><img src="${getSecureImageUrl(detail.cover)}" onerror="this.src='${FALLBACK_IMAGE}'"></div>`;
-  } else {
-    albumCover.innerHTML = '<i class="fas fa-music"></i>';
-  }
-  
-  // 更新歌词
-  currentLyrics = detail.lyric || '';
-  lyricsContent.textContent = currentLyrics || '暂无歌词';
-  
-  // 处理音频URL
-  let audioUrl = detail.url;
-  if (detail.url && detail.url.includes('douyinvod.com')) {
-    try {
-      const resp = await fetch(PROXY_SERVER + encodeURIComponent(detail.url));
-      const blob = await resp.blob();
-      currentBlobUrl = URL.createObjectURL(blob);
-      audioUrl = currentBlobUrl;
-    } catch (e) { 
-      console.error('代理请求失败:', e);
+    // 4. 更新封面
+    if (data.data.cover) {
+      const secureUrl = getSecureImageUrl(data.data.cover);
+      albumCover.innerHTML = `<div class="album-image-container"><img src="${secureUrl}" onerror="this.src='${FALLBACK_IMAGE}'"></div>`;
+      if ('mediaSession' in navigator) {
+        navigator.mediaSession.metadata.artwork = [{ src: secureUrl || FALLBACK_IMAGE, sizes: '512x512', type: 'image/jpeg' }];
+      }
     }
-  }
-  
-  // 设置音频源并播放
-  audioPlayer.src = audioUrl || '';
-  currentSong.url = detail.url;
-  currentSong.link = detail.link || null;
-  
-  // 加载音频
-  audioPlayer.load();
-  
-  // 如果需要播放则开始播放
-  if (shouldPlay) {
-    try { 
-      await audioPlayer.play(); 
-      playBtn.style.display = 'none';
-      pauseBtn.style.display = 'flex';
-    } catch (e) { 
-      console.error('播放失败:', e);
+
+    // 5. 处理音频URL
+    let audioUrl = data.data.url;
+    if (data.data.url && data.data.url.includes('douyinvod.com')) {
+      try {
+        const proxyResp = await fetch(PROXY_SERVER + encodeURIComponent(data.data.url));
+        const blob = await proxyResp.blob();
+        if (currentBlobUrl) URL.revokeObjectURL(currentBlobUrl);
+        currentBlobUrl = URL.createObjectURL(blob);
+        audioUrl = currentBlobUrl;
+      } catch (e) {
+        console.error('代理请求失败', e);
+      }
     }
+
+    // 6. 设置新src并自动播放
+    audioPlayer.src = audioUrl || '';
+    audioPlayer.load();
+    await audioPlayer.play();
+
+    // 7. 更新其他信息
+    currentLyrics = data.data.lyric || '';
+    lyricsContent.textContent = currentLyrics || '暂无歌词';
+    currentSong.url = data.data.url;
+    currentSong.link = data.data.link || null;
+
+    highlightCurrentSong(song);
+  } catch (err) {
+    console.error('播放失败', err);
+    lyricsContent.textContent = '加载歌曲详情失败';
+  } finally {
+    isUpdating = false;
   }
 }
 
 function playNextSong() {
-  if (!currentSearchResults.length) return;
+  if (!currentSearchResults.length || isUpdating) return;
   const idx = currentSearchResults.findIndex(s => currentSong && s.n === currentSong.n);
   const next = currentSearchResults[(idx + 1) % currentSearchResults.length];
   playSong(next);
 }
 
 function playPrevSong() {
-  if (!currentSearchResults.length) return;
+  if (!currentSearchResults.length || isUpdating) return;
   const idx = currentSearchResults.findIndex(s => currentSong && s.n === currentSong.n);
   const prev = currentSearchResults[(idx - 1 + currentSearchResults.length) % currentSearchResults.length];
   playSong(prev);
@@ -332,29 +318,26 @@ function playPrevSong() {
 document.addEventListener('DOMContentLoaded', () => {
   document.documentElement.classList.add('dark-theme');
   renderHotTags();
-  if (!handleShareUrl()) searchMusic('新歌');
+  if (!handleShareUrl()) searchMusic('窝窝');
   renderFavorites();
-  
-  // 设置MediaSession操作处理
+
+  // MediaSession动作处理
   if ('mediaSession' in navigator) {
-    navigator.mediaSession.setActionHandler('play', () => {
-      audioPlayer.play();
-    });
-    
-    navigator.mediaSession.setActionHandler('pause', () => {
-      audioPlayer.pause();
-    });
-    
-    navigator.mediaSession.setActionHandler('previoustrack', () => {
-      playPrevSong();
-    });
-    
-    navigator.mediaSession.setActionHandler('nexttrack', () => {
-      playNextSong();
+    navigator.mediaSession.setActionHandler('play', () => audioPlayer.play());
+    navigator.mediaSession.setActionHandler('pause', () => audioPlayer.pause());
+    navigator.mediaSession.setActionHandler('previoustrack', playPrevSong);
+    navigator.mediaSession.setActionHandler('nexttrack', playNextSong);
+    navigator.mediaSession.setActionHandler('seekto', details => {
+      if (details.fastSeek) return;
+      audioPlayer.currentTime = details.seekTime;
     });
   }
 
-  /* 事件委托：收藏/分享按钮 & 歌曲点击切换 */
+  // 防止熄屏中断
+  audioPlayer.setAttribute('playsinline', 'true');
+  audioPlayer.setAttribute('webkit-playsinline', 'true');
+
+  /* 事件委托：收藏/分享/切换歌曲 */
   resultsList.addEventListener('click', e => {
     const btn = e.target.closest('.fav-btn');
     if (btn) {
@@ -370,7 +353,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       return;
     }
-    
     const shareBtn = e.target.closest('.share-btn');
     if (shareBtn) {
       e.stopPropagation();
@@ -391,8 +373,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
       return;
     }
-    
-    // 歌曲切换
     const item = e.target.closest('.result-item');
     if (item) {
       const n = parseInt(item.dataset.n, 10);
@@ -418,32 +398,26 @@ document.addEventListener('DOMContentLoaded', () => {
   audioPlayer.addEventListener('play', () => { 
     playBtn.style.display = 'none'; 
     pauseBtn.style.display = 'flex'; 
-    
-    // 更新MediaSession播放状态
     if ('mediaSession' in navigator) {
       navigator.mediaSession.playbackState = 'playing';
     }
   });
-  
   audioPlayer.addEventListener('pause', () => { 
     playBtn.style.display = 'flex'; 
     pauseBtn.style.display = 'none'; 
-    
-    // 更新MediaSession播放状态
     if ('mediaSession' in navigator) {
       navigator.mediaSession.playbackState = 'paused';
     }
   });
-  
   audioPlayer.addEventListener('timeupdate', () => {
     const { currentTime, duration } = audioPlayer;
     progressBar.style.width = (currentTime / duration * 100 || 0) + '%';
     currentTimeEl.textContent = formatTime(currentTime);
     durationEl.textContent = formatTime(duration);
     syncLyrics(currentTime);
-    
-    // 更新MediaSession播放位置
-    if ('mediaSession' in navigator && !isNaN(duration) && isFinite(duration)) {
+
+    // 保持熄屏界面进度同步
+    if ('mediaSession' in navigator && !isNaN(duration)) {
       navigator.mediaSession.setPositionState({
         duration: duration,
         playbackRate: audioPlayer.playbackRate,
@@ -451,23 +425,18 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
   });
-  
   audioPlayer.addEventListener('progress', () => {
     if (audioPlayer.buffered.length) {
       const bufferedEnd = audioPlayer.buffered.end(audioPlayer.buffered.length - 1);
       bufferBar.style.width = (bufferedEnd / audioPlayer.duration * 100 || 0) + '%';
     }
   });
-  
   audioPlayer.addEventListener('ended', () => loopMode ? audioPlayer.play() : playNextSong());
-  
   progressContainer.addEventListener('click', e => {
     const width = progressContainer.clientWidth;
     audioPlayer.currentTime = (e.offsetX / width) * audioPlayer.duration;
   });
-  
   detailBtn.addEventListener('click', () => currentSong && currentSong.link ? window.open(currentSong.link, '_blank') : alert('该歌曲没有详情链接'));
-  
   downloadLyricsBtn.addEventListener('click', () => {
     if (!currentLyrics) return alert('当前没有可下载的歌词');
     const blob = new Blob([currentLyrics], { type: 'text/plain' });
@@ -477,16 +446,13 @@ document.addEventListener('DOMContentLoaded', () => {
     a.click();
     URL.revokeObjectURL(a.href);
   });
-  
   downloadSongBtn.addEventListener('click', () => currentSong && currentSong.url ? window.open(currentSong.url, '_blank') : alert('无法下载歌曲，链接无效'));
-  
   volumeSlider.addEventListener('input', () => {
     audioPlayer.volume = volumeSlider.value;
     isMuted = audioPlayer.volume === 0;
     muteBtn.innerHTML = isMuted ? '<i class="fas fa-volume-mute"></i>' : '<i class="fas fa-volume-up"></i>';
     muteBtn.classList.toggle('muted', isMuted);
   });
-  
   muteBtn.addEventListener('click', () => {
     if (isMuted) {
       audioPlayer.volume = lastVolume || 1;
@@ -500,12 +466,7 @@ document.addEventListener('DOMContentLoaded', () => {
     muteBtn.innerHTML = isMuted ? '<i class="fas fa-volume-mute"></i>' : '<i class="fas fa-volume-up"></i>';
     muteBtn.classList.toggle('muted', isMuted);
   });
-  
-  loopBtn.addEventListener('click', () => { 
-    loopMode = !loopMode; 
-    loopBtn.classList.toggle('active', loopMode); 
-  });
-  
+  loopBtn.addEventListener('click', () => { loopMode = !loopMode; loopBtn.classList.toggle('active', loopMode); });
   prevBtn.addEventListener('click', playPrevSong);
   nextBtn.addEventListener('click', playNextSong);
 });
@@ -517,7 +478,6 @@ function formatTime(sec) {
   const s = Math.floor(sec % 60);
   return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
 }
-
 function syncLyrics(time) {
   if (!currentLyrics) return;
   const lines = currentLyrics.split('\n');
@@ -538,7 +498,6 @@ function syncLyrics(time) {
     lyricsContent.scrollTop = Math.max(0, (active - 1) * lh);
   }
 }
-
 function handleShareUrl() {
   const keyword = getUrlParameter('keyword');
   const songId = getUrlParameter('songId');
@@ -551,8 +510,10 @@ function handleShareUrl() {
     if (songId) {
       const target = currentSearchResults.find(s => s.n === +songId);
       if (target) {
-        playSong(target);
-        document.querySelector(`.result-item[data-n="${songId}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        audioPlayer.oncanplaythrough = () => {
+          playSong(target);
+          document.querySelector(`.result-item[data-n="${songId}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        };
       } else if (currentSearchResults.length) {
         playSong(currentSearchResults[0]);
       }
