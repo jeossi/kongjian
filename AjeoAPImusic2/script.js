@@ -1,4 +1,4 @@
-// 修复版 script.js（包含MediaSession API支持）
+// 修复版 script.js（包含熄屏播放修复）
 const hotKeywords = [
   "王佳音","鱼蛋","窝窝","艺凌","洋澜","任夏","魏佳艺","韩小欠","单依纯","DJ","林宥嘉",
   "喝茶","古筝","助眠","热歌","热门","新歌","飙升","流行",
@@ -222,17 +222,37 @@ function renderSearchResults(results) {
 
 /* ---------- 播放控制 ---------- */
 function playSong(song) {
+  // 暂停但不清除当前音频
   audioPlayer.pause();
-  if (currentBlobUrl) URL.revokeObjectURL(currentBlobUrl);
+  
+  // 保留之前的Blob URL用于后续清理
+  const prevBlobUrl = currentBlobUrl;
+  currentBlobUrl = null;
+  
+  // 更新当前歌曲信息
   currentSong = song;
-  audioPlayer.src = '';
   songTitle.textContent = song.title;
   songArtist.textContent = song.singer;
   lyricsContent.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 加载中...';
+  
+  // 立即更新MediaSession元数据（即使音频尚未加载）
+  if ('mediaSession' in navigator) {
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: song.title,
+      artist: song.singer,
+      album: '聚合音乐点播',
+      artwork: [
+        { src: FALLBACK_IMAGE, sizes: '512x512', type: 'image/jpeg' }
+      ]
+    });
+  }
+  
+  // 获取歌曲详情
   fetch(`${baseApiUrl}${song.n}`)
     .then(r => r.json())
-    .then(data => data && data.data && updatePlayer(data.data))
+    .then(data => data && data.data && updatePlayer(data.data, prevBlobUrl))
     .catch(() => { lyricsContent.textContent = '加载歌曲详情失败'; });
+  
   highlightCurrentSong(song);
 }
 
@@ -245,25 +265,26 @@ function highlightCurrentSong(song) {
   }
 }
 
-async function updatePlayer(detail) {
+async function updatePlayer(detail, prevBlobUrl) {
+  // 清理前一个Blob URL
+  if (prevBlobUrl) {
+    URL.revokeObjectURL(prevBlobUrl);
+  }
+  
+  // 更新专辑封面
   if (detail.cover) {
-    albumCover.innerHTML = `<div class="album-image-container"><img src="${getSecureImageUrl(detail.cover)}" onerror="this.src='${FALLBACK_IMAGE}'"></div>`;
-  } else {
-    albumCover.innerHTML = '<i class="fas fa-music"></i>';
+    const secureUrl = getSecureImageUrl(detail.cover);
+    albumCover.innerHTML = `<div class="album-image-container"><img src="${secureUrl}" onerror="this.src='${FALLBACK_IMAGE}'"></div>`;
+    
+    // 更新MediaSession封面
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.metadata.artwork = [
+        { src: secureUrl || FALLBACK_IMAGE, sizes: '512x512', type: 'image/jpeg' }
+      ];
+    }
   }
   
-  // 设置MediaSession元数据
-  if ('mediaSession' in navigator) {
-    navigator.mediaSession.metadata = new MediaMetadata({
-      title: currentSong.title,
-      artist: currentSong.singer,
-      album: '聚合音乐点播',
-      artwork: [
-        { src: getSecureImageUrl(detail.cover) || FALLBACK_IMAGE, sizes: '512x512', type: 'image/jpeg' }
-      ]
-    });
-  }
-  
+  // 处理音频URL
   let audioUrl = detail.url;
   if (detail.url && detail.url.includes('douyinvod.com')) {
     try {
@@ -271,9 +292,12 @@ async function updatePlayer(detail) {
       const blob = await resp.blob();
       currentBlobUrl = URL.createObjectURL(blob);
       audioUrl = currentBlobUrl;
-    } catch { /* ignore */ }
+    } catch (e) {
+      console.error('代理请求失败', e);
+    }
   }
   
+  // 设置新音频源
   audioPlayer.src = audioUrl || '';
   audioPlayer.load();
   
@@ -287,7 +311,7 @@ async function updatePlayer(detail) {
       }
     });
     
-    // 设置MediaSession位置状态（解决熄屏显示问题）
+    // 更新MediaSession位置状态
     if ('mediaSession' in navigator && !isNaN(audioPlayer.duration)) {
       navigator.mediaSession.setPositionState({
         duration: audioPlayer.duration,
@@ -302,6 +326,7 @@ async function updatePlayer(detail) {
     console.error('播放失败', e);
   }
   
+  // 更新UI状态
   playBtn.style.display = 'none';
   pauseBtn.style.display = 'flex';
   currentLyrics = detail.lyric || '';
