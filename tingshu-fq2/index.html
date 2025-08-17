@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>番茄听书</title>
+    <link rel="icon" href="../Aje128.png" type="image/png" sizes="32x32">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css?v=8.17.0907">
+</head>
+<body>
+    <div class="container">
+        <!-- 搜索页面 -->
+        <div id="search-page">
+            <div class="header">
+                <div class="logo">
+                    <i class="fas fa-book-open logo-icon"></i>
+                    <div class="logo-text">番茄听书</div>
+                </div>
+                <div class="header-buttons">
+                    <button class="favorite-btn" id="favorite-button">我的收藏</button>
+                </div>
+            </div>
+
+            <div class="favorite-panel" id="favorite-panel">
+                <h3>我的收藏</h3>
+                <div class="favorite-list" id="favorite-list">
+                    <!-- 收藏列表将在这里动态生成 -->
+                </div>
+            </div>
+
+            <div class="search-container">
+                <div class="search-box">
+                    <input type="text" id="search-input" placeholder="输入书名、分类或作者..." autocomplete="off">
+                    <button class="search-btn" id="search-button">
+                        <i class="fas fa-search"></i> 搜索
+                    </button>
+                </div>
+                <div class="hot-search" id="hot-search-panel">
+                    <h3>热门搜索</h3>
+                    <div class="hot-tags">
+                        <div class="tag">都市</div>
+                        <div class="tag">兵王</div>
+                        <div class="tag">赘婿</div>
+                        <div class="tag">灵异</div>
+                        <div class="tag">悬疑</div>
+                        <div class="tag">穿越</div>
+                        <div class="tag">玄幻</div>
+                        <div class="tag">奇幻仙侠</div>
+                        <div class="tag">传统玄幻</div>
+                        <div class="tag">言情</div>
+                        <div class="tag">现代言情</div>
+                        <div class="tag">古代言情</div>
+                        <div class="tag">先婚后爱</div>
+                        <div class="tag">多女主</div>
+                        <div class="tag">神医</div>
+                        <div class="tag">医术</div>
+                        <div class="tag">重生</div>
+                        <div class="tag">民俗秘闻</div>
+                        <div class="tag">宫斗宅斗</div>
+                        <div class="tag">励志成功</div>
+                        <div class="tag">名人传</div>
+                        <div class="tag">学霸</div>
+                        <div class="tag">儿童</div>
+                        <div class="tag">现言日常</div>
+                        <div class="tag">脑洞</div>
+                        <div class="tag">历史古代</div>
+                        <div class="tag">历史脑洞</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="loader" id="search-loader">
+                <div class="loader-spinner"></div>
+                <div>正在加载书籍数据...</div>
+            </div>
+
+            <div class="results-container">
+                <div class="results-grid" id="results-grid">
+                    <!-- 搜索结果将在这里动态生成 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 播放页面 -->
+        <div id="player-page">
+            <div class="player-header">
+                <button class="back-btn" id="back-button">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <div class="book-details">
+                    <img src="https://via.placeholder.com/150x200/1e1e1e/ff6b6b?text=Book+Cover" alt="Book Cover" class="book-large-cover" id="player-book-cover">
+                    <div class="book-meta">
+                        <div class="book-meta-title" id="player-book-title">龙潜都市</div>
+                        <div class="book-meta-author" id="player-book-author">播音: 亦朵儿，帝九紫</div>
+                        <div class="book-meta-category" id="player-book-category">分类: 赘婿</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="player-container">
+                <div class="proxy-indicator" id="proxy-indicator">代理: 准备中...</div>
+                <div class="time-container">
+                    <span id="current-time">00:00</span>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" id="progress-bar">
+                            <div class="buffer" id="buffer"></div>
+                            <div class="progress" id="progress"></div>
+                        </div>
+                    </div>
+                    <span id="total-time">00:00</span>
+                </div>
+
+                <div class="controls-row">
+                    <button class="control-btn" id="prev-btn">
+                        <i class="fas fa-step-backward"></i>
+                    </button>
+                    <button class="control-btn play-btn" id="play-btn">
+                        <i class="fas fa-play"></i>
+                    </button>
+                    <button class="control-btn" id="next-btn">
+                        <i class="fas fa-step-forward"></i>
+                    </button>
+
+                    <div class="speed-control">
+                        <button class="speed-btn" id="speed-btn">
+                            <span>倍速</span>
+                        </button>
+                        <div class="speed-menu" id="speed-menu">
+                            <div class="speed-option" data-speed="0.5">0.5x</div>
+                            <div class="speed-option" data-speed="1.0">1.0x</div>
+                            <div class="speed-option" data-speed="1.25">1.25x</div>
+                            <div class="speed-option" data-speed="1.5">1.5x</div>
+                            <div class="speed-option" data-speed="1.75">1.75x</div>
+                            <div class="speed-option" data-speed="2.0">2.0x</div>
+                            <div class="speed-option" data-speed="2.5">2.5x</div>
+                            <div class="speed-option" data-speed="3.0">3.0x</div>
+                        </div>
+                    </div>
+                    
+                    <div class="sleep-timer-container">
+                        <button class="sleep-timer-btn" id="sleep-timer-btn" title="睡眠定时器">
+                            <i class="fas fa-bed"></i>
+                        </button>
+                        <div class="timer-menu" id="timer-menu">
+                            <div class="timer-option" data-minutes="0">关闭</div>
+                            <div class="timer-option" data-minutes="15">15分钟</div>
+                            <div class="timer-option" data-minutes="30">30分钟</div>
+                            <div class="timer-option" data-minutes="60">60分钟</div>
+                            <div class="timer-option" data-minutes="90">90分钟</div>
+                            <div class="timer-option" data-minutes="120">120分钟</div>
+                        </div>
+                    </div>
+                    
+                    <div class="volume-controls">
+                        <button class="control-btn" id="volume-btn">
+                            <i class="fas fa-volume-up"></i>
+                        </button>
+                        <div class="volume-bar" id="volume-bar">
+                            <div class="volume-level" id="volume-level"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chapters-container">
+                <div class="chapter-title">
+                    <i class="fas fa-list"></i> 章节列表
+                    <div style="margin-left: auto; font-size: 16px;">
+                        共 <span id="chapter-count">0</span> 章
+                    </div>
+                </div>
+                <ul class="chapter-list" id="chapter-list">
+                    <!-- 章节列表将在这里动态生成 -->
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js?v=8.16.0835"></script>
+    <script src="media-session.js?v=8.17.0907"></script>
+</body>
+</html>
