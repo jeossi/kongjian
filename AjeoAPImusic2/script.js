@@ -1,4 +1,4 @@
-// 修复版 script.js（修复收藏按钮无法取消、列表状态未同步、点击歌曲不切换等问题）
+// 修复版 script.js（修复熄屏下播放进度显示不同步问题）
 const hotKeywords = [
   "王佳音","鱼蛋","窝窝","艺凌","洋澜","任夏","魏佳艺","韩小欠","单依纯","DJ","林宥嘉",
   "喝茶","古筝","助眠","热歌","热门","新歌","飙升","流行",
@@ -367,6 +367,33 @@ function setupMediaSession() {
   });
 }
 
+/* ---------- 进度更新函数 ---------- */
+// 提取进度更新逻辑到单独函数
+function updatePlayerProgress() {
+  const { currentTime, duration } = audioPlayer;
+  progressBar.style.width = (currentTime / duration * 100 || 0) + '%';
+  currentTimeEl.textContent = formatTime(currentTime);
+  durationEl.textContent = formatTime(duration);
+  syncLyrics(currentTime);
+  
+  // 更新MediaSession位置状态
+  if ('mediaSession' in navigator) {
+    navigator.mediaSession.setPositionState({
+      duration: duration || 0,
+      playbackRate: audioPlayer.playbackRate,
+      position: currentTime || 0
+    });
+  }
+}
+
+// 提取缓冲更新逻辑到单独函数
+function updateBufferProgress() {
+  if (audioPlayer.buffered.length) {
+    const bufferedEnd = audioPlayer.buffered.end(audioPlayer.buffered.length - 1);
+    bufferBar.style.width = (bufferedEnd / audioPlayer.duration * 100 || 0) + '%';
+  }
+}
+
 /* ---------- 事件绑定 ---------- */
 document.addEventListener('DOMContentLoaded', () => {
   document.documentElement.classList.add('dark-theme');
@@ -450,28 +477,13 @@ document.addEventListener('DOMContentLoaded', () => {
       navigator.mediaSession.playbackState = "paused";
     }
   });
-  audioPlayer.addEventListener('timeupdate', () => {
-    const { currentTime, duration } = audioPlayer;
-    progressBar.style.width = (currentTime / duration * 100 || 0) + '%';
-    currentTimeEl.textContent = formatTime(currentTime);
-    durationEl.textContent = formatTime(duration);
-    syncLyrics(currentTime);
-    
-    // 更新MediaSession位置状态
-    if ('mediaSession' in navigator) {
-      navigator.mediaSession.setPositionState({
-        duration: duration || 0,
-        playbackRate: audioPlayer.playbackRate,
-        position: currentTime || 0
-      });
-    }
-  });
-  audioPlayer.addEventListener('progress', () => {
-    if (audioPlayer.buffered.length) {
-      const bufferedEnd = audioPlayer.buffered.end(audioPlayer.buffered.length - 1);
-      bufferBar.style.width = (bufferedEnd / audioPlayer.duration * 100 || 0) + '%';
-    }
-  });
+  
+  // 使用提取的进度更新函数
+  audioPlayer.addEventListener('timeupdate', updatePlayerProgress);
+  
+  // 使用提取的缓冲更新函数
+  audioPlayer.addEventListener('progress', updateBufferProgress);
+  
   audioPlayer.addEventListener('ended', () => loopMode ? audioPlayer.play() : playNextSong());
   progressContainer.addEventListener('click', e => {
     const width = progressContainer.clientWidth;
@@ -513,6 +525,15 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   prevBtn.addEventListener('click', playPrevSong);
   nextBtn.addEventListener('click', playNextSong);
+  
+  // 添加页面可见性监听器 - 修复熄屏不同步问题
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      // 页面重新可见时强制更新进度
+      updatePlayerProgress();
+      updateBufferProgress();
+    }
+  });
 });
 
 /* ---------- 其他工具 ---------- */
