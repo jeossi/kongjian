@@ -124,6 +124,17 @@ function setupEventListeners() {
             dom.favoritePanel.style.display = 'none';
         }
     });
+
+    // 音量控制事件
+    dom.volumeBar.addEventListener('click', setVolumeFromEvent);
+    dom.volumeBar.addEventListener('touchstart', e => {
+        e.preventDefault();
+        setVolumeFromEvent(e);
+    });
+    dom.volumeBar.addEventListener('touchmove', e => {
+        e.preventDefault();
+        setVolumeFromEvent(e);
+    });
 }
 
 function setVolumeFromEvent(e) {
@@ -133,16 +144,6 @@ function setVolumeFromEvent(e) {
     state.audio.volume = percent;
     updateVolumeUI();
 }
-
-dom.volumeBar.addEventListener('click', setVolumeFromEvent);
-dom.volumeBar.addEventListener('touchstart', e => {
-    e.preventDefault();
-    setVolumeFromEvent(e);
-});
-dom.volumeBar.addEventListener('touchmove', e => {
-    e.preventDefault();
-    setVolumeFromEvent(e);
-});
 
 // ================= 页面切换 =================
 function showPage(page) {
@@ -319,6 +320,7 @@ async function playChapterAudio(chapter) {
 
     try {
         updateProxyIndicator('init');
+        updateMediaMetadata(); // 提前更新元数据
 
         const res = await fetch(`https://api.cenguigui.cn/api/tingshu/?item_id=${chapter.item_id}`);
         const data = await res.json();
@@ -336,9 +338,10 @@ async function playChapterAudio(chapter) {
 
             state.audio.oncanplay = async () => {
                 try {
-                    await state.audio.play();
-                    state.isPlaying = true;
-                    dom.playButton.innerHTML = '<i class="fas fa-pause"></i>';
+                    if (state.isPlaying) {
+                        await state.audio.play();
+                        dom.playButton.innerHTML = '<i class="fas fa-pause"></i>';
+                    }
                     updateProxyIndicator('success');
                     state.retryCount = 0;
                     state.isAudioLoaded = true;
@@ -367,26 +370,32 @@ async function playChapterAudio(chapter) {
 function playChapter(index) {
     if (index === state.currentChapterIndex && state.isAudioLoaded) return;
 
-    // ✅ 保存当前播放位置
+    // 保存当前播放位置
     savePlaybackPosition();
     
-    // ✅ 清除重试计时器
+    // 记录当前播放状态但不暂停音频
+    const wasPlaying = state.isPlaying;
+    
     clearTimeout(state.retryTimer);
     state.retryCount = 0;
     state.isAudioLoaded = false;
 
-    // ✅ 更新当前章节索引
     state.currentChapterIndex = index;
+    updateProxyIndicator('retry');
 
-    // ✅ 立即更新 MediaSession 元数据
-    updateMediaMetadata();
-
-    // ✅ 更新章节列表高亮
+    // 更新章节列表UI
     document.querySelectorAll('.chapter-item').forEach((li, i) =>
         li.classList.toggle('active', i === index)
     );
 
-    // ✅ 加载并播放新章节
+    // 立即更新媒体元数据（关键修改）
+    updateMediaMetadata();
+    
+    // 保持播放按钮状态
+    if (wasPlaying) {
+        dom.playButton.innerHTML = '<i class="fas fa-pause"></i>';
+    }
+
     if (state.chapters[index]) {
         playChapterAudio(state.chapters[index]);
     }
@@ -406,8 +415,10 @@ function tryRetry() {
 // ================= 音频结束处理 =================
 function handleAudioEnded() {
     if (state.currentChapterIndex < state.chapters.length - 1) {
+        // 自动播放下一章
         playChapter(state.currentChapterIndex + 1);
     } else {
+        // 最后一章结束
         pauseAudio();
         state.audio.currentTime = 0;
         updateProgressBar();
