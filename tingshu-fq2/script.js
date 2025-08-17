@@ -13,9 +13,7 @@ const state = {
     retryTimer: null,
     proxy: 'https://ajeo.cc/',
     isAudioLoaded: false,
-    backgroundTimer: null, // 新增后台计时器
-    backgroundStartTime: 0, // 新增后台计时起始时间
-    backgroundStartPosition: 0 // 新增后台计时起始位置
+    wakeLock: null               // 新增：屏幕常亮控制器
 };
 
 // 防抖锁
@@ -55,6 +53,22 @@ const dom = {
     favoriteList: document.getElementById('favorite-list')
 };
 
+// ================= 工具：屏幕常亮 =================
+async function requestWakeLock() {
+    if ('wakeLock' in navigator && !state.wakeLock) {
+        try {
+            state.wakeLock = await navigator.wakeLock.request('screen');
+        } catch (e) {
+            console.warn('WakeLock 失败:', e);
+        }
+    }
+}
+function releaseWakeLock() {
+    if (state.wakeLock) {
+        state.wakeLock.release().then(() => (state.wakeLock = null));
+    }
+}
+
 // ================= 事件绑定 =================
 function setupEventListeners() {
     dom.searchInput.addEventListener('focus', () => dom.hotSearchPanel.style.display = 'block');
@@ -66,7 +80,11 @@ function setupEventListeners() {
     }));
     dom.searchButton.addEventListener('click', performSearch);
     dom.searchInput.addEventListener('keypress', e => { if (e.key === 'Enter') performSearch(); });
-    dom.backButton.addEventListener('click', () => { showPage('search'); pauseAudio(); });
+    dom.backButton.addEventListener('click', () => {
+        showPage('search');
+        pauseAudio();
+        releaseWakeLock();                 // 回到搜索页时释放常亮
+    });
     dom.playButton.addEventListener('click', togglePlay);
     dom.prevButton.addEventListener('click', playPrevChapter);
     dom.nextButton.addEventListener('click', playNextChapter);
@@ -78,7 +96,8 @@ function setupEventListeners() {
     dom.speedBtn.addEventListener('click', e => { e.stopPropagation(); dom.speedMenu.classList.toggle('show'); });
     document.querySelectorAll('.speed-option').forEach(opt => opt.addEventListener('click', () => {
         const speed = parseFloat(opt.dataset.speed);
-        state.audio.playbackRate = speed; state.playbackRate = speed;
+        state.audio.playbackRate = speed;
+        state.playbackRate = speed;
         dom.speedBtn.innerHTML = `<span>${speed}x</span>`;
         dom.speedMenu.classList.remove('show');
     }));
@@ -87,22 +106,20 @@ function setupEventListeners() {
     });
     state.audio.addEventListener('timeupdate', updateProgressBar);
     state.audio.addEventListener('progress', updateBufferBar);
-    state.audio.addEventListener('ended', handleAudioEnded);
+    state.audio.addEventListener('ended', () => {
+        playNextChapter();                 // 确保播放完毕自动下一章
+    });
     state.audio.addEventListener('loadedmetadata', () => {
         dom.totalTime.textContent = formatTime(state.audio.duration);
         restorePlaybackPosition();
         updateBufferBar();
         updateMediaSessionPosition();
     });
-    
-    // 改进的错误处理逻辑
     state.audio.addEventListener('error', () => {
         if (state.isAudioLoaded || state.audio.currentTime > 0) {
-            console.warn('播放中出错，停止重试');
             updateProxyIndicator('error');
             return;
         }
-
         if (state.retryCount < state.maxRetry) {
             state.retryCount++;
             updateProxyIndicator('retry');
@@ -114,110 +131,33 @@ function setupEventListeners() {
             updateProxyIndicator('error');
         }
     });
-    
     state.audio.addEventListener('playing', () => {
         state.isAudioLoaded = true;
-        console.log('音频成功开始播放');
-        if ('mediaSession' in navigator) {
-            navigator.mediaSession.playbackState = "playing";
-        }
+        if ('mediaSession' in navigator) navigator.mediaSession.playbackState = "playing";
     });
-    
-    // 收藏按钮事件
+
     dom.favoriteButton.addEventListener('click', toggleFavoritePanel);
     document.addEventListener('click', e => {
-        if (!dom.favoriteButton.contains(e.target) && !dom.favoritePanel.contains(e.target)) {
-            dom.favoritePanel.style.display = 'none';
-        }
+        if (!dom.favoriteButton.contains(e.target) && !dom.favoritePanel.contains(e.target)) dom.favoritePanel.style.display = 'none';
     });
-    
-    // 设置音量控制事件
     dom.volumeBar.addEventListener('click', setVolumeFromEvent);
-    dom.volumeBar.addEventListener('touchstart', e => {
-        e.preventDefault();
-        setVolumeFromEvent(e);
-    });
-    dom.volumeBar.addEventListener('touchmove', e => {
-        e.preventDefault();
-        setVolumeFromEvent(e);
-    });
-
-    // 监听页面可见性变化
-    document.addEventListener('visibilitychange', handleVisibilityChange);
+    dom.volumeBar.addEventListener('touchstart', e => { e.preventDefault(); setVolumeFromEvent(e); });
+    dom.volumeBar.addEventListener('touchmove', e => { e.preventDefault(); setVolumeFromEvent(e); });
 }
 
-// ================= 页面可见性处理 =================
-function handleVisibilityChange() {
-    if (document.visibilityState === 'hidden') {
-        // 页面进入后台
-        startBackgroundTracking();
-    } else {
-        // 页面回到前台
-        stopBackgroundTracking();
-        // 更新进度条
-        updateProgressBar();
-    }
-}
-
-function startBackgroundTracking() {
-    // 记录进入后台时的时间和位置
-    state.backgroundStartTime = Date.now();
-    state.backgroundStartPosition = state.audio.currentTime;
-    
-    // 清除之前的计时器
-    if (state.backgroundTimer) clearInterval(state.backgroundTimer);
-    
-    // 每秒更新一次进度
-    state.backgroundTimer = setInterval(() => {
-        if (state.isPlaying) {
-            // 计算当前播放位置
-            const elapsed = (Date.now() - state.backgroundStartTime) / 1000;
-            const newPosition = state.backgroundStartPosition + elapsed;
-            
-            // 更新当前时间显示
-            dom.currentTime.textContent = formatTime(newPosition);
-            
-            // 检查是否需要切换到下一章
-            if (state.audio.duration && newPosition >= state.audio.duration) {
-                handleAudioEnded();
-            }
-        }
-    }, 1000);
-}
-
-function stopBackgroundTracking() {
-    if (state.backgroundTimer) {
-        clearInterval(state.backgroundTimer);
-        state.backgroundTimer = null;
-    }
-}
-
-// ================= 音频结束处理 =================
-function handleAudioEnded() {
-    if (document.visibilityState === 'visible') {
-        // 页面在前台，直接播放下一章
-        playNextChapter();
-    } else {
-        // 页面在后台，切换到下一章但不播放（保持暂停状态）
-        if (state.currentChapterIndex < state.chapters.length - 1) {
-            state.currentChapterIndex++;
-            savePlaybackPosition();
-            updateMediaSessionMetadata();
-        }
-    }
+function setVolumeFromEvent(e) {
+    const rect = dom.volumeBar.getBoundingClientRect();
+    const x = (e.clientX ?? e.touches[0].clientX) - rect.left;
+    const percent = Math.max(0, Math.min(1, x / rect.width));
+    state.audio.volume = percent;
+    updateVolumeUI();
 }
 
 // ================= 页面切换 =================
 function showPage(page) {
-    if (page === 'search') {
-        dom.searchPage.style.display = 'block';
-        dom.playerPage.style.display = 'none';
-        state.currentPage = 'search';
-    } else {
-        dom.searchPage.style.display = 'none';
-        dom.playerPage.style.display = 'block';
-        state.currentPage = 'player';
-    }
+    state.currentPage = page;
+    dom.searchPage.style.display = page === 'search' ? 'block' : 'none';
+    dom.playerPage.style.display  = page === 'player' ? 'block' : 'none';
 }
 
 // ================= 代理指示器 =================
@@ -247,7 +187,6 @@ function updateBufferBar() {
         dom.buffer.style.width = '0%';
         return;
     }
-    
     try {
         const bufferedEnd = state.audio.buffered.end(state.audio.buffered.length - 1);
         const bufferedPercent = (bufferedEnd / state.audio.duration) * 100;
@@ -306,15 +245,9 @@ function renderSearchResults(books) {
                     </button>
                 </div>
             </div>`;
-        
-        // 卡片点击事件 - 排除按钮点击
         card.addEventListener('click', (e) => {
-            if (!e.target.closest('.book-btn') && !e.target.closest('.expand-btn')) {
-                loadBookDetails(b.book_id);
-            }
+            if (!e.target.closest('.book-btn') && !e.target.closest('.expand-btn')) loadBookDetails(b.book_id);
         });
-        
-        // 按钮事件
         card.querySelector('.favorite-book-btn').addEventListener('click', toggleFavorite);
         card.querySelector('.share-book-btn').addEventListener('click', shareBook);
         card.querySelector('.expand-btn').addEventListener('click', toggleExpand);
@@ -334,6 +267,7 @@ async function loadBookDetails(bookId) {
             state.isAudioLoaded = false;
             renderPlayerPage();
             showPage('player');
+            requestWakeLock();                 // 进入播放页即申请常亮
             if (state.chapters.length) {
                 const savedProgress = getSavedProgress(bookId);
                 if (savedProgress) {
@@ -345,9 +279,9 @@ async function loadBookDetails(bookId) {
                 }
             }
         } else throw new Error('加载书籍详情失败');
-    } catch (err) { 
+    } catch (err) {
         showToast(`加载失败: ${err.message}`);
-        console.error(err); 
+        console.error(err);
     }
 }
 
@@ -359,14 +293,9 @@ function renderPlayerPage() {
     dom.playerBookAuthor.textContent = `播音: ${author}`;
     dom.playerBookCategory.textContent = `分类: ${category}`;
     dom.chapterList.innerHTML = '';
-
-    // 添加：更新章节总数
     const totalChapters = state.chapters.length;
     const chapterCountEl = document.getElementById('chapter-count');
-    if (chapterCountEl) {
-        chapterCountEl.textContent = `共${totalChapters}章`;
-    }
-
+    if (chapterCountEl) chapterCountEl.textContent = `共${totalChapters}章`;
     state.chapters.forEach((c, i) => {
         const li = document.createElement('li');
         li.className = 'chapter-item' + (i === state.currentChapterIndex ? ' active' : '');
@@ -374,12 +303,9 @@ function renderPlayerPage() {
         li.addEventListener('click', () => playChapter(i));
         dom.chapterList.appendChild(li);
     });
-
     setTimeout(() => {
         const activeChapter = dom.chapterList.querySelector('.chapter-item.active');
-        if (activeChapter) {
-            activeChapter.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }
+        if (activeChapter) activeChapter.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }, 300);
 }
 
@@ -389,26 +315,18 @@ function proxyUrl(url) { return state.proxy + encodeURIComponent(url); }
 async function playChapterAudio(chapter) {
     if (isLoadingAudio || state.isAudioLoaded) return;
     isLoadingAudio = true;
-
     try {
         updateProxyIndicator('init');
-
         const res = await fetch(`https://api.cenguigui.cn/api/tingshu/?item_id=${chapter.item_id}`);
         const data = await res.json();
-
         if (data.code === 200 && data.data?.url) {
             const audioUrl = proxyUrl(data.data.url);
-
-            // 避免重复设置 src
             if (state.audio.src !== audioUrl) {
                 state.audio.src = audioUrl;
-                state.audio.load(); // 只加载一次
+                state.audio.load();
             }
-
             state.audio.playbackRate = state.playbackRate;
             state.isAudioLoaded = false;
-
-            // 等待音频可以播放
             state.audio.oncanplay = async () => {
                 try {
                     await state.audio.play();
@@ -422,15 +340,8 @@ async function playChapterAudio(chapter) {
                     tryRetry();
                 }
             };
-
-            state.audio.onerror = () => {
-                if (!state.isAudioLoaded) {
-                    tryRetry();
-                }
-            };
-        } else {
-            throw new Error('获取音频URL失败');
-        }
+            state.audio.onerror = () => { if (!state.isAudioLoaded) tryRetry(); };
+        } else throw new Error('获取音频URL失败');
     } catch (err) {
         console.error(err);
         tryRetry();
@@ -441,28 +352,17 @@ async function playChapterAudio(chapter) {
 
 function playChapter(index) {
     if (index === state.currentChapterIndex && state.isAudioLoaded) return;
-
     pauseAudio();
     clearTimeout(state.retryTimer);
     state.retryCount = 0;
     state.isAudioLoaded = false;
-
     state.audio.currentTime = 0;
     updateProgressBar();
-
     state.currentChapterIndex = index;
     updateProxyIndicator('retry');
-
-    document.querySelectorAll('.chapter-item').forEach((li, i) =>
-        li.classList.toggle('active', i === index)
-    );
-    
-    // 更新媒体会话元数据
+    document.querySelectorAll('.chapter-item').forEach((li, i) => li.classList.toggle('active', i === index));
     updateMediaSessionMetadata();
-
-    if (state.chapters[index]) {
-        playChapterAudio(state.chapters[index]);
-    }
+    if (state.chapters[index]) playChapterAudio(state.chapters[index]);
 }
 
 function tryRetry() {
@@ -481,129 +381,96 @@ function playAudio() {
     state.audio.play().then(() => {
         state.isPlaying = true;
         dom.playButton.innerHTML = '<i class="fas fa-pause"></i>';
-        // 更新媒体会话播放状态
-        if ('mediaSession' in navigator) {
-            navigator.mediaSession.playbackState = "playing";
-        }
-    }).catch((err) => {
+        if ('mediaSession' in navigator) navigator.mediaSession.playbackState = "playing";
+    }).catch(err => {
         console.error('播放失败:', err);
         tryRetry();
     });
 }
-
 function pauseAudio() {
     state.audio.pause();
     state.isPlaying = false;
     dom.playButton.innerHTML = '<i class="fas fa-play"></i>';
-    // 保存播放进度
     savePlaybackPosition();
-    // 更新媒体会话播放状态
-    if ('mediaSession' in navigator) {
-        navigator.mediaSession.playbackState = "paused";
-    }
+    if ('mediaSession' in navigator) navigator.mediaSession.playbackState = "paused";
 }
-
 function togglePlay() {
     state.isPlaying ? pauseAudio() : playAudio();
 }
-
 function playPrevChapter() {
     if (state.currentChapterIndex > 0) playChapter(state.currentChapterIndex - 1);
 }
-
 function playNextChapter() {
-    if (state.currentChapterIndex < state.chapters.length - 1) playChapter(state.currentChapterIndex + 1);
-    else {
+    if (state.currentChapterIndex < state.chapters.length - 1) {
+        playChapter(state.currentChapterIndex + 1);
+    } else {
+        // 最后一章播放完后也保持常亮不退出
         pauseAudio();
         state.audio.currentTime = 0;
         updateProgressBar();
     }
 }
-
 function updateProgressBar() {
     if (state.audio.duration) dom.progress.style.width = (state.audio.currentTime / state.audio.duration * 100) + '%';
     dom.currentTime.textContent = formatTime(state.audio.currentTime);
-    // 更新媒体会话位置状态
     updateMediaSessionPosition();
 }
-
 function updateVolumeUI() {
     const v = state.audio.volume;
     dom.volumeLevel.style.width = v * 100 + '%';
     dom.volumeButton.innerHTML = `<i class="fas fa-volume-${state.audio.muted || v === 0 ? 'mute' : v < .5 ? 'down' : 'up'}"></i>`;
 }
-
 function toggleMute() {
     state.audio.muted = !state.audio.muted;
     updateVolumeUI();
 }
-
 function formatTime(sec) {
     if (isNaN(sec)) return '00:00';
     const m = Math.floor(sec / 60), s = Math.floor(sec % 60);
     return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
 }
 
-// ================= 收藏功能 =================
+// ================= 收藏功能（省略，与旧版一致） =================
 function toggleFavorite(e) {
     e.stopPropagation();
     const btn = e.currentTarget;
     const bookId = btn.dataset.bookid;
-    
     const storedFavorites = localStorage.getItem('bookFavorites');
     let favorites = storedFavorites ? JSON.parse(storedFavorites) : [];
-    
     const bookIndex = favorites.findIndex(f => f.book_id === bookId);
-    
     if (bookIndex !== -1) {
-        // 移除收藏
         favorites.splice(bookIndex, 1);
         btn.innerHTML = '<i class="far fa-star"></i> 收藏';
         btn.classList.remove('favorited');
     } else {
-        // 添加收藏
         const book = state.searchResults.find(b => b.book_id === bookId);
         if (book) {
-            favorites.push({
-                book_id: book.book_id,
-                title: book.title,
-                cover: book.cover,
-                author: book.author
-            });
+            favorites.push({ book_id: book.book_id, title: book.title, cover: book.cover, author: book.author });
             btn.innerHTML = '<i class="fas fa-star"></i> 收藏';
             btn.classList.add('favorited');
         }
     }
-    
     localStorage.setItem('bookFavorites', JSON.stringify(favorites));
     renderFavorites();
 }
-
 function isBookFavorited(bookId) {
     const storedFavorites = localStorage.getItem('bookFavorites');
     if (!storedFavorites) return false;
-    
-    const favorites = JSON.parse(storedFavorites);
-    return favorites.some(f => f.book_id === bookId);
+    return JSON.parse(storedFavorites).some(f => f.book_id === bookId);
 }
-
 function toggleFavoritePanel(e) {
     e.stopPropagation();
     renderFavorites();
     dom.favoritePanel.style.display = dom.favoritePanel.style.display === 'block' ? 'none' : 'block';
 }
-
 function renderFavorites() {
     const storedFavorites = localStorage.getItem('bookFavorites');
     const favorites = storedFavorites ? JSON.parse(storedFavorites) : [];
-    
     dom.favoriteList.innerHTML = '';
-    
     if (favorites.length === 0) {
         dom.favoriteList.innerHTML = '<div class="no-favorites">暂无收藏书籍</div>';
         return;
     }
-    
     favorites.forEach(book => {
         const item = document.createElement('div');
         item.className = 'favorite-item';
@@ -615,122 +482,67 @@ function renderFavorites() {
             </div>
             <button class="remove-favorite" data-bookid="${book.book_id}">
                 <i class="fas fa-times"></i>
-            </button>
-        `;
+            </button>`;
         item.addEventListener('click', () => loadBookDetails(book.book_id));
-        item.querySelector('.remove-favorite').addEventListener('click', (e) => {
+        item.querySelector('.remove-favorite').addEventListener('click', e => {
             e.stopPropagation();
             removeFavorite(book.book_id);
         });
         dom.favoriteList.appendChild(item);
     });
 }
-
 function removeFavorite(bookId) {
     const storedFavorites = localStorage.getItem('bookFavorites');
     let favorites = storedFavorites ? JSON.parse(storedFavorites) : [];
-    
     favorites = favorites.filter(f => f.book_id !== bookId);
     localStorage.setItem('bookFavorites', JSON.stringify(favorites));
     renderFavorites();
-    
-    // 更新搜索结果中的收藏状态
     document.querySelectorAll(`.favorite-book-btn[data-bookid="${bookId}"]`).forEach(btn => {
         btn.innerHTML = '<i class="far fa-star"></i> 收藏';
         btn.classList.remove('favorited');
     });
 }
-
 function shareBook(e) {
     e.stopPropagation();
     const bookId = e.currentTarget.dataset.bookid;
     const book = state.searchResults.find(b => b.book_id === bookId);
-    
     if (book) {
         const shareText = `【Ajeo提示】请前往浏览器粘贴【链接】收听 \n  ${book.title} \n 【链接】：\n ${window.location.href.split('#')[0]}#book_id=${bookId}`;
-        
-        // 创建一个临时的textarea元素来复制文本
         const copyToClipboardFallback = (text) => {
             const textarea = document.createElement('textarea');
             textarea.value = text;
             textarea.style.position = 'fixed';
             document.body.appendChild(textarea);
             textarea.select();
-            
-            try {
-                const successful = document.execCommand('copy');
-                if (!successful) {
-                    throw new Error('复制失败');
-                }
-            } catch (err) {
-                console.error('使用execCommand复制失败:', err);
-                throw err;
-            } finally {
-                document.body.removeChild(textarea);
-            }
+            try { document.execCommand('copy'); } catch (err) { console.error(err); }
+            document.body.removeChild(textarea);
         };
-        
-        try {
-            // 优先使用现代API
-            if (navigator.clipboard) {
-                navigator.clipboard.writeText(shareText).then(() => {
-                    showToast('已复制，请到微信粘贴分享');
-                }).catch(() => {
-                    // 如果现代API失败，使用回退方案
-                    copyToClipboardFallback(shareText);
-                    showToast('已复制，请到微信粘贴分享');
-                });
-            } else {
-                // 不支持clipboard API，直接使用回退方案
-                copyToClipboardFallback(shareText);
-                showToast('已复制，请到微信粘贴分享');
-            }
-        } catch (err) {
-            console.error('复制失败:', err);
-            // 如果所有方法都失败，显示手动复制提示
-            promptManualCopy(shareText);
-        }
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(shareText).then(() => showToast('已复制，请到微信粘贴分享')).catch(() => copyToClipboardFallback(shareText));
+        } else copyToClipboardFallback(shareText);
     }
 }
 
 // ================= 媒体会话 API =================
 function setupMediaSessionHandlers() {
     if ('mediaSession' in navigator) {
-        // 设置媒体操作处理程序
-        navigator.mediaSession.setActionHandler('play', () => {
-            playAudio();
-        });
-
-        navigator.mediaSession.setActionHandler('pause', () => {
-            pauseAudio();
-        });
-
-        navigator.mediaSession.setActionHandler('previoustrack', () => {
-            playPrevChapter();
-        });
-
-        navigator.mediaSession.setActionHandler('nexttrack', () => {
-            playNextChapter();
-        });
+        navigator.mediaSession.setActionHandler('play', playAudio);
+        navigator.mediaSession.setActionHandler('pause', pauseAudio);
+        navigator.mediaSession.setActionHandler('previoustrack', playPrevChapter);
+        navigator.mediaSession.setActionHandler('nexttrack', playNextChapter);
     }
 }
-
 function updateMediaSessionMetadata() {
     if (!('mediaSession' in navigator) || !state.currentBook || !state.chapters[state.currentChapterIndex]) return;
-    
     const chapter = state.chapters[state.currentChapterIndex];
     const book = state.currentBook;
-    
     navigator.mediaSession.metadata = new MediaMetadata({
         title: chapter.title,
         artist: book.book_name,
         album: book.author,
-        artwork: [
-            { src: book.book_pic, sizes: '200x200', type: 'image/jpeg' }
-        ]
+        artwork: [{ src: book.book_pic, sizes: '200x200', type: 'image/jpeg' }]
     });
 }
-
 function updateMediaSessionPosition() {
     if ('mediaSession' in navigator && state.audio.duration && !isNaN(state.audio.duration)) {
         navigator.mediaSession.setPositionState({
@@ -741,87 +553,62 @@ function updateMediaSessionPosition() {
     }
 }
 
-// 添加新的辅助函数
-function showToast(message) {
-    const toast = document.createElement('div');
-    toast.className = 'toast-message';
-    toast.textContent = message;
-    document.body.appendChild(toast);
-    
-    setTimeout(() => {
-        toast.classList.add('show');
-    }, 10);
-    
-    setTimeout(() => {
-        toast.classList.remove('show');
-        setTimeout(() => {
-            document.body.removeChild(toast);
-        }, 300);
-    }, 3000);
-}
-
-function promptManualCopy(text) {
-    const container = document.createElement('div');
-    container.className = 'manual-copy-container';
-    
-    container.innerHTML = `
-        <div class="manual-copy-box">
-            <h3>请手动复制以下链接</h3>
-            <textarea readonly class="copy-textarea">${text}</textarea>
-            <button class="search-btn close-copy-btn">关闭</button>
-        </div>
-    `;
-    
-    document.body.appendChild(container);
-    
-    const textarea = container.querySelector('.copy-textarea');
-    textarea.select();
-    
-    container.querySelector('.close-copy-btn').addEventListener('click', () => {
-        document.body.removeChild(container);
-    });
-}
-
 // ================= 进度保存 =================
 function savePlaybackPosition() {
     if (!state.currentBook || !state.audio.duration) return;
-    
     const progress = {
         bookId: state.currentBook.book_id,
         chapterIndex: state.currentChapterIndex,
         currentTime: state.audio.currentTime,
         timestamp: Date.now()
     };
-    
     localStorage.setItem(`bookProgress_${state.currentBook.book_id}`, JSON.stringify(progress));
 }
-
 function restorePlaybackPosition() {
     if (!state.currentBook) return;
-    
     const saved = localStorage.getItem(`bookProgress_${state.currentBook.book_id}`);
-    if (!saved) return;
-    
-    const progress = JSON.parse(saved);
-    if (progress && progress.chapterIndex === state.currentChapterIndex) {
-        state.audio.currentTime = progress.currentTime;
-        updateProgressBar();
+    if (saved) {
+        const progress = JSON.parse(saved);
+        if (progress && progress.chapterIndex === state.currentChapterIndex) {
+            state.audio.currentTime = progress.currentTime;
+            updateProgressBar();
+        }
     }
 }
-
 function getSavedProgress(bookId) {
     const saved = localStorage.getItem(`bookProgress_${bookId}`);
-    if (!saved) return null;
-    
-    return JSON.parse(saved);
+    return saved ? JSON.parse(saved) : null;
 }
 
-// ================= 展开按钮 =================
+// ================= 其他辅助 =================
+function showToast(message) {
+    const toast = document.createElement('div');
+    toast.className = 'toast-message';
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.classList.add('show'), 10);
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => document.body.removeChild(toast), 300);
+    }, 3000);
+}
+function promptManualCopy(text) {
+    const container = document.createElement('div');
+    container.className = 'manual-copy-container';
+    container.innerHTML = `
+        <div class="manual-copy-box">
+            <h3>请手动复制以下链接</h3>
+            <textarea readonly class="copy-textarea">${text}</textarea>
+            <button class="search-btn close-copy-btn">关闭</button>
+        </div>`;
+    document.body.appendChild(container);
+    container.querySelector('.copy-textarea').select();
+    container.querySelector('.close-copy-btn').addEventListener('click', () => document.body.removeChild(container));
+}
 function toggleExpand(e) {
     e.stopPropagation();
     const btn = e.currentTarget;
     const intro = btn.previousElementSibling;
-    
     if (intro.classList.contains('expanded')) {
         intro.classList.remove('expanded');
         btn.textContent = '展开';
@@ -839,13 +626,10 @@ function initApp() {
     state.audio.volume = .7;
     updateVolumeUI();
     updateProxyIndicator('init');
-    
-    // 检查URL中是否有书籍ID
     const hash = window.location.hash;
     if (hash.startsWith('#book_id=')) {
         const bookId = hash.split('=')[1];
         loadBookDetails(bookId);
     }
 }
-
 window.addEventListener('DOMContentLoaded', initApp);
