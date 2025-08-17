@@ -466,6 +466,45 @@ function renderPlayerPage() {
     }, 300);
 }
 
+// ================= 分享功能 =================
+function shareBook(e) {
+    e.stopPropagation();
+    const bookId = e.currentTarget.dataset.bookid;
+    const book = state.searchResults.find(b => b.book_id === bookId);
+    if (book) {
+        const shareText = `【Ajeo提示】请前往浏览器粘贴【链接】收听 \n  ${book.title} \n 【链接】：\n ${window.location.href.split('#')[0]}#book_id=${bookId}`;
+        
+        // 优先使用现代剪贴板API
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(shareText)
+                .then(() => showToast('已复制，请到微信粘贴分享'))
+                .catch(() => promptManualCopy(shareText));
+        } else {
+            // 回退方案
+            promptManualCopy(shareText);
+        }
+    }
+}
+
+function promptManualCopy(text) {
+    const container = document.createElement('div');
+    container.className = 'manual-copy-container';
+    container.innerHTML = `
+        <div class="manual-copy-box">
+            <h3>请手动复制以下链接</h3>
+            <textarea readonly class="copy-textarea">${text}</textarea>
+            <button class="search-btn close-copy-btn">关闭</button>
+        </div>`;
+    document.body.appendChild(container);
+    
+    const textarea = container.querySelector('.copy-textarea');
+    textarea.select();
+    
+    container.querySelector('.close-copy-btn').addEventListener('click', () => {
+        document.body.removeChild(container);
+    });
+}
+
 // ================= 收藏功能 =================
 function toggleFavorite(e) {
     e.stopPropagation();
@@ -608,6 +647,41 @@ function setSleepTimer(e) {
     dom.timerMenu.classList.remove('show');
 }
 
+// ================= 展开功能 =================
+function toggleExpand(e) {
+    e.stopPropagation();
+    const btn = e.currentTarget;
+    const intro = btn.previousElementSibling;
+    if (intro.classList.contains('expanded')) {
+        intro.classList.remove('expanded');
+        btn.textContent = '展开';
+    } else {
+        intro.classList.add('expanded');
+        btn.textContent = '收起';
+    }
+}
+
+// ================= 音量控制 =================
+function toggleMute() {
+    state.audio.muted = !state.audio.muted;
+    updateVolumeUI();
+}
+
+function updateVolumeUI() {
+    const v = state.audio.volume;
+    dom.volumeLevel.style.width = v * 100 + '%';
+    dom.volumeButton.innerHTML = `<i class="fas fa-volume-${state.audio.muted || v === 0 ? 'mute' : v < .5 ? 'down' : 'up'}"></i>`;
+}
+
+function setVolumeFromEvent(e) {
+    const rect = dom.volumeBar.getBoundingClientRect();
+    const x = (e.clientX ?? e.touches[0].clientX) - rect.left;
+    const percent = Math.max(0, Math.min(1, x / rect.width));
+    state.audio.volume = percent;
+    state.volume = percent;
+    updateVolumeUI();
+}
+
 // ================= 事件绑定 =================
 function setupEventListeners() {
     // 搜索相关
@@ -633,23 +707,6 @@ function setupEventListeners() {
     
     // 音量控制
     dom.volumeButton.addEventListener('click', toggleMute);
-    function toggleMute() {
-        state.audio.muted = !state.audio.muted;
-        updateVolumeUI();
-    }
-    function updateVolumeUI() {
-        const v = state.audio.volume;
-        dom.volumeLevel.style.width = v * 100 + '%';
-        dom.volumeButton.innerHTML = `<i class="fas fa-volume-${state.audio.muted || v === 0 ? 'mute' : v < .5 ? 'down' : 'up'}"></i>`;
-    }
-    function setVolumeFromEvent(e) {
-        const rect = dom.volumeBar.getBoundingClientRect();
-        const x = (e.clientX ?? e.touches[0].clientX) - rect.left;
-        const percent = Math.max(0, Math.min(1, x / rect.width));
-        state.audio.volume = percent;
-        state.volume = percent;
-        updateVolumeUI();
-    }
     dom.volumeBar.addEventListener('click', setVolumeFromEvent);
     dom.volumeBar.addEventListener('touchstart', e => {
         e.preventDefault();
@@ -697,56 +754,6 @@ function setupEventListeners() {
             dom.timerMenu.classList.remove('show');
         }
     });
-    
-    // 展开按钮
-    function toggleExpand(e) {
-        e.stopPropagation();
-        const btn = e.currentTarget;
-        const intro = btn.previousElementSibling;
-        if (intro.classList.contains('expanded')) {
-            intro.classList.remove('expanded');
-            btn.textContent = '展开';
-        } else {
-            intro.classList.add('expanded');
-            btn.textContent = '收起';
-        }
-    }
-    
-    // 分享功能
-    function shareBook(e) {
-        e.stopPropagation();
-        const bookId = e.currentTarget.dataset.bookid;
-        const book = state.searchResults.find(b => b.book_id === bookId);
-        if (book) {
-            const shareText = `【Ajeo提示】请前往浏览器粘贴【链接】收听 \n  ${book.title} \n 【链接】：\n ${window.location.href.split('#')[0]}#book_id=${bookId}`;
-            if (navigator.clipboard) {
-                navigator.clipboard.writeText(shareText).then(() => {
-                    showToast('已复制，请到微信粘贴分享');
-                }).catch(() => {
-                    promptManualCopy(shareText);
-                });
-            } else {
-                promptManualCopy(shareText);
-            }
-        }
-    }
-    
-    function promptManualCopy(text) {
-        const container = document.createElement('div');
-        container.className = 'manual-copy-container';
-        container.innerHTML = `
-            <div class="manual-copy-box">
-                <h3>请手动复制以下链接</h3>
-                <textarea readonly class="copy-textarea">${text}</textarea>
-                <button class="search-btn close-copy-btn">关闭</button>
-            </div>`;
-        document.body.appendChild(container);
-        const textarea = container.querySelector('.copy-textarea');
-        textarea.select();
-        container.querySelector('.close-copy-btn').addEventListener('click', () => {
-            document.body.removeChild(container);
-        });
-    }
 }
 
 // ================= 初始化 =================
