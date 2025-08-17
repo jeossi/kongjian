@@ -1,4 +1,4 @@
-// 修复版 script.js（修复收藏按钮无法取消、列表状态未同步、点击歌曲不切换等问题）
+// 修复版 script.js（修复熄屏下播放进度显示不同步问题 + 添加搜索结果计数）
 const hotKeywords = [
   "王佳音","鱼蛋","窝窝","艺凌","洋澜","任夏","魏佳艺","韩小欠","单依纯","DJ","林宥嘉",
   "喝茶","古筝","助眠","热歌","热门","新歌","飙升","流行",
@@ -39,6 +39,7 @@ const collectionBtn     = document.getElementById('collectionBtn');
 const collectionPanel   = document.getElementById('collectionPanel');
 const closeCollectionPanel = document.getElementById('closeCollectionPanel');
 const collectionList    = document.getElementById('collectionList');
+const resultCountEl     = document.getElementById('resultCount'); // 新增结果计数元素
 
 let currentSong = null;
 let currentSearchResults = [];
@@ -54,7 +55,7 @@ let isFromShareLink = false;
 let currentSearchKeyword = "";
 
 const PROXY_SERVER = 'https://ajeo.cc/';
-const FALLBACK_IMAGE = '../mm.jpg';
+
 
 /* ---------- 通用工具 ---------- */
 function getSecureImageUrl(originalUrl) {
@@ -178,6 +179,10 @@ function renderHotTags() {
 function searchMusic(keyword, callback = null) {
   currentSearchKeyword = keyword;
   baseApiUrl = `https://www.hhlqilongzhu.cn/api/joox/juhe_music.php?msg=${encodeURIComponent(keyword)}&type=json&n=`;
+  
+  // 更新结果计数为"搜索中"
+  resultCountEl.textContent = '搜索中...';
+  
   resultsList.innerHTML = '<div class="result-item" style="justify-content:center;color:#888"><i class="fas fa-spinner fa-spin"></i> 搜索中...</div>';
   fetch(baseApiUrl)
     .then(r => r.json())
@@ -188,6 +193,8 @@ function searchMusic(keyword, callback = null) {
       isFromShareLink = false;
     })
     .catch(() => {
+      // 搜索失败时更新计数
+      resultCountEl.textContent = '共0条';
       resultsList.innerHTML = '<div class="result-item" style="justify-content:center;color:#888"><i class="fas fa-exclamation-triangle"></i> 搜索失败，请稍后重试</div>';
       isFromShareLink = false;
     });
@@ -195,6 +202,10 @@ function searchMusic(keyword, callback = null) {
 
 function renderSearchResults(results) {
   currentSearchResults = results || [];
+  
+  // 更新结果计数
+  resultCountEl.textContent = `共${currentSearchResults.length}条`;
+  
   resultsList.innerHTML = '';
   if (!currentSearchResults.length) {
     resultsList.innerHTML = '<div class="result-item" style="justify-content:center;color:#888"><i class="fas fa-music"></i> 未找到相关歌曲</div>';
@@ -222,18 +233,32 @@ function renderSearchResults(results) {
 
 /* ---------- 播放控制 ---------- */
 function playSong(song) {
+  // 暂停当前播放
   audioPlayer.pause();
-  if (currentBlobUrl) URL.revokeObjectURL(currentBlobUrl);
+  
+  // 清除之前的blob URL
+  if (currentBlobUrl) {
+    URL.revokeObjectURL(currentBlobUrl);
+    currentBlobUrl = null;
+  }
+  
+  // 更新当前歌曲信息
   currentSong = song;
-  audioPlayer.src = '';
   songTitle.textContent = song.title;
   songArtist.textContent = song.singer;
   lyricsContent.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 加载中...';
+  
+  // 更新MediaSession元数据（即使音频还未加载）
+  updateMediaSessionMetadata(song);
+  
+  // 高亮当前歌曲
+  highlightCurrentSong(song);
+  
+  // 加载歌曲详情
   fetch(`${baseApiUrl}${song.n}`)
     .then(r => r.json())
     .then(data => data && data.data && updatePlayer(data.data))
     .catch(() => { lyricsContent.textContent = '加载歌曲详情失败'; });
-  highlightCurrentSong(song);
 }
 
 function highlightCurrentSong(song) {
@@ -246,11 +271,14 @@ function highlightCurrentSong(song) {
 }
 
 async function updatePlayer(detail) {
+  // 更新专辑封面
   if (detail.cover) {
-    albumCover.innerHTML = `<div class="album-image-container"><img src="${getSecureImageUrl(detail.cover)}" onerror="this.src='${FALLBACK_IMAGE}'"></div>`;
+    albumCover.innerHTML = `<div class="album-image-container"><img src="${getSecureImageUrl(detail.cover)}"></div>`;
   } else {
     albumCover.innerHTML = '<i class="fas fa-music"></i>';
   }
+  
+  // 处理音频URL
   let audioUrl = detail.url;
   if (detail.url && detail.url.includes('douyinvod.com')) {
     try {
@@ -260,15 +288,32 @@ async function updatePlayer(detail) {
       audioUrl = currentBlobUrl;
     } catch { /* ignore */ }
   }
+  
+  // 设置音频源并播放
   audioPlayer.src = audioUrl || '';
   audioPlayer.load();
-  try { await audioPlayer.play(); } catch { /* ignore */ }
+  
+  try { 
+    await audioPlayer.play(); 
+    // 更新播放状态
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.playbackState = "playing";
+    }
+  } catch { /* ignore */ }
+  
   playBtn.style.display = 'none';
   pauseBtn.style.display = 'flex';
+  
+  // 更新歌词
   currentLyrics = detail.lyric || '';
   lyricsContent.textContent = currentLyrics || '暂无歌词';
+  
+  // 更新歌曲信息
   currentSong.url = detail.url;
   currentSong.link = detail.link || null;
+  
+  // 更新MediaSession元数据（包含封面）
+  updateMediaSessionMetadata(currentSong, detail.cover);
 }
 
 function playNextSong() {
@@ -277,6 +322,7 @@ function playNextSong() {
   const next = currentSearchResults[(idx + 1) % currentSearchResults.length];
   playSong(next);
 }
+
 function playPrevSong() {
   if (!currentSearchResults.length) return;
   const idx = currentSearchResults.findIndex(s => currentSong && s.n === currentSong.n);
@@ -284,12 +330,90 @@ function playPrevSong() {
   playSong(prev);
 }
 
+/* ---------- MediaSession API ---------- */
+function updateMediaSessionMetadata(song, coverUrl) {
+  if (!('mediaSession' in navigator)) return;
+  
+  const artwork = [];
+  if (coverUrl) {
+    artwork.push({
+      src: getSecureImageUrl(coverUrl),
+      sizes: '160x160',
+      type: 'image/jpeg'
+    });
+  }
+  
+  navigator.mediaSession.metadata = new MediaMetadata({
+    title: song.title,
+    artist: song.singer,
+    artwork: artwork
+  });
+}
+
+function setupMediaSession() {
+  if (!('mediaSession' in navigator)) return;
+  
+  // 设置动作处理函数
+  navigator.mediaSession.setActionHandler('play', () => {
+    audioPlayer.play();
+  });
+  
+  navigator.mediaSession.setActionHandler('pause', () => {
+    audioPlayer.pause();
+  });
+  
+  navigator.mediaSession.setActionHandler('previoustrack', () => {
+    playPrevSong();
+  });
+  
+  navigator.mediaSession.setActionHandler('nexttrack', () => {
+    playNextSong();
+  });
+  
+  // 设置位置状态处理
+  navigator.mediaSession.setPositionState({
+    duration: audioPlayer.duration || 0,
+    playbackRate: audioPlayer.playbackRate,
+    position: audioPlayer.currentTime || 0
+  });
+}
+
+/* ---------- 进度更新函数 ---------- */
+// 提取进度更新逻辑到单独函数
+function updatePlayerProgress() {
+  const { currentTime, duration } = audioPlayer;
+  progressBar.style.width = (currentTime / duration * 100 || 0) + '%';
+  currentTimeEl.textContent = formatTime(currentTime);
+  durationEl.textContent = formatTime(duration);
+  syncLyrics(currentTime);
+  
+  // 更新MediaSession位置状态
+  if ('mediaSession' in navigator) {
+    navigator.mediaSession.setPositionState({
+      duration: duration || 0,
+      playbackRate: audioPlayer.playbackRate,
+      position: currentTime || 0
+    });
+  }
+}
+
+// 提取缓冲更新逻辑到单独函数
+function updateBufferProgress() {
+  if (audioPlayer.buffered.length) {
+    const bufferedEnd = audioPlayer.buffered.end(audioPlayer.buffered.length - 1);
+    bufferBar.style.width = (bufferedEnd / audioPlayer.duration * 100 || 0) + '%';
+  }
+}
+
 /* ---------- 事件绑定 ---------- */
 document.addEventListener('DOMContentLoaded', () => {
   document.documentElement.classList.add('dark-theme');
   renderHotTags();
-  if (!handleShareUrl()) searchMusic('新歌');
+  if (!handleShareUrl()) searchMusic('窝窝');
   renderFavorites();
+  
+  // 初始化MediaSession
+  setupMediaSession();
 
   /* 事件委托：收藏/分享按钮 & 歌曲点击切换 */
   resultsList.addEventListener('click', e => {
@@ -350,21 +474,27 @@ document.addEventListener('DOMContentLoaded', () => {
   closeCollectionPanel.addEventListener('click', () => collectionPanel.style.display = 'none');
   playBtn.addEventListener('click', () => audioPlayer.play());
   pauseBtn.addEventListener('click', () => audioPlayer.pause());
-  audioPlayer.addEventListener('play', () => { playBtn.style.display = 'none'; pauseBtn.style.display = 'flex'; });
-  audioPlayer.addEventListener('pause', () => { playBtn.style.display = 'flex'; pauseBtn.style.display = 'none'; });
-  audioPlayer.addEventListener('timeupdate', () => {
-    const { currentTime, duration } = audioPlayer;
-    progressBar.style.width = (currentTime / duration * 100 || 0) + '%';
-    currentTimeEl.textContent = formatTime(currentTime);
-    durationEl.textContent = formatTime(duration);
-    syncLyrics(currentTime);
-  });
-  audioPlayer.addEventListener('progress', () => {
-    if (audioPlayer.buffered.length) {
-      const bufferedEnd = audioPlayer.buffered.end(audioPlayer.buffered.length - 1);
-      bufferBar.style.width = (bufferedEnd / audioPlayer.duration * 100 || 0) + '%';
+  audioPlayer.addEventListener('play', () => { 
+    playBtn.style.display = 'none'; 
+    pauseBtn.style.display = 'flex'; 
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.playbackState = "playing";
     }
   });
+  audioPlayer.addEventListener('pause', () => { 
+    playBtn.style.display = 'flex'; 
+    pauseBtn.style.display = 'none'; 
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.playbackState = "paused";
+    }
+  });
+  
+  // 使用提取的进度更新函数
+  audioPlayer.addEventListener('timeupdate', updatePlayerProgress);
+  
+  // 使用提取的缓冲更新函数
+  audioPlayer.addEventListener('progress', updateBufferProgress);
+  
   audioPlayer.addEventListener('ended', () => loopMode ? audioPlayer.play() : playNextSong());
   progressContainer.addEventListener('click', e => {
     const width = progressContainer.clientWidth;
@@ -400,9 +530,21 @@ document.addEventListener('DOMContentLoaded', () => {
     muteBtn.innerHTML = isMuted ? '<i class="fas fa-volume-mute"></i>' : '<i class="fas fa-volume-up"></i>';
     muteBtn.classList.toggle('muted', isMuted);
   });
-  loopBtn.addEventListener('click', () => { loopMode = !loopMode; loopBtn.classList.toggle('active', loopMode); });
+  loopBtn.addEventListener('click', () => { 
+    loopMode = !loopMode; 
+    loopBtn.classList.toggle('active', loopMode); 
+  });
   prevBtn.addEventListener('click', playPrevSong);
   nextBtn.addEventListener('click', playNextSong);
+  
+  // 添加页面可见性监听器 - 修复熄屏不同步问题
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      // 页面重新可见时强制更新进度
+      updatePlayerProgress();
+      updateBufferProgress();
+    }
+  });
 });
 
 /* ---------- 其他工具 ---------- */
@@ -412,6 +554,7 @@ function formatTime(sec) {
   const s = Math.floor(sec % 60);
   return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
 }
+
 function syncLyrics(time) {
   if (!currentLyrics) return;
   const lines = currentLyrics.split('\n');
@@ -432,6 +575,7 @@ function syncLyrics(time) {
     lyricsContent.scrollTop = Math.max(0, (active - 1) * lh);
   }
 }
+
 function handleShareUrl() {
   const keyword = getUrlParameter('keyword');
   const songId = getUrlParameter('songId');
