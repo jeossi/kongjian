@@ -10,7 +10,7 @@
     <title>番茄听书</title>
     <link rel="icon" href="../Aje128.png" type="image/png" sizes="32x32">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css?v=8.17.1620">
+    <link rel="stylesheet" href="style.css?v=8.17.2011">
 </head>
 <body>
     <div class="container">
@@ -155,9 +155,13 @@
             </div>
 
             <div class="chapters-container">
-                <div class="chapter-title">
-                    <i class="fas fa-list"></i> 章节列表
-                </div>
+                <div class="chapter-header">
+                   <div class="chapter-title">
+                       <i class="fas fa-list"></i> 章节列表
+                     </div>
+                <span class="chapter-count" id="chapter-count">共？章</span>
+            </div>
+				
                 <ul class="chapter-list" id="chapter-list">
                     <!-- 章节列表将在这里动态生成 -->
                 </ul>
@@ -165,6 +169,6 @@
         </div>
     </div>
 
-    <script src="script.js?v=8.17.1620"></script>
+    <script src="script.js?v=8.17.2011"></script>
 </body>
 </html>
