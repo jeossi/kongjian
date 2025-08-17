@@ -367,29 +367,26 @@ async function playChapterAudio(chapter) {
 function playChapter(index) {
     if (index === state.currentChapterIndex && state.isAudioLoaded) return;
 
-    // 保存当前播放位置
+    // ✅ 保存当前播放位置
     savePlaybackPosition();
     
-    // 暂停当前音频但不改变播放状态
-    state.audio.pause();
-    
+    // ✅ 清除重试计时器
     clearTimeout(state.retryTimer);
     state.retryCount = 0;
     state.isAudioLoaded = false;
 
-    state.audio.currentTime = 0;
-    updateProgressBar();
-
+    // ✅ 更新当前章节索引
     state.currentChapterIndex = index;
-    updateProxyIndicator('retry');
 
+    // ✅ 立即更新 MediaSession 元数据
+    updateMediaMetadata();
+
+    // ✅ 更新章节列表高亮
     document.querySelectorAll('.chapter-item').forEach((li, i) =>
         li.classList.toggle('active', i === index)
     );
 
-    // 立即更新媒体元数据
-    updateMediaMetadata();
-
+    // ✅ 加载并播放新章节
     if (state.chapters[index]) {
         playChapterAudio(state.chapters[index]);
     }
@@ -409,10 +406,8 @@ function tryRetry() {
 // ================= 音频结束处理 =================
 function handleAudioEnded() {
     if (state.currentChapterIndex < state.chapters.length - 1) {
-        // 自动播放下一章
         playChapter(state.currentChapterIndex + 1);
     } else {
-        // 最后一章结束
         pauseAudio();
         state.audio.currentTime = 0;
         updateProgressBar();
