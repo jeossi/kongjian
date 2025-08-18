@@ -1,11 +1,11 @@
-// 修复版 script.js（修复熄屏下播放进度显示不同步问题 + 添加搜索结果计数）
+// 修复版 script.js（修复锁屏界面播放时间提前问题）
 const hotKeywords = [
-  "王佳音","鱼蛋","窝窝","艺凌","洋澜","任夏","魏佳艺","韩小欠","单依纯","DJ","林宥嘉",
-  "喝茶","古筝","助眠","热歌","热门","新歌","飙升","流行",
-  "治愈房车","周杰伦","林俊杰","邓紫棋","陈奕迅","汪苏泷",
-  "经典老歌","薛之谦","吴亦凡","刀郎","跳楼机",
+  "王佳音","鱼蛋","窝窝","艺凌","洋澜","任夏","魏佳艺","韩小欠","单依纯","DJ","喝茶","古筝","助眠", 
+  "经典老歌","70后","80后","热歌","热门","新歌","飙升","流行",
+  "治愈房车","周杰伦","林俊杰","邓紫棋","陈奕迅","汪苏泷","林宥嘉",
+  "薛之谦","吴亦凡","刀郎","跳楼机","搀扶",
   "周深","王子健","Beyond","五月天","伍佰","王一佳","王菲","陶喆",
-  "七月上","于春洋","搀扶","周传雄","张杰","半吨兄弟","张学友"
+  "七月上","于春洋","周传雄","张杰","半吨兄弟","张学友"
 ];
 
 const searchInput       = document.getElementById('searchInput');
@@ -39,7 +39,7 @@ const collectionBtn     = document.getElementById('collectionBtn');
 const collectionPanel   = document.getElementById('collectionPanel');
 const closeCollectionPanel = document.getElementById('closeCollectionPanel');
 const collectionList    = document.getElementById('collectionList');
-const resultCountEl     = document.getElementById('resultCount'); // 新增结果计数元素
+const resultCountEl     = document.getElementById('resultCount');
 
 let currentSong = null;
 let currentSearchResults = [];
@@ -55,7 +55,6 @@ let isFromShareLink = false;
 let currentSearchKeyword = "";
 
 const PROXY_SERVER = 'https://ajeo.cc/';
-
 
 /* ---------- 通用工具 ---------- */
 function getSecureImageUrl(originalUrl) {
@@ -154,7 +153,6 @@ function renderFavorites() {
 function renderHotTags() {
   hotTags.innerHTML = '';
 
-  // 创建关闭按钮
   const closeBtn = document.createElement('div');
   closeBtn.className = 'hot-search-close';
   closeBtn.innerHTML = '<i class="fas fa-times"></i>';
@@ -163,7 +161,6 @@ function renderHotTags() {
   });
   hotTags.appendChild(closeBtn);
 
-  // 渲染热门关键词
   hotKeywords.forEach(kw => {
     const tag = document.createElement('div');
     tag.className = 'hot-tag';
@@ -179,10 +176,7 @@ function renderHotTags() {
 function searchMusic(keyword, callback = null) {
   currentSearchKeyword = keyword;
   baseApiUrl = `https://www.hhlqilongzhu.cn/api/joox/juhe_music.php?msg=${encodeURIComponent(keyword)}&type=json&n=`;
-  
-  // 更新结果计数为"搜索中"
   resultCountEl.textContent = '搜索中...';
-  
   resultsList.innerHTML = '<div class="result-item" style="justify-content:center;color:#888"><i class="fas fa-spinner fa-spin"></i> 搜索中...</div>';
   fetch(baseApiUrl)
     .then(r => r.json())
@@ -193,7 +187,6 @@ function searchMusic(keyword, callback = null) {
       isFromShareLink = false;
     })
     .catch(() => {
-      // 搜索失败时更新计数
       resultCountEl.textContent = '共0条';
       resultsList.innerHTML = '<div class="result-item" style="justify-content:center;color:#888"><i class="fas fa-exclamation-triangle"></i> 搜索失败，请稍后重试</div>';
       isFromShareLink = false;
@@ -202,10 +195,7 @@ function searchMusic(keyword, callback = null) {
 
 function renderSearchResults(results) {
   currentSearchResults = results || [];
-  
-  // 更新结果计数
   resultCountEl.textContent = `共${currentSearchResults.length}条`;
-  
   resultsList.innerHTML = '';
   if (!currentSearchResults.length) {
     resultsList.innerHTML = '<div class="result-item" style="justify-content:center;color:#888"><i class="fas fa-music"></i> 未找到相关歌曲</div>';
@@ -233,28 +223,27 @@ function renderSearchResults(results) {
 
 /* ---------- 播放控制 ---------- */
 function playSong(song) {
-  // 暂停当前播放
   audioPlayer.pause();
-  
-  // 清除之前的blob URL
   if (currentBlobUrl) {
     URL.revokeObjectURL(currentBlobUrl);
     currentBlobUrl = null;
   }
-  
-  // 更新当前歌曲信息
   currentSong = song;
   songTitle.textContent = song.title;
   songArtist.textContent = song.singer;
   lyricsContent.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 加载中...';
-  
-  // 更新MediaSession元数据（即使音频还未加载）
   updateMediaSessionMetadata(song);
-  
-  // 高亮当前歌曲
   highlightCurrentSong(song);
-  
-  // 加载歌曲详情
+
+  // 重置 MediaSession 状态
+  if ('mediaSession' in navigator) {
+    navigator.mediaSession.setPositionState({
+      duration: 0,
+      playbackRate: 1,
+      position: 0
+    });
+  }
+
   fetch(`${baseApiUrl}${song.n}`)
     .then(r => r.json())
     .then(data => data && data.data && updatePlayer(data.data))
@@ -271,14 +260,11 @@ function highlightCurrentSong(song) {
 }
 
 async function updatePlayer(detail) {
-  // 更新专辑封面
   if (detail.cover) {
     albumCover.innerHTML = `<div class="album-image-container"><img src="${getSecureImageUrl(detail.cover)}"></div>`;
   } else {
     albumCover.innerHTML = '<i class="fas fa-music"></i>';
   }
-  
-  // 处理音频URL
   let audioUrl = detail.url;
   if (detail.url && detail.url.includes('douyinvod.com')) {
     try {
@@ -288,31 +274,21 @@ async function updatePlayer(detail) {
       audioUrl = currentBlobUrl;
     } catch { /* ignore */ }
   }
-  
-  // 设置音频源并播放
   audioPlayer.src = audioUrl || '';
   audioPlayer.load();
-  
-  try { 
-    await audioPlayer.play(); 
-    // 更新播放状态
+  try {
+    await audioPlayer.play();
+    updatePlayerProgress(true); // 强制同步一次
     if ('mediaSession' in navigator) {
       navigator.mediaSession.playbackState = "playing";
     }
   } catch { /* ignore */ }
-  
   playBtn.style.display = 'none';
   pauseBtn.style.display = 'flex';
-  
-  // 更新歌词
   currentLyrics = detail.lyric || '';
   lyricsContent.textContent = currentLyrics || '暂无歌词';
-  
-  // 更新歌曲信息
   currentSong.url = detail.url;
   currentSong.link = detail.link || null;
-  
-  // 更新MediaSession元数据（包含封面）
   updateMediaSessionMetadata(currentSong, detail.cover);
 }
 
@@ -333,7 +309,6 @@ function playPrevSong() {
 /* ---------- MediaSession API ---------- */
 function updateMediaSessionMetadata(song, coverUrl) {
   if (!('mediaSession' in navigator)) return;
-  
   const artwork = [];
   if (coverUrl) {
     artwork.push({
@@ -342,7 +317,6 @@ function updateMediaSessionMetadata(song, coverUrl) {
       type: 'image/jpeg'
     });
   }
-  
   navigator.mediaSession.metadata = new MediaMetadata({
     title: song.title,
     artist: song.singer,
@@ -352,52 +326,30 @@ function updateMediaSessionMetadata(song, coverUrl) {
 
 function setupMediaSession() {
   if (!('mediaSession' in navigator)) return;
-  
-  // 设置动作处理函数
-  navigator.mediaSession.setActionHandler('play', () => {
-    audioPlayer.play();
-  });
-  
-  navigator.mediaSession.setActionHandler('pause', () => {
-    audioPlayer.pause();
-  });
-  
-  navigator.mediaSession.setActionHandler('previoustrack', () => {
-    playPrevSong();
-  });
-  
-  navigator.mediaSession.setActionHandler('nexttrack', () => {
-    playNextSong();
-  });
-  
-  // 设置位置状态处理
-  navigator.mediaSession.setPositionState({
-    duration: audioPlayer.duration || 0,
-    playbackRate: audioPlayer.playbackRate,
-    position: audioPlayer.currentTime || 0
-  });
+  navigator.mediaSession.setActionHandler('play', () => audioPlayer.play());
+  navigator.mediaSession.setActionHandler('pause', () => audioPlayer.pause());
+  navigator.mediaSession.setActionHandler('previoustrack', () => playPrevSong());
+  navigator.mediaSession.setActionHandler('nexttrack', () => playNextSong());
 }
 
 /* ---------- 进度更新函数 ---------- */
-// 提取进度更新逻辑到单独函数
-function updatePlayerProgress() {
-  const { currentTime, duration } = audioPlayer;
+function updatePlayerProgress(force = false) {
+  const { currentTime, duration, paused } = audioPlayer;
+  if (!duration || (paused && !force)) return;
+
   progressBar.style.width = (currentTime / duration * 100 || 0) + '%';
   currentTimeEl.textContent = formatTime(currentTime);
   durationEl.textContent = formatTime(duration);
-  syncLyrics(currentTime);
-  
-  // 更新MediaSession位置状态
+
   if ('mediaSession' in navigator) {
     navigator.mediaSession.setPositionState({
-      duration: duration || 0,
+      duration,
       playbackRate: audioPlayer.playbackRate,
-      position: currentTime || 0
+      position: currentTime
     });
   }
 }
 
-// 提取缓冲更新逻辑到单独函数
 function updateBufferProgress() {
   if (audioPlayer.buffered.length) {
     const bufferedEnd = audioPlayer.buffered.end(audioPlayer.buffered.length - 1);
@@ -411,11 +363,8 @@ document.addEventListener('DOMContentLoaded', () => {
   renderHotTags();
   if (!handleShareUrl()) searchMusic('窝窝');
   renderFavorites();
-  
-  // 初始化MediaSession
   setupMediaSession();
 
-  /* 事件委托：收藏/分享按钮 & 歌曲点击切换 */
   resultsList.addEventListener('click', e => {
     const btn = e.target.closest('.fav-btn');
     if (btn) {
@@ -451,7 +400,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
       return;
     }
-    // 歌曲切换
     const item = e.target.closest('.result-item');
     if (item) {
       const n = parseInt(item.dataset.n, 10);
@@ -460,7 +408,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  /* 其余绑定 */
   searchInput.addEventListener('focus', () => hotSearchPanel.style.display = 'block');
   searchInput.addEventListener('blur', () => setTimeout(() => hotSearchPanel.style.display = 'none', 200));
   searchBtn.addEventListener('click', () => { const k = searchInput.value.trim(); if (k) searchMusic(k); });
@@ -488,13 +435,8 @@ document.addEventListener('DOMContentLoaded', () => {
       navigator.mediaSession.playbackState = "paused";
     }
   });
-  
-  // 使用提取的进度更新函数
-  audioPlayer.addEventListener('timeupdate', updatePlayerProgress);
-  
-  // 使用提取的缓冲更新函数
+  audioPlayer.addEventListener('timeupdate', () => updatePlayerProgress());
   audioPlayer.addEventListener('progress', updateBufferProgress);
-  
   audioPlayer.addEventListener('ended', () => loopMode ? audioPlayer.play() : playNextSong());
   progressContainer.addEventListener('click', e => {
     const width = progressContainer.clientWidth;
@@ -536,11 +478,8 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   prevBtn.addEventListener('click', playPrevSong);
   nextBtn.addEventListener('click', playNextSong);
-  
-  // 添加页面可见性监听器 - 修复熄屏不同步问题
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {
-      // 页面重新可见时强制更新进度
       updatePlayerProgress();
       updateBufferProgress();
     }
