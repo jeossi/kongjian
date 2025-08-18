@@ -1,4 +1,4 @@
-// 修复版 script.js（修复锁屏界面播放时间提前问题）
+// 修复锁屏时间并恢复锁屏自动播放的 script.js（保持其它功能不变）
 const hotKeywords = [
   "王佳音","鱼蛋","窝窝","艺凌","洋澜","任夏","魏佳艺","韩小欠","单依纯","DJ","喝茶","古筝","助眠", 
   "经典老歌","70后","80后","热歌","热门","新歌","飙升","流行",
@@ -274,15 +274,12 @@ async function updatePlayer(detail) {
       audioUrl = currentBlobUrl;
     } catch { /* ignore */ }
   }
+
+  // 关键改动：使用 autoplay 恢复锁屏自动播放
   audioPlayer.src = audioUrl || '';
+  audioPlayer.autoplay = true;
   audioPlayer.load();
-  try {
-    await audioPlayer.play();
-    updatePlayerProgress(true); // 强制同步一次
-    if ('mediaSession' in navigator) {
-      navigator.mediaSession.playbackState = "playing";
-    }
-  } catch { /* ignore */ }
+
   playBtn.style.display = 'none';
   pauseBtn.style.display = 'flex';
   currentLyrics = detail.lyric || '';
@@ -438,6 +435,7 @@ document.addEventListener('DOMContentLoaded', () => {
   audioPlayer.addEventListener('timeupdate', () => updatePlayerProgress());
   audioPlayer.addEventListener('progress', updateBufferProgress);
   audioPlayer.addEventListener('ended', () => loopMode ? audioPlayer.play() : playNextSong());
+  audioPlayer.addEventListener('loadedmetadata', () => updatePlayerProgress(true)); // 确保首次同步
   progressContainer.addEventListener('click', e => {
     const width = progressContainer.clientWidth;
     audioPlayer.currentTime = (e.offsetX / width) * audioPlayer.duration;
