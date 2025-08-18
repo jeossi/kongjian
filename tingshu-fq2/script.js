@@ -15,7 +15,8 @@ const state = {
     isAudioLoaded: false,
     sleepTimer: null,
     sleepTimerMinutes: 0,
-    backgroundPlayback: false
+    backgroundPlayback: false,
+    isMediaSessionReady: false // 新增：标识 MediaSession 是否已初始化
 };
 
 // ================= DOM 节点 =================
@@ -200,21 +201,29 @@ function cleanupAudio() {
 
 function proxyUrl(url) { return state.proxy + encodeURIComponent(url); }
 
-// 更新MediaSession元数据（标题和封面）
-function updateMediaSessionMetadata() {
+// 更新MediaSession元数据（分阶段更新）
+function updateMediaSessionMetadata(stage = 'init', coverUrl = null) {
     if (!('mediaSession' in navigator) || !state.currentBook || !state.chapters[state.currentChapterIndex]) return;
     
     const chapter = state.chapters[state.currentChapterIndex];
     const book = state.currentBook;
     
+    let artwork = [];
+    
+    if (stage === 'cover' && coverUrl) {
+        // 封面加载完成后二次更新
+        artwork.push({
+            src: coverUrl,
+            sizes: '150x200',
+            type: 'image/jpeg'
+        });
+    }
+    
     navigator.mediaSession.metadata = new MediaMetadata({
         title: chapter.title,
         artist: book.author,
         album: book.book_name,
-        artwork: [
-            { src: book.book_pic, sizes: '150x200', type: 'image/jpeg' },
-            { src: book.book_pic, sizes: '300x400', type: 'image/jpeg' }
-        ]
+        artwork: artwork
     });
 }
 
@@ -239,30 +248,35 @@ function setupMediaSession() {
         playNextChapter();
     });
     
-    // 设置位置状态处理
-    navigator.mediaSession.setPositionState({
-        duration: state.audio.duration || 0,
-        playbackRate: state.audio.playbackRate,
-        position: state.audio.currentTime || 0
-    });
+    state.isMediaSessionReady = true;
 }
 
 async function playChapterAudio(chapter) {
     try {
         updateProxyIndicator('init');
+        
+        // 1. 立即更新MediaSession标题和作者
+        updateMediaSessionMetadata('init');
+        
         const res = await fetch(`https://api.cenguigui.cn/api/tingshu/?item_id=${chapter.item_id}`);
         const data = await res.json();
         if (data.code === 200 && data.data?.url) {
             const audioUrl = proxyUrl(data.data.url);
             cleanupAudio();
 
+            // 2. 封面加载完成后二次更新MediaSession
+            if (state.currentBook.book_pic) {
+                const img = new Image();
+                img.onload = () => {
+                    updateMediaSessionMetadata('cover', state.currentBook.book_pic);
+                };
+                img.src = state.currentBook.book_pic;
+            }
+
             state.audio.src = audioUrl;
             state.audio.load();
             state.audio.playbackRate = state.playbackRate;
             state.isAudioLoaded = false;
-
-            // 关键修复：立即更新MediaSession元数据（包含封面）
-            updateMediaSessionMetadata();
 
             state.audio.oncanplay = async () => {
                 try {
