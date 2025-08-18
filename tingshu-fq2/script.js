@@ -16,7 +16,7 @@ const state = {
     sleepTimer: null,
     sleepTimerMinutes: 0,
     backgroundPlayback: false,
-    isMediaSessionReady: false // 新增：标识 MediaSession 是否已初始化
+    isMediaSessionReady: false
 };
 
 // ================= DOM 节点 =================
@@ -201,7 +201,7 @@ function cleanupAudio() {
 
 function proxyUrl(url) { return state.proxy + encodeURIComponent(url); }
 
-// 更新MediaSession元数据（分阶段更新）
+// ✅ 延迟更新 MediaSession 元数据，直到音频真正播放
 function updateMediaSessionMetadata(stage = 'init', coverUrl = null) {
     if (!('mediaSession' in navigator) || !state.currentBook || !state.chapters[state.currentChapterIndex]) return;
     
@@ -220,7 +220,6 @@ function updateMediaSessionMetadata(stage = 'init', coverUrl = null) {
 function setupMediaSession() {
     if (!('mediaSession' in navigator)) return;
     
-    // 设置媒体会话动作处理程序
     navigator.mediaSession.setActionHandler('play', () => {
         playAudio();
     });
@@ -240,63 +239,7 @@ function setupMediaSession() {
     state.isMediaSessionReady = true;
 }
 
-async function playChapterAudio(chapter) {
-    try {
-        updateProxyIndicator('init');
-        
-        // 1. 立即更新MediaSession标题和作者
-        updateMediaSessionMetadata('init');
-        
-        const res = await fetch(`https://api.cenguigui.cn/api/tingshu/?item_id=${chapter.item_id}`);
-        const data = await res.json();
-        if (data.code === 200 && data.data?.url) {
-            const audioUrl = proxyUrl(data.data.url);
-            cleanupAudio();
-
-            // 2. 封面加载完成后二次更新MediaSession
-            if (state.currentBook.book_pic) {
-                const img = new Image();
-                img.onload = () => {
-                    updateMediaSessionMetadata('cover', state.currentBook.book_pic);
-                };
-                img.src = state.currentBook.book_pic;
-            }
-
-            state.audio.src = audioUrl;
-            state.audio.load();
-            state.audio.playbackRate = state.playbackRate;
-            state.isAudioLoaded = false;
-
-            state.audio.oncanplay = async () => {
-                try {
-                    await state.audio.play();
-                    state.isPlaying = true;
-                    dom.playButton.innerHTML = '<i class="fas fa-pause"></i>';
-                    updateProxyIndicator('success');
-                    state.retryCount = 0;
-                    state.isAudioLoaded = true;
-                    
-                    // 更新播放状态
-                    if ('mediaSession' in navigator) {
-                        navigator.mediaSession.playbackState = "playing";
-                    }
-                } catch (playErr) {
-                    console.error('播放失败:', playErr);
-                    tryRetry();
-                }
-            };
-            state.audio.onerror = () => {
-                if (!state.isAudioLoaded) tryRetry();
-            };
-        } else {
-            throw new Error('获取音频URL失败');
-        }
-    } catch (err) {
-        console.error(err);
-        tryRetry();
-    }
-}
-
+// ✅ 已移除 playChapterAudio，统一由 playChapter 处理
 async function playChapter(index) {
     if (index === state.currentChapterIndex && state.isAudioLoaded) return;
 
@@ -308,38 +251,54 @@ async function playChapter(index) {
     const chapter = state.chapters[index];
     if (!chapter) return;
 
-    // ✅ 立即更新 MediaSession 元数据（不中断会话）
-    updateMediaSessionMetadata('cover', state.currentBook.book_pic);
+    // ❌ 不再提前更新 MediaSession
+    // updateMediaSessionMetadata('cover', state.currentBook.book_pic); 
 
     try {
-        // ✅ 预加载音频 URL，但不立即设置 audio.src
         const res = await fetch(`https://api.cenguigui.cn/api/tingshu/?item_id=${chapter.item_id}`);
         const data = await res.json();
         if (data.code === 200 && data.data?.url) {
             const audioUrl = proxyUrl(data.data.url);
 
-            // ✅ 先设置元数据，再设置 src
             state.audio.src = audioUrl;
             state.audio.load();
             state.audio.playbackRate = state.playbackRate;
             state.isAudioLoaded = false;
+            updateProxyIndicator('init'); // ✅ 重置代理指示器
 
+            // ✅ 只在音频真正开始播放时更新 MediaSession
             state.audio.oncanplay = async () => {
                 try {
                     await state.audio.play();
                     state.isPlaying = true;
                     dom.playButton.innerHTML = '<i class="fas fa-pause"></i>';
                     state.isAudioLoaded = true;
+
+                    // ✅ 延迟更新 MediaSession
+                    updateMediaSessionMetadata('cover', state.currentBook.book_pic);
                     if ('mediaSession' in navigator) {
                         navigator.mediaSession.playbackState = "playing";
                     }
+                    updateProxyIndicator('success'); // ✅ 确保图标更新
                 } catch (playErr) {
                     console.error('播放失败:', playErr);
+                    updateProxyIndicator('error');
                 }
             };
+
+            state.audio.onerror = () => {
+                updateProxyIndicator('error');
+                tryRetry();
+            };
+
+            // ✅ 兜底：如果缓存命中，立即更新图标
+            if (state.audio.readyState >= 2) {
+                updateProxyIndicator('success');
+            }
         }
     } catch (err) {
         console.error(err);
+        updateProxyIndicator('error');
     }
 }
 
@@ -349,7 +308,7 @@ function tryRetry() {
         updateProxyIndicator('retry');
         state.retryTimer = setTimeout(() => {
             const chapter = state.chapters[state.currentChapterIndex];
-            if (chapter) playChapterAudio(chapter);
+            if (chapter) playChapter(state.currentChapterIndex);
         }, 3000);
     } else updateProxyIndicator('error');
 }
@@ -720,6 +679,7 @@ function setupEventListeners() {
     });
     state.audio.addEventListener('playing', () => {
         state.isAudioLoaded = true;
+        updateProxyIndicator('success'); // ✅ 确保播放中图标正确
         console.log('音频成功开始播放');
     });
     dom.favoriteButton.addEventListener('click', toggleFavoritePanel);
