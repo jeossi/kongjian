@@ -201,7 +201,6 @@ function cleanupAudio() {
 
 function proxyUrl(url) { return state.proxy + encodeURIComponent(url); }
 
-// ✅ 延迟更新 MediaSession 元数据，直到音频真正播放
 function updateMediaSessionMetadata(stage = 'init', coverUrl = null) {
     if (!('mediaSession' in navigator) || !state.currentBook || !state.chapters[state.currentChapterIndex]) return;
     
@@ -236,10 +235,16 @@ function setupMediaSession() {
         playNextChapter();
     });
     
+    // 新增位置状态处理
+    navigator.mediaSession.setPositionState({
+        duration: state.audio.duration || 0,
+        playbackRate: state.audio.playbackRate,
+        position: state.audio.currentTime || 0
+    });
+    
     state.isMediaSessionReady = true;
 }
 
-// ✅ 已移除 playChapterAudio，统一由 playChapter 处理
 async function playChapter(index) {
     if (index === state.currentChapterIndex && state.isAudioLoaded) return;
 
@@ -251,9 +256,6 @@ async function playChapter(index) {
     const chapter = state.chapters[index];
     if (!chapter) return;
 
-    // ❌ 不再提前更新 MediaSession
-    // updateMediaSessionMetadata('cover', state.currentBook.book_pic); 
-
     try {
         const res = await fetch(`https://api.cenguigui.cn/api/tingshu/?item_id=${chapter.item_id}`);
         const data = await res.json();
@@ -264,9 +266,8 @@ async function playChapter(index) {
             state.audio.load();
             state.audio.playbackRate = state.playbackRate;
             state.isAudioLoaded = false;
-            updateProxyIndicator('init'); // ✅ 重置代理指示器
+            updateProxyIndicator('init');
 
-            // ✅ 只在音频真正开始播放时更新 MediaSession
             state.audio.oncanplay = async () => {
                 try {
                     await state.audio.play();
@@ -274,12 +275,12 @@ async function playChapter(index) {
                     dom.playButton.innerHTML = '<i class="fas fa-pause"></i>';
                     state.isAudioLoaded = true;
 
-                    // ✅ 延迟更新 MediaSession
+                    // 延迟更新 MediaSession
                     updateMediaSessionMetadata('cover', state.currentBook.book_pic);
                     if ('mediaSession' in navigator) {
                         navigator.mediaSession.playbackState = "playing";
                     }
-                    updateProxyIndicator('success'); // ✅ 确保图标更新
+                    updateProxyIndicator('success');
                 } catch (playErr) {
                     console.error('播放失败:', playErr);
                     updateProxyIndicator('error');
@@ -291,7 +292,6 @@ async function playChapter(index) {
                 tryRetry();
             };
 
-            // ✅ 兜底：如果缓存命中，立即更新图标
             if (state.audio.readyState >= 2) {
                 updateProxyIndicator('success');
             }
@@ -357,6 +357,15 @@ function playNextChapter() {
 function updateProgressBar() {
     if (state.audio.duration) dom.progress.style.width = (state.audio.currentTime / state.audio.duration * 100) + '%';
     dom.currentTime.textContent = formatTime(state.audio.currentTime);
+    
+    // 更新 MediaSession 位置状态
+    if ('mediaSession' in navigator && !isNaN(state.audio.duration)) {
+        navigator.mediaSession.setPositionState({
+            duration: state.audio.duration,
+            playbackRate: state.audio.playbackRate,
+            position: state.audio.currentTime
+        });
+    }
 }
 
 function updateBufferBar() {
@@ -679,7 +688,7 @@ function setupEventListeners() {
     });
     state.audio.addEventListener('playing', () => {
         state.isAudioLoaded = true;
-        updateProxyIndicator('success'); // ✅ 确保播放中图标正确
+        updateProxyIndicator('success');
         console.log('音频成功开始播放');
     });
     dom.favoriteButton.addEventListener('click', toggleFavoritePanel);
@@ -698,16 +707,18 @@ function setupEventListeners() {
             dom.timerMenu.classList.remove('show');
         }
     });
+    
+    // 新增页面可见性监听器 - 修复熄屏不同步问题
     document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'hidden' && state.isPlaying) {
+        if (document.visibilityState === 'visible') {
+            // 页面重新可见时强制更新进度
+            updateProgressBar();
+            updateBufferBar();
+        } else if (document.visibilityState === 'hidden' && state.isPlaying) {
             state.backgroundPlayback = true;
-        } else if (document.visibilityState === 'visible' && state.backgroundPlayback) {
-            state.backgroundPlayback = false;
-            if ('mediaSession' in navigator) {
-                navigator.mediaSession.playbackState = "playing";
-            }
         }
     });
+    
     document.addEventListener('resume', () => {
         if (state.isPlaying) {
             state.audio.play().catch(e => {
