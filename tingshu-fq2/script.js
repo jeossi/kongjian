@@ -207,23 +207,12 @@ function updateMediaSessionMetadata(stage = 'init', coverUrl = null) {
     
     const chapter = state.chapters[state.currentChapterIndex];
     const book = state.currentBook;
-    
-    let artwork = [];
-    
-    if (stage === 'cover' && coverUrl) {
-        // 封面加载完成后二次更新
-        artwork.push({
-            src: coverUrl,
-            sizes: '150x200',
-            type: 'image/jpeg'
-        });
-    }
-    
+
     navigator.mediaSession.metadata = new MediaMetadata({
         title: chapter.title,
         artist: book.author,
         album: book.book_name,
-        artwork: artwork
+        artwork: coverUrl ? [{ src: coverUrl, sizes: '150x200', type: 'image/jpeg' }] : []
     });
 }
 
@@ -308,17 +297,50 @@ async function playChapterAudio(chapter) {
     }
 }
 
-function playChapter(index) {
+async function playChapter(index) {
     if (index === state.currentChapterIndex && state.isAudioLoaded) return;
-    cleanupAudio();
-    state.audio.currentTime = 0;
-    updateProgressBar();
+
     state.currentChapterIndex = index;
-    updateProxyIndicator('retry');
     document.querySelectorAll('.chapter-item').forEach((li, i) =>
         li.classList.toggle('active', i === index)
     );
-    if (state.chapters[index]) playChapterAudio(state.chapters[index]);
+
+    const chapter = state.chapters[index];
+    if (!chapter) return;
+
+    // ✅ 立即更新 MediaSession 元数据（不中断会话）
+    updateMediaSessionMetadata('cover', state.currentBook.book_pic);
+
+    try {
+        // ✅ 预加载音频 URL，但不立即设置 audio.src
+        const res = await fetch(`https://api.cenguigui.cn/api/tingshu/?item_id=${chapter.item_id}`);
+        const data = await res.json();
+        if (data.code === 200 && data.data?.url) {
+            const audioUrl = proxyUrl(data.data.url);
+
+            // ✅ 先设置元数据，再设置 src
+            state.audio.src = audioUrl;
+            state.audio.load();
+            state.audio.playbackRate = state.playbackRate;
+            state.isAudioLoaded = false;
+
+            state.audio.oncanplay = async () => {
+                try {
+                    await state.audio.play();
+                    state.isPlaying = true;
+                    dom.playButton.innerHTML = '<i class="fas fa-pause"></i>';
+                    state.isAudioLoaded = true;
+                    if ('mediaSession' in navigator) {
+                        navigator.mediaSession.playbackState = "playing";
+                    }
+                } catch (playErr) {
+                    console.error('播放失败:', playErr);
+                }
+            };
+        }
+    } catch (err) {
+        console.error(err);
+    }
 }
 
 function tryRetry() {
