@@ -15,8 +15,7 @@ const state = {
     isAudioLoaded: false,
     sleepTimer: null,
     sleepTimerMinutes: 0,
-    backgroundPlayback: false,
-    mediaSessionInitialized: false
+    backgroundPlayback: false
 };
 
 // ================= DOM 节点 =================
@@ -168,7 +167,7 @@ function renderPlayerPage() {
     dom.playerBookCategory.textContent = `分类: ${category}`;
     dom.chapterList.innerHTML = '';
     dom.chapterCount.textContent = state.chapters.length;
-    
+
     state.chapters.forEach((c, i) => {
         const li = document.createElement('li');
         li.className = 'chapter-item' + (i === state.currentChapterIndex ? ' active' : '');
@@ -201,6 +200,45 @@ function cleanupAudio() {
 
 function proxyUrl(url) { return state.proxy + encodeURIComponent(url); }
 
+// 分阶段更新 MediaSession
+function updateMediaSessionTitle() {
+    if (!('mediaSession' in navigator)) return;
+    const chapter = state.chapters[state.currentChapterIndex];
+    const book = state.currentBook;
+    if (!chapter || !book) return;
+
+    navigator.mediaSession.metadata = new MediaMetadata({
+        title: chapter.title,
+        artist: book.author,
+        album: book.book_name
+    });
+    navigator.mediaSession.playbackState = state.isPlaying ? "playing" : "paused";
+}
+
+function updateMediaSessionCover() {
+    if (!('mediaSession' in navigator)) return;
+    const chapter = state.chapters[state.currentChapterIndex];
+    const book = state.currentBook;
+    if (!chapter || !book) return;
+
+    const img = new Image();
+    img.onload = () => {
+        navigator.mediaSession.metadata = new MediaMetadata({
+            title: chapter.title,
+            artist: book.author,
+            album: book.book_name,
+            artwork: [
+                { src: book.book_pic, sizes: '150x200', type: 'image/jpeg' },
+                { src: book.book_pic, sizes: '300x400', type: 'image/jpeg' }
+            ]
+        });
+    };
+    img.onerror = () => {
+        console.warn('封面加载失败，跳过更新封面');
+    };
+    img.src = book.book_pic;
+}
+
 async function playChapterAudio(chapter) {
     try {
         updateProxyIndicator('init');
@@ -208,7 +246,6 @@ async function playChapterAudio(chapter) {
         const data = await res.json();
         if (data.code === 200 && data.data?.url) {
             const audioUrl = proxyUrl(data.data.url);
-
             cleanupAudio();
 
             state.audio.src = audioUrl;
@@ -216,8 +253,11 @@ async function playChapterAudio(chapter) {
             state.audio.playbackRate = state.playbackRate;
             state.isAudioLoaded = false;
 
-            // 立即更新媒体会话元数据（不含封面）
-            updateMediaSession(true);
+            // 立即更新标题/作者
+            updateMediaSessionTitle();
+
+            // 异步更新封面
+            updateMediaSessionCover();
 
             state.audio.oncanplay = async () => {
                 try {
@@ -227,9 +267,7 @@ async function playChapterAudio(chapter) {
                     updateProxyIndicator('success');
                     state.retryCount = 0;
                     state.isAudioLoaded = true;
-                    
-                    // 音频就绪后再次更新媒体会话（包含封面）
-                    updateMediaSession();
+                    updateMediaSessionTitle(); // 再次确认
                 } catch (playErr) {
                     console.error('播放失败:', playErr);
                     tryRetry();
@@ -372,36 +410,25 @@ function updateProxyIndicator(status) {
 function setSleepTimer(e) {
     const minutes = parseInt(e.currentTarget.dataset.minutes);
     state.sleepTimerMinutes = minutes;
-    
     if (state.sleepTimer) {
         clearTimeout(state.sleepTimer);
         state.sleepTimer = null;
     }
-    
     document.querySelectorAll('.timer-option').forEach(opt => {
-        if (parseInt(opt.dataset.minutes) === minutes) {
-            opt.classList.add('timer-active');
-        } else {
-            opt.classList.remove('timer-active');
-        }
+        opt.classList.toggle('timer-active', parseInt(opt.dataset.minutes) === minutes);
     });
-    
     if (minutes > 0) {
         state.sleepTimer = setTimeout(() => {
             pauseAudio();
             showToast(`睡眠定时器已结束播放`);
             state.sleepTimer = null;
             state.sleepTimerMinutes = 0;
-            document.querySelectorAll('.timer-option').forEach(opt => {
-                opt.classList.remove('timer-active');
-            });
+            document.querySelectorAll('.timer-option').forEach(opt => opt.classList.remove('timer-active'));
         }, minutes * 60 * 1000);
-        
         showToast(`已设置${minutes}分钟后停止播放`);
     } else {
         showToast(`已关闭睡眠定时器`);
     }
-    
     dom.timerMenu.classList.remove('show');
 }
 
@@ -600,67 +627,6 @@ function toggleExpand(e) {
     }
 }
 
-// ================= 媒体会话 =================
-function setupMediaSession() {
-    if ('mediaSession' in navigator) {
-        navigator.mediaSession.setActionHandler('play', () => {
-            playAudio();
-        });
-        
-        navigator.mediaSession.setActionHandler('pause', () => {
-            pauseAudio();
-        });
-        
-        navigator.mediaSession.setActionHandler('previoustrack', () => {
-            playPrevChapter();
-        });
-        
-        navigator.mediaSession.setActionHandler('nexttrack', () => {
-            playNextChapter();
-        });
-        
-        try {
-            navigator.mediaSession.setActionHandler('seekto', (details) => {
-                if (details.fastSeek && 'fastSeek' in state.audio) {
-                    state.audio.fastSeek(details.seekTime);
-                } else {
-                    state.audio.currentTime = details.seekTime;
-                }
-            });
-        } catch (error) {
-            console.log('不支持seekto操作');
-        }
-        
-        state.mediaSessionInitialized = true;
-    }
-}
-
-function updateMediaSession(initialUpdate = false) {
-    if (!('mediaSession' in navigator)) return;
-    
-    const chapter = state.chapters[state.currentChapterIndex];
-    const book = state.currentBook;
-    
-    if (!chapter || !book) return;
-    
-    const metadata = {
-        title: chapter.title,
-        artist: book.author,
-        album: book.book_name
-    };
-    
-    // 初始更新时不包含封面，避免延迟
-    if (!initialUpdate && book.book_pic) {
-        metadata.artwork = [
-            { src: book.book_pic, sizes: '150x200', type: 'image/jpeg' },
-            { src: book.book_pic, sizes: '300x400', type: 'image/jpeg' }
-        ];
-    }
-    
-    navigator.mediaSession.metadata = new MediaMetadata(metadata);
-    navigator.mediaSession.playbackState = state.isPlaying ? "playing" : "paused";
-}
-
 // ================= 事件绑定 =================
 function setupEventListeners() {
     dom.searchInput.addEventListener('focus', () => dom.hotSearchPanel.style.display = 'block');
@@ -727,16 +693,14 @@ function setupEventListeners() {
             dom.timerMenu.classList.remove('show');
         }
     });
-    
     document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'hidden' && state.isPlaying) {
             state.backgroundPlayback = true;
         } else if (document.visibilityState === 'visible' && state.backgroundPlayback) {
             state.backgroundPlayback = false;
-            updateMediaSession();
+            updateMediaSessionTitle();
         }
     });
-    
     document.addEventListener('resume', () => {
         if (state.isPlaying) {
             state.audio.play().catch(e => {
@@ -776,7 +740,6 @@ function initApp() {
         const bookId = hash.split('=')[1];
         loadBookDetails(bookId);
     }
-    
     state.audio.setAttribute('crossorigin', 'anonymous');
 }
 window.addEventListener('DOMContentLoaded', initApp);
