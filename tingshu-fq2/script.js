@@ -200,43 +200,51 @@ function cleanupAudio() {
 
 function proxyUrl(url) { return state.proxy + encodeURIComponent(url); }
 
-// 分阶段更新 MediaSession
-function updateMediaSessionTitle() {
-    if (!('mediaSession' in navigator)) return;
+// 更新MediaSession元数据（标题和封面）
+function updateMediaSessionMetadata() {
+    if (!('mediaSession' in navigator) || !state.currentBook || !state.chapters[state.currentChapterIndex]) return;
+    
     const chapter = state.chapters[state.currentChapterIndex];
     const book = state.currentBook;
-    if (!chapter || !book) return;
-
+    
     navigator.mediaSession.metadata = new MediaMetadata({
         title: chapter.title,
         artist: book.author,
-        album: book.book_name
+        album: book.book_name,
+        artwork: [
+            { src: book.book_pic, sizes: '150x200', type: 'image/jpeg' },
+            { src: book.book_pic, sizes: '300x400', type: 'image/jpeg' }
+        ]
     });
-    navigator.mediaSession.playbackState = state.isPlaying ? "playing" : "paused";
 }
 
-function updateMediaSessionCover() {
+// ================= MediaSession API =================
+function setupMediaSession() {
     if (!('mediaSession' in navigator)) return;
-    const chapter = state.chapters[state.currentChapterIndex];
-    const book = state.currentBook;
-    if (!chapter || !book) return;
-
-    const img = new Image();
-    img.onload = () => {
-        navigator.mediaSession.metadata = new MediaMetadata({
-            title: chapter.title,
-            artist: book.author,
-            album: book.book_name,
-            artwork: [
-                { src: book.book_pic, sizes: '150x200', type: 'image/jpeg' },
-                { src: book.book_pic, sizes: '300x400', type: 'image/jpeg' }
-            ]
-        });
-    };
-    img.onerror = () => {
-        console.warn('封面加载失败，跳过更新封面');
-    };
-    img.src = book.book_pic;
+    
+    // 设置媒体会话动作处理程序
+    navigator.mediaSession.setActionHandler('play', () => {
+        playAudio();
+    });
+    
+    navigator.mediaSession.setActionHandler('pause', () => {
+        pauseAudio();
+    });
+    
+    navigator.mediaSession.setActionHandler('previoustrack', () => {
+        playPrevChapter();
+    });
+    
+    navigator.mediaSession.setActionHandler('nexttrack', () => {
+        playNextChapter();
+    });
+    
+    // 设置位置状态处理
+    navigator.mediaSession.setPositionState({
+        duration: state.audio.duration || 0,
+        playbackRate: state.audio.playbackRate,
+        position: state.audio.currentTime || 0
+    });
 }
 
 async function playChapterAudio(chapter) {
@@ -253,11 +261,8 @@ async function playChapterAudio(chapter) {
             state.audio.playbackRate = state.playbackRate;
             state.isAudioLoaded = false;
 
-            // 立即更新标题/作者
-            updateMediaSessionTitle();
-
-            // 异步更新封面
-            updateMediaSessionCover();
+            // 关键修复：立即更新MediaSession元数据（包含封面）
+            updateMediaSessionMetadata();
 
             state.audio.oncanplay = async () => {
                 try {
@@ -267,7 +272,11 @@ async function playChapterAudio(chapter) {
                     updateProxyIndicator('success');
                     state.retryCount = 0;
                     state.isAudioLoaded = true;
-                    updateMediaSessionTitle(); // 再次确认
+                    
+                    // 更新播放状态
+                    if ('mediaSession' in navigator) {
+                        navigator.mediaSession.playbackState = "playing";
+                    }
                 } catch (playErr) {
                     console.error('播放失败:', playErr);
                     tryRetry();
@@ -698,7 +707,9 @@ function setupEventListeners() {
             state.backgroundPlayback = true;
         } else if (document.visibilityState === 'visible' && state.backgroundPlayback) {
             state.backgroundPlayback = false;
-            updateMediaSessionTitle();
+            if ('mediaSession' in navigator) {
+                navigator.mediaSession.playbackState = "playing";
+            }
         }
     });
     document.addEventListener('resume', () => {
