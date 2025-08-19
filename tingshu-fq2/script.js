@@ -15,8 +15,7 @@ const state = {
     isAudioLoaded: false,
     sleepTimer: null,
     sleepTimerMinutes: 0,
-    wakeLock: null,
-    resultCount: 0  // 新增：搜索结果计数
+    wakeLock: null
 };
 
 // 防抖锁
@@ -56,14 +55,8 @@ const dom = {
     favoriteList: document.getElementById('favorite-list'),
     sleepTimerBtn: document.getElementById('sleep-timer-btn'),
     timerMenu: document.getElementById('timer-menu'),
-    chapterCount: document.getElementById('chapter-count'),
-    resultCount: document.createElement('div') // 新增：搜索结果计数元素
+    chapterCount: document.getElementById('chapter-count')
 };
-
-// 在搜索容器中添加结果计数
-dom.resultCount.className = 'result-count';
-dom.resultCount.innerHTML = '共 <span id="result-count-value">0</span> 条';
-document.querySelector('.search-container').appendChild(dom.resultCount);
 
 // ================= 工具：屏幕常亮 =================
 async function requestWakeLock() {
@@ -105,8 +98,6 @@ async function performSearch() {
         const data = await res.json();
         if (data.code === 200 && data.data) {
             state.searchResults = data.data;
-            state.resultCount = data.data.length; // 保存结果数量
-            document.getElementById('result-count-value').textContent = data.data.length; // 更新UI
             renderSearchResults(data.data);
         } else throw new Error('未找到搜索结果');
     } catch (err) {
@@ -253,7 +244,6 @@ async function playChapterAudio(chapter) {
                     updateProxyIndicator('success');
                     state.retryCount = 0;
                     state.isAudioLoaded = true;
-                    // 音频就绪后更新媒体会话
                     updateMediaSession();
                 } catch (playErr) {
                     console.error('播放失败:', playErr);
@@ -284,10 +274,7 @@ function playChapter(index) {
     document.querySelectorAll('.chapter-item').forEach((li, i) =>
         li.classList.toggle('active', i === index)
     );
-    
-    // 立即更新媒体会话元数据（只包含标题和作者）
     updateMediaSession(true);
-    
     if (state.chapters[index]) playChapterAudio(state.chapters[index]);
 }
 
@@ -633,17 +620,16 @@ function updateMediaSession(isChapterSwitch = false) {
     const chapter = state.chapters[state.currentChapterIndex];
     const book = state.currentBook;
 
-    // 1. 立即设置元数据（标题和作者）
+    // 第一次仅设置标题和作者，确保锁屏不会消失
     navigator.mediaSession.metadata = new MediaMetadata({
         title: chapter.title,
         artist: book.author,
         album: book.book_name
     });
 
-    // 2. 异步加载封面图片
+    // 异步获取封面后再二次更新
     const img = new Image();
     img.onload = () => {
-        // 3. 封面加载完成后更新元数据（添加封面）
         navigator.mediaSession.metadata = new MediaMetadata({
             title: chapter.title,
             artist: book.author,
@@ -655,7 +641,7 @@ function updateMediaSession(isChapterSwitch = false) {
     };
     img.src = book.book_pic;
 
-    // 4. 如果是章节切换，立即更新一次位置状态
+    // 如果是章节切换，立即更新一次位置状态
     if (isChapterSwitch && state.audio.duration && !isNaN(state.audio.duration)) {
         updateMediaSessionPosition();
     }
@@ -726,7 +712,7 @@ function setupEventListeners() {
         dom.totalTime.textContent = formatTime(state.audio.duration);
         restorePlaybackPosition();
         updateBufferBar();
-        updateMediaSessionPosition(); // 新增：音频元数据加载后更新位置状态
+        updateMediaSessionPosition();
     });
     state.audio.addEventListener('error', () => {
         if (state.isAudioLoaded || state.audio.currentTime > 0) {
@@ -738,7 +724,7 @@ function setupEventListeners() {
     });
     state.audio.addEventListener('playing', () => {
         state.isAudioLoaded = true;
-        updateMediaSession(); // 新增：播放开始后更新媒体会话
+        updateMediaSession();
     });
     dom.favoriteButton.addEventListener('click', toggleFavoritePanel);
     document.addEventListener('click', e => {
@@ -757,7 +743,6 @@ function setupEventListeners() {
         }
     });
     
-    // 新增：页面可见性变化时更新进度
     document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'visible') {
             updateProgressBar();
