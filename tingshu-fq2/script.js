@@ -205,18 +205,10 @@ function renderPlayerPage() {
 }
 
 // ================= 音频播放器 =================
-function cleanupAudio() {
+function softCleanupAudio() {
     state.audio.pause();
     state.isPlaying = false;
-    state.isAudioLoaded = false;
-    if (state.audio.src && state.audio.src.startsWith('blob:')) {
-        URL.revokeObjectURL(state.audio.src);
-    }
-    state.audio.removeAttribute('src');
-    state.audio.load();
-    clearTimeout(state.retryTimer);
-    state.retryCount = 0;
-    console.log('Audio resources cleaned up');
+    dom.playButton.innerHTML = '<i class="fas fa-play"></i>';
 }
 
 function proxyUrl(url) { return state.proxy + encodeURIComponent(url); }
@@ -230,7 +222,7 @@ async function playChapterAudio(chapter) {
         const data = await res.json();
         if (data.code === 200 && data.data?.url) {
             const audioUrl = proxyUrl(data.data.url);
-            cleanupAudio();
+            softCleanupAudio();
             state.audio.src = audioUrl;
             state.audio.load();
             state.audio.playbackRate = state.playbackRate;
@@ -266,7 +258,7 @@ async function playChapterAudio(chapter) {
 
 function playChapter(index) {
     if (index === state.currentChapterIndex && state.isAudioLoaded) return;
-    cleanupAudio();
+    softCleanupAudio();
     state.audio.currentTime = 0;
     updateProgressBar();
     state.currentChapterIndex = index;
@@ -684,7 +676,7 @@ function setupEventListeners() {
     dom.searchInput.addEventListener('keypress', e => { if (e.key === 'Enter') performSearch(); });
     dom.backButton.addEventListener('click', () => { 
         showPage('search'); 
-        cleanupAudio(); 
+        softCleanupAudio(); 
         releaseWakeLock();
     });
     dom.playButton.addEventListener('click', togglePlay);
