@@ -747,6 +747,10 @@ function setupEventListeners() {
             if ('mediaSession' in navigator) {
                 navigator.mediaSession.playbackState = "playing";
             }
+            
+            // 锁屏前更新一次进度
+            updateProgressBar();
+            updateBufferBar();
         }
     });
     
