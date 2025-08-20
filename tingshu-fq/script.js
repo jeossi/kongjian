@@ -245,9 +245,24 @@ function setupMediaSession() {
     state.isMediaSessionReady = true;
 }
 
+// 重置MediaSession状态
+function resetMediaSession() {
+    if ('mediaSession' in navigator) {
+        navigator.mediaSession.setPositionState({
+            duration: 0,
+            playbackRate: 1,
+            position: 0
+        });
+        navigator.mediaSession.playbackState = "none";
+    }
+}
+
 async function playChapter(index) {
     if (index === state.currentChapterIndex && state.isAudioLoaded) return;
 
+    // 重置MediaSession状态
+    resetMediaSession();
+    
     state.currentChapterIndex = index;
     document.querySelectorAll('.chapter-item').forEach((li, i) =>
         li.classList.toggle('active', i === index)
@@ -717,11 +732,25 @@ function setupEventListeners() {
             // 页面重新可见时强制更新进度
             updateProgressBar();
             updateBufferBar();
+            
+            // 检查是否需要恢复播放
+            if (state.backgroundPlayback && state.isPlaying) {
+                state.audio.play().catch(e => {
+                    console.log('恢复播放失败:', e);
+                });
+                state.backgroundPlayback = false;
+            }
         } else if (document.visibilityState === 'hidden' && state.isPlaying) {
             state.backgroundPlayback = true;
+            
+            // 更新MediaSession状态
+            if ('mediaSession' in navigator) {
+                navigator.mediaSession.playbackState = "playing";
+            }
         }
     });
     
+    // 添加页面恢复事件监听
     document.addEventListener('resume', () => {
         if (state.isPlaying) {
             state.audio.play().catch(e => {
