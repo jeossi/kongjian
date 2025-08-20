@@ -520,7 +520,22 @@ function setupEventListeners() {
     document.addEventListener('click', e => { if (!dom.speedBtn.contains(e.target) && !dom.speedMenu.contains(e.target)) dom.speedMenu.classList.remove('show'); });
     state.audio.addEventListener('timeupdate', updateProgressBar);
     state.audio.addEventListener('progress', updateBufferBar);
-    state.audio.addEventListener('ended', playNextChapter);
+    // ✅ 修复：使用MediaSession的nexttrack动作实现锁屏连续播放
+    state.audio.addEventListener('ended', () => {
+        if (state.currentChapterIndex < state.chapters.length - 1) {
+            if ('mediaSession' in navigator) {
+                // 通过MediaSession绕过自动播放限制
+                navigator.mediaSession.setActionHandler('nexttrack', playNextChapter);
+                navigator.mediaSession.dispatchEvent(new Event('nexttrack'));
+            } else {
+                playNextChapter();
+            }
+        } else {
+            pauseAudio();
+            state.audio.currentTime = 0;
+            updateProgressBar();
+        }
+    });
     state.audio.addEventListener('loadedmetadata', () => {
         dom.totalTime.textContent = formatTime(state.audio.duration);
         restorePlaybackPosition();
