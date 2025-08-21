@@ -189,15 +189,15 @@ function searchMusic(keyword, callback = null) {
     .then(data => {
       renderSearchResults(data);
       // 只有在不是处理分享链接时才自动播放第一首
-      if (!isFromShareLink && data && data.length) playSong(data[0]);
+      if (!isHandlingShareLink && data && data.length) playSong(data[0]);
       if (callback) callback();
-      isFromShareLink = false;
+      isHandlingShareLink = false;
     })
     .catch(() => {
       // 搜索失败时更新计数
       resultCountEl.textContent = '共0条';
       resultsList.innerHTML = '<div class="result-item" style="justify-content:center;color:#888"><i class="fas fa-exclamation-triangle"></i> 搜索失败，请稍后重试</div>';
-      isFromShareLink = false;
+      isHandlingShareLink = false;
     });
 }
 
@@ -256,14 +256,6 @@ function playSong(song) {
   
   // 高亮当前歌曲
   highlightCurrentSong(song);
-  
-  // 如果是处理分享链接，设置一个标志防止循环请求
-  if (isHandlingShareLink) {
-    isHandlingShareLink = false;
-    // 直接播放，不重新加载详情
-    audioPlayer.play().catch(() => {});
-    return;
-  }
   
   // 加载歌曲详情
   fetch(`${baseApiUrl}${song.n}`)
@@ -606,7 +598,6 @@ function handleShareUrl() {
   const keyword = getUrlParameter('keyword');
   const songId = getUrlParameter('songId');
   if (!keyword) return false;
-  isFromShareLink = true;
   isHandlingShareLink = true; // 设置标志，表示正在处理分享链接
   searchInput.value = decodeURIComponent(keyword);
   window.history.replaceState({}, document.title, window.location.pathname);
@@ -615,7 +606,6 @@ function handleShareUrl() {
     if (songId) {
       const target = currentSearchResults.find(s => s.n === +songId);
       if (target) {
-        // 直接播放目标歌曲，不触发额外的详情请求
         playSong(target);
         document.querySelector(`.result-item[data-n="${songId}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       } else if (currentSearchResults.length) {
@@ -624,7 +614,6 @@ function handleShareUrl() {
     } else if (currentSearchResults.length) {
       playSong(currentSearchResults[0]);
     }
-    isHandlingShareLink = false; // 重置标志
   });
   return true;
 }
