@@ -746,6 +746,32 @@ body {
     background: rgba(255, 107, 107, 0.2);
 }
 
+/* 全屏按钮样式 */
+.fullscreen-control {
+    display: inline-block;
+    flex-shrink: 0;
+}
+
+.fullscreen-btn {
+    background: rgba(255, 107, 107, 0.2);
+    color: var(--text-primary);
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 16px;
+    transition: var(--transition);
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px;
+}
+
+.fullscreen-btn:hover {
+    background: rgba(255, 107, 107, 0.3);
+}
+
 /* 剧集列表样式 */
 .chapters-container {
     background: var(--bg-secondary);
@@ -929,6 +955,23 @@ body {
     background: var(--accent-hover);
 }
 
+/* 全屏模式下的样式 */
+:fullscreen .video-container-inner,
+:-webkit-full-screen .video-container-inner,
+:-moz-full-screen .video-container-inner,
+:-ms-fullscreen .video-container-inner {
+    width: 100%;
+    height: 100%;
+    background: #000;
+}
+
+:fullscreen #video-player,
+:-webkit-full-screen #video-player,
+:-moz-full-screen #video-player,
+:-ms-fullscreen #video-player {
+    object-fit: contain;
+}
+
 /* 响应式设计 */
 @media (max-width: 768px) {
     .header {
@@ -958,7 +1001,7 @@ body {
         width: 100%;
     }
 
-    .volume-controls, .speed-control {
+    .volume-controls, .speed-control, .fullscreen-control {
         display: flex;
         align-items: center;
         margin: 0;
@@ -967,10 +1010,10 @@ body {
     }
 
     .volume-bar {
-        width: 80px;
+        width: 60px;
     }
 
-    .speed-btn {
+    .speed-btn, .fullscreen-btn {
         font-size: 16px;
         min-width: 40px;
         width: 40px;
@@ -1031,10 +1074,10 @@ body {
     }
 
     .volume-bar {
-        width: 60px;
+        width: 40px;
     }
 
-    .speed-btn {
+    .speed-btn, .fullscreen-btn {
         min-width: 40px;
         height: 40px;
         font-size: 16px;
