@@ -12,7 +12,8 @@ const state = {
     maxRetry: 1, // 重试次数改为1
     retryTimer: null,
     proxy: 'https://ajeo.cc/',
-    isAudioLoaded: false
+    isAudioLoaded: false,
+    isFullscreen: false // 新增全屏状态
     // 移除了 preloadedNextChapter 和 preloadedVideo
 };
 
@@ -52,7 +53,8 @@ const dom = {
     favoriteButton: document.getElementById('favorite-button'),
     favoritePanel: document.getElementById('favorite-panel'),
     favoriteList: document.getElementById('favorite-list'),
-    videoPlayer: document.getElementById('video-player')
+    videoPlayer: document.getElementById('video-player'),
+    fullscreenBtn: document.getElementById('fullscreen-btn') // 新增全屏按钮
 };
 
 // 设置audio为视频播放器
@@ -137,6 +139,15 @@ function setupEventListeners() {
             dom.favoritePanel.style.display = 'none';
         }
     });
+    
+    // 全屏按钮事件
+    dom.fullscreenBtn.addEventListener('click', toggleFullscreen);
+    
+    // 监听全屏变化
+    document.addEventListener('fullscreenchange', updateFullscreenButton);
+    document.addEventListener('webkitfullscreenchange', updateFullscreenButton);
+    document.addEventListener('mozfullscreenchange', updateFullscreenButton);
+    document.addEventListener('MSFullscreenChange', updateFullscreenButton);
 }
 function setVolumeFromEvent(e) {
     const rect = dom.volumeBar.getBoundingClientRect();
@@ -238,6 +249,9 @@ function renderSearchResults(books) {
                         data-bookid="${b.book_id}" title="${isFavorited ? '已收藏' : '收藏'}">
                         <i class="${isFavorited ? 'fas' : 'far'} fa-star"></i> 收藏
                     </button>
+                    <button class="book-btn play-book-btn" data-bookid="${b.book_id}" title="播放">
+                        <i class="fas fa-play"></i> 播放
+                    </button>
                     <button class="book-btn share-book-btn" data-bookid="${b.book_id}" title="分享">
                         <i class="fas fa-share-alt"></i> 分享
                     </button>
@@ -253,6 +267,10 @@ function renderSearchResults(books) {
         
         // 按钮事件
         card.querySelector('.favorite-book-btn').addEventListener('click', toggleFavorite);
+        card.querySelector('.play-book-btn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            loadBookDetails(b.book_id);
+        });
         card.querySelector('.share-book-btn').addEventListener('click', shareBook);
         card.querySelector('.expand-btn').addEventListener('click', toggleExpand);
         dom.resultsGrid.appendChild(card);
@@ -477,6 +495,48 @@ function formatTime(sec) {
     if (isNaN(sec)) return '00:00';
     const m = Math.floor(sec / 60), s = Math.floor(sec % 60);
     return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+}
+
+// ================= 全屏功能 =================
+function toggleFullscreen() {
+    if (!document.fullscreenElement && !document.webkitFullscreenElement && 
+        !document.mozFullScreenElement && !document.msFullscreenElement) {
+        // 进入全屏
+        const videoContainer = document.querySelector('.video-container-inner');
+        if (videoContainer.requestFullscreen) {
+            videoContainer.requestFullscreen();
+        } else if (videoContainer.webkitRequestFullscreen) {
+            videoContainer.webkitRequestFullscreen();
+        } else if (videoContainer.mozRequestFullScreen) {
+            videoContainer.mozRequestFullScreen();
+        } else if (videoContainer.msRequestFullscreen) {
+            videoContainer.msRequestFullscreen();
+        }
+    } else {
+        // 退出全屏
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+            document.webkitExitFullscreen();
+        } else if (document.mozCancelFullScreen) {
+            document.mozCancelFullScreen();
+        } else if (document.msExitFullscreen) {
+            document.msExitFullscreen();
+        }
+    }
+}
+
+function updateFullscreenButton() {
+    const isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement || 
+                           document.mozFullScreenElement || document.msFullscreenElement);
+    
+    state.isFullscreen = isFullscreen;
+    
+    if (isFullscreen) {
+        dom.fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i>';
+    } else {
+        dom.fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
+    }
 }
 
 // ================= 收藏功能 =================
