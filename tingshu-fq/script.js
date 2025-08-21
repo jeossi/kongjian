@@ -260,8 +260,8 @@ function resetMediaSession() {
 async function playChapter(index) {
     if (index === state.currentChapterIndex && state.isAudioLoaded) return;
 
-    // 重置MediaSession状态
-    resetMediaSession();
+    // 立即更新MediaSession元数据（不等待音频加载）
+    updateMediaSessionMetadata('init', state.currentBook?.book_pic || null);
     
     state.currentChapterIndex = index;
     document.querySelectorAll('.chapter-item').forEach((li, i) =>
@@ -272,9 +272,6 @@ async function playChapter(index) {
     if (!chapter) return;
 
     try {
-        // 立即更新MediaSession元数据（不等待音频加载）
-        updateMediaSessionMetadata('init', null);
-        
         const res = await fetch(`https://api.cenguigui.cn/api/tingshu/?item_id=${chapter.item_id}`);
         const data = await res.json();
         if (data.code === 200 && data.data?.url) {
@@ -688,7 +685,19 @@ function setupEventListeners() {
     document.addEventListener('click', e => {
         if (!dom.speedBtn.contains(e.target) && !dom.speedMenu.contains(e.target)) dom.speedMenu.classList.remove('show');
     });
-    state.audio.addEventListener('timeupdate', updateProgressBar);
+    
+    // 更新 timeupdate 事件处理，添加 MediaSession 位置状态更新
+    state.audio.addEventListener('timeupdate', () => {
+        updateProgressBar();
+        if ('mediaSession' in navigator && !isNaN(state.audio.duration)) {
+            navigator.mediaSession.setPositionState({
+                duration: state.audio.duration,
+                playbackRate: state.audio.playbackRate,
+                position: state.audio.currentTime
+            });
+        }
+    });
+    
     state.audio.addEventListener('progress', updateBufferBar);
     state.audio.addEventListener('ended', playNextChapter);
     state.audio.addEventListener('loadedmetadata', () => {
@@ -726,10 +735,10 @@ function setupEventListeners() {
         }
     });
     
-    // 新增页面可见性监听器 - 修复熄屏不同步问题
+    // 增强页面可见性变化处理
     document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'visible') {
-            // 页面重新可见时强制更新进度
+            // 页面重新可见时强制更新进度和缓冲
             updateProgressBar();
             updateBufferBar();
             
@@ -740,15 +749,20 @@ function setupEventListeners() {
                 });
                 state.backgroundPlayback = false;
             }
-        } else if (document.visibilityState === 'hidden' && state.isPlaying) {
-            state.backgroundPlayback = true;
+            
+            // 更新 MediaSession 状态
+            if ('mediaSession' in navigator) {
+                navigator.mediaSession.playbackState = state.isPlaying ? "playing" : "paused";
+            }
+        } else if (document.visibilityState === 'hidden') {
+            state.backgroundPlayback = state.isPlaying;
             
             // 更新MediaSession状态
             if ('mediaSession' in navigator) {
-                navigator.mediaSession.playbackState = "playing";
+                navigator.mediaSession.playbackState = state.isPlaying ? "playing" : "paused";
             }
             
-            // 锁屏前更新一次进度
+            // 锁屏前更新一次进度和缓冲
             updateProgressBar();
             updateBufferBar();
         }
