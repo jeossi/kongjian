@@ -1,4 +1,4 @@
-// 修复版 script.js（修复熄屏下播放进度显示不同步问题 + 添加搜索结果计数）
+// 修复版 script.js（修复分享链接播放问题 + 循环请求问题 + 保持其他功能）
 const hotKeywords = [
  "王佳音","鱼蛋","窝窝","艺凌","洋澜","任夏","魏佳艺","韩小欠","单依纯","DJ","喝茶","古筝","助眠", 
   "经典老歌","70后","80后","热歌","热门","新歌","飙升","流行",
@@ -53,9 +53,9 @@ let currentBlobUrl = null;
 let favorites = JSON.parse(localStorage.getItem('musicFavorites')) || [];
 let isFromShareLink = false;
 let currentSearchKeyword = "";
+let isHandlingShareLink = false; // 新增标志：是否正在处理分享链接
 
 const PROXY_SERVER = 'https://ajeo.cc/';
-
 
 /* ---------- 通用工具 ---------- */
 function getSecureImageUrl(originalUrl) {
@@ -188,6 +188,7 @@ function searchMusic(keyword, callback = null) {
     .then(r => r.json())
     .then(data => {
       renderSearchResults(data);
+      // 只有在不是处理分享链接时才自动播放第一首
       if (!isFromShareLink && data && data.length) playSong(data[0]);
       if (callback) callback();
       isFromShareLink = false;
@@ -233,7 +234,8 @@ function renderSearchResults(results) {
 
 /* ---------- 播放控制 ---------- */
 function playSong(song) {
-	resetMediaSession(); // ✅ 新增：重置锁屏界面状态
+  resetMediaSession(); // ✅ 新增：重置锁屏界面状态
+  
   // 暂停当前播放
   audioPlayer.pause();
   
@@ -254,6 +256,14 @@ function playSong(song) {
   
   // 高亮当前歌曲
   highlightCurrentSong(song);
+  
+  // 如果是处理分享链接，设置一个标志防止循环请求
+  if (isHandlingShareLink) {
+    isHandlingShareLink = false;
+    // 直接播放，不重新加载详情
+    audioPlayer.play().catch(() => {});
+    return;
+  }
   
   // 加载歌曲详情
   fetch(`${baseApiUrl}${song.n}`)
@@ -597,6 +607,7 @@ function handleShareUrl() {
   const songId = getUrlParameter('songId');
   if (!keyword) return false;
   isFromShareLink = true;
+  isHandlingShareLink = true; // 设置标志，表示正在处理分享链接
   searchInput.value = decodeURIComponent(keyword);
   window.history.replaceState({}, document.title, window.location.pathname);
   resultsList.innerHTML = '<div class="result-item" style="justify-content:center;color:#888">正在加载分享歌曲...</div>';
@@ -604,16 +615,16 @@ function handleShareUrl() {
     if (songId) {
       const target = currentSearchResults.find(s => s.n === +songId);
       if (target) {
-        audioPlayer.oncanplaythrough = () => {
-          playSong(target);
-          document.querySelector(`.result-item[data-n="${songId}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        };
+        // 直接播放目标歌曲，不触发额外的详情请求
+        playSong(target);
+        document.querySelector(`.result-item[data-n="${songId}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       } else if (currentSearchResults.length) {
         playSong(currentSearchResults[0]);
       }
     } else if (currentSearchResults.length) {
       playSong(currentSearchResults[0]);
     }
+    isHandlingShareLink = false; // 重置标志
   });
   return true;
 }
