@@ -831,13 +831,10 @@ function setupEventListeners() {
     
     state.audio.addEventListener('progress', updateBufferBar);
     
-    // 增强的 ended 事件处理
+    // 修复的 ended 事件处理 - 直接调用自动播放下一章
     state.audio.addEventListener('ended', () => {
         console.log('音频播放结束，触发自动播放下一章');
-        // 使用setTimeout确保在锁屏状态下也能正常工作
-        setTimeout(() => {
-            autoPlayNextChapter();
-        }, 100);
+        autoPlayNextChapter();
     });
     
     state.audio.addEventListener('loadedmetadata', () => {
