@@ -16,7 +16,13 @@ const state = {
     sleepTimer: null,
     sleepTimerMinutes: 0,
     backgroundPlayback: false,
-    isMediaSessionReady: false
+    isMediaSessionReady: false,
+    // 新增状态管理
+    wakeLock: null,
+    lastUpdateTime: 0,
+    progressUpdateTimer: null,
+    isScreenLocked: false,
+    autoPlayNextEnabled: true
 };
 
 // ================= DOM 节点 =================
@@ -62,10 +68,74 @@ function showPage(page) {
         dom.searchPage.style.display = 'block';
         dom.playerPage.style.display = 'none';
         state.currentPage = 'search';
+        // 释放唤醒锁
+        releaseWakeLock();
     } else {
         dom.searchPage.style.display = 'none';
         dom.playerPage.style.display = 'block';
         state.currentPage = 'player';
+        // 请求唤醒锁以保持播放
+        requestWakeLock();
+    }
+}
+
+// ================= 屏幕唤醒锁管理 =================
+async function requestWakeLock() {
+    try {
+        if ('wakeLock' in navigator) {
+            state.wakeLock = await navigator.wakeLock.request('screen');
+            console.log('已获取屏幕唤醒锁');
+            
+            state.wakeLock.addEventListener('release', () => {
+                console.log('屏幕唤醒锁已释放');
+            });
+        }
+    } catch (err) {
+        console.log('无法获取屏幕唤醒锁:', err);
+    }
+}
+
+async function releaseWakeLock() {
+    if (state.wakeLock) {
+        try {
+            await state.wakeLock.release();
+            state.wakeLock = null;
+            console.log('主动释放屏幕唤醒锁');
+        } catch (err) {
+            console.log('释放唤醒锁失败:', err);
+        }
+    }
+}
+
+// ================= 进度同步管理 =================
+function startProgressSync() {
+    // 清除之前的定时器
+    if (state.progressUpdateTimer) {
+        clearInterval(state.progressUpdateTimer);
+    }
+    
+    // 创建高频率的进度更新定时器
+    state.progressUpdateTimer = setInterval(() => {
+        if (state.isPlaying && state.audio && !isNaN(state.audio.currentTime)) {
+            const now = Date.now();
+            state.lastUpdateTime = now;
+            
+            // 强制更新进度显示
+            updateProgressBar();
+            updateBufferBar();
+            
+            // 在后台时也保存进度
+            if (state.isScreenLocked) {
+                savePlaybackPosition();
+            }
+        }
+    }, 500); // 每500ms更新一次，确保同步
+}
+
+function stopProgressSync() {
+    if (state.progressUpdateTimer) {
+        clearInterval(state.progressUpdateTimer);
+        state.progressUpdateTimer = null;
     }
 }
 
@@ -189,6 +259,7 @@ function cleanupAudio() {
     state.audio.pause();
     state.isPlaying = false;
     state.isAudioLoaded = false;
+    stopProgressSync(); // 停止进度同步
     if (state.audio.src && state.audio.src.startsWith('blob:')) {
         URL.revokeObjectURL(state.audio.src);
     }
@@ -235,11 +306,25 @@ function setupMediaSession() {
         playNextChapter();
     });
     
-    // 新增位置状态处理
-    navigator.mediaSession.setPositionState({
-        duration: state.audio.duration || 0,
-        playbackRate: state.audio.playbackRate,
-        position: state.audio.currentTime || 0
+    // 位置跳转处理
+    navigator.mediaSession.setActionHandler('seekto', (details) => {
+        if (details.seekTime && state.audio.duration) {
+            state.audio.currentTime = details.seekTime;
+            updateProgressBar();
+        }
+    });
+    
+    // 快进快退处理
+    navigator.mediaSession.setActionHandler('seekforward', () => {
+        if (state.audio.currentTime) {
+            state.audio.currentTime = Math.min(state.audio.currentTime + 30, state.audio.duration);
+        }
+    });
+    
+    navigator.mediaSession.setActionHandler('seekbackward', () => {
+        if (state.audio.currentTime) {
+            state.audio.currentTime = Math.max(state.audio.currentTime - 30, 0);
+        }
     });
     
     state.isMediaSessionReady = true;
@@ -260,7 +345,7 @@ function resetMediaSession() {
 async function playChapter(index) {
     if (index === state.currentChapterIndex && state.isAudioLoaded) return;
 
-    // 立即更新MediaSession元数据（不等待音频加载）
+    // 立即更新MediaSession元数据
     updateMediaSessionMetadata('init', state.currentBook?.book_pic || null);
     
     state.currentChapterIndex = index;
@@ -289,8 +374,11 @@ async function playChapter(index) {
                     state.isPlaying = true;
                     dom.playButton.innerHTML = '<i class="fas fa-pause"></i>';
                     state.isAudioLoaded = true;
+                    
+                    // 开始进度同步
+                    startProgressSync();
 
-                    // 延迟更新 MediaSession（包含封面）
+                    // 延迟更新 MediaSession
                     updateMediaSessionMetadata('cover', state.currentBook.book_pic);
                     if ('mediaSession' in navigator) {
                         navigator.mediaSession.playbackState = "playing";
@@ -332,6 +420,7 @@ function playAudio() {
     state.audio.play().then(() => {
         state.isPlaying = true;
         dom.playButton.innerHTML = '<i class="fas fa-pause"></i>';
+        startProgressSync(); // 开始进度同步
         if ('mediaSession' in navigator) {
             navigator.mediaSession.playbackState = "playing";
         }
@@ -345,6 +434,7 @@ function pauseAudio() {
     state.audio.pause();
     state.isPlaying = false;
     dom.playButton.innerHTML = '<i class="fas fa-play"></i>';
+    stopProgressSync(); // 停止进度同步
     savePlaybackPosition();
     if ('mediaSession' in navigator) {
         navigator.mediaSession.playbackState = "paused";
@@ -369,17 +459,49 @@ function playNextChapter() {
     }
 }
 
+// 增强的自动播放下一章功能
+function autoPlayNextChapter() {
+    console.log('准备自动播放下一章, 当前状态:', {
+        autoPlayEnabled: state.autoPlayNextEnabled,
+        isPlaying: state.isPlaying,
+        currentIndex: state.currentChapterIndex,
+        totalChapters: state.chapters.length
+    });
+    
+    if (!state.autoPlayNextEnabled) {
+        console.log('自动播放已禁用');
+        return;
+    }
+    
+    if (state.currentChapterIndex < state.chapters.length - 1) {
+        console.log('开始播放下一章...');
+        playChapter(state.currentChapterIndex + 1);
+    } else {
+        console.log('已到最后一章，停止播放');
+        pauseAudio();
+        state.audio.currentTime = 0;
+        updateProgressBar();
+    }
+}
+
 function updateProgressBar() {
-    if (state.audio.duration) dom.progress.style.width = (state.audio.currentTime / state.audio.duration * 100) + '%';
+    if (state.audio.duration) {
+        const progressPercent = (state.audio.currentTime / state.audio.duration * 100);
+        dom.progress.style.width = progressPercent + '%';
+    }
     dom.currentTime.textContent = formatTime(state.audio.currentTime);
     
     // 更新 MediaSession 位置状态
     if ('mediaSession' in navigator && !isNaN(state.audio.duration)) {
-        navigator.mediaSession.setPositionState({
-            duration: state.audio.duration,
-            playbackRate: state.audio.playbackRate,
-            position: state.audio.currentTime
-        });
+        try {
+            navigator.mediaSession.setPositionState({
+                duration: state.audio.duration,
+                playbackRate: state.audio.playbackRate,
+                position: state.audio.currentTime
+            });
+        } catch (e) {
+            // 忽略MediaSession更新错误，避免影响正常播放
+        }
     }
 }
 
@@ -686,20 +808,38 @@ function setupEventListeners() {
         if (!dom.speedBtn.contains(e.target) && !dom.speedMenu.contains(e.target)) dom.speedMenu.classList.remove('show');
     });
     
-    // 更新 timeupdate 事件处理，添加 MediaSession 位置状态更新
+    // 更新音频事件监听 - 使用增强的 timeupdate 处理
     state.audio.addEventListener('timeupdate', () => {
-        updateProgressBar();
+        // 只在用户界面可见时更新UI，但总是更新内部状态
+        if (!state.isScreenLocked) {
+            updateProgressBar();
+        }
+        
+        // 始终更新MediaSession状态
         if ('mediaSession' in navigator && !isNaN(state.audio.duration)) {
-            navigator.mediaSession.setPositionState({
-                duration: state.audio.duration,
-                playbackRate: state.audio.playbackRate,
-                position: state.audio.currentTime
-            });
+            try {
+                navigator.mediaSession.setPositionState({
+                    duration: state.audio.duration,
+                    playbackRate: state.audio.playbackRate,
+                    position: state.audio.currentTime
+                });
+            } catch (e) {
+                // 忽略错误
+            }
         }
     });
     
     state.audio.addEventListener('progress', updateBufferBar);
-    state.audio.addEventListener('ended', playNextChapter);
+    
+    // 增强的 ended 事件处理
+    state.audio.addEventListener('ended', () => {
+        console.log('音频播放结束，触发自动播放下一章');
+        // 使用setTimeout确保在锁屏状态下也能正常工作
+        setTimeout(() => {
+            autoPlayNextChapter();
+        }, 100);
+    });
+    
     state.audio.addEventListener('loadedmetadata', () => {
         dom.totalTime.textContent = formatTime(state.audio.duration);
         restorePlaybackPosition();
@@ -735,12 +875,19 @@ function setupEventListeners() {
         }
     });
     
-    // 增强页面可见性变化处理
+    // 增强的页面可见性变化处理
     document.addEventListener('visibilitychange', () => {
+        console.log('页面可见性变化:', document.visibilityState);
+        
         if (document.visibilityState === 'visible') {
+            state.isScreenLocked = false;
+            
             // 页面重新可见时强制更新进度和缓冲
             updateProgressBar();
             updateBufferBar();
+            
+            // 重新启用自动播放下一章
+            state.autoPlayNextEnabled = true;
             
             // 检查是否需要恢复播放
             if (state.backgroundPlayback && state.isPlaying) {
@@ -754,8 +901,17 @@ function setupEventListeners() {
             if ('mediaSession' in navigator) {
                 navigator.mediaSession.playbackState = state.isPlaying ? "playing" : "paused";
             }
+            
+            // 重新请求唤醒锁
+            if (state.currentPage === 'player' && state.isPlaying) {
+                requestWakeLock();
+            }
         } else if (document.visibilityState === 'hidden') {
+            state.isScreenLocked = true;
             state.backgroundPlayback = state.isPlaying;
+            
+            // 确保自动播放下一章仍然启用
+            state.autoPlayNextEnabled = true;
             
             // 更新MediaSession状态
             if ('mediaSession' in navigator) {
@@ -765,17 +921,47 @@ function setupEventListeners() {
             // 锁屏前更新一次进度和缓冲
             updateProgressBar();
             updateBufferBar();
+            
+            // 保存播放进度
+            if (state.isPlaying) {
+                savePlaybackPosition();
+            }
         }
     });
     
-    // 添加页面恢复事件监听
+    // 页面失去焦点和获得焦点的处理
+    window.addEventListener('blur', () => {
+        console.log('窗口失去焦点');
+        state.isScreenLocked = true;
+        if (state.isPlaying) {
+            savePlaybackPosition();
+        }
+    });
+    
+    window.addEventListener('focus', () => {
+        console.log('窗口获得焦点');
+        state.isScreenLocked = false;
+        updateProgressBar();
+        updateBufferBar();
+    });
+    
+    // 增强的页面恢复事件监听
     document.addEventListener('resume', () => {
+        console.log('页面恢复事件触发');
         if (state.isPlaying) {
             state.audio.play().catch(e => {
                 console.log('恢复播放失败:', e);
             });
         }
     }, false);
+    
+    // 添加页面beforeunload事件处理
+    window.addEventListener('beforeunload', () => {
+        if (state.isPlaying) {
+            savePlaybackPosition();
+        }
+        releaseWakeLock();
+    });
 }
 
 function setVolumeFromEvent(e) {
@@ -809,5 +995,10 @@ function initApp() {
         loadBookDetails(bookId);
     }
     state.audio.setAttribute('crossorigin', 'anonymous');
+    
+    // 初始化时启用自动播放下一章
+    state.autoPlayNextEnabled = true;
+    
+    console.log('应用初始化完成');
 }
 window.addEventListener('DOMContentLoaded', initApp);
