@@ -123,11 +123,6 @@ function startProgressSync() {
             // 强制更新进度显示
             updateProgressBar();
             updateBufferBar();
-            
-            // 在后台时也保存进度
-            if (state.isScreenLocked) {
-                savePlaybackPosition();
-            }
         }
     }, 500); // 每500ms更新一次，确保同步
 }
@@ -213,9 +208,9 @@ async function loadBookDetails(bookId) {
             renderPlayerPage();
             showPage('player');
             if (state.chapters.length) {
-                const savedProgress = getSavedProgress(bookId);
-                if (savedProgress) {
-                    state.currentChapterIndex = savedProgress.chapterIndex;
+                const savedChapterIndex = getSavedChapterIndex(bookId);
+                if (savedChapterIndex !== null) {
+                    state.currentChapterIndex = savedChapterIndex;
                     playChapter(state.currentChapterIndex);
                 } else {
                     state.currentChapterIndex = 0;
@@ -384,6 +379,9 @@ async function playChapter(index) {
                         navigator.mediaSession.playbackState = "playing";
                     }
                     updateProxyIndicator('success');
+                    
+                    // 保存当前章节索引
+                    saveCurrentChapterIndex();
                 } catch (playErr) {
                     console.error('播放失败:', playErr);
                     updateProxyIndicator('error');
@@ -435,7 +433,6 @@ function pauseAudio() {
     state.isPlaying = false;
     dom.playButton.innerHTML = '<i class="fas fa-play"></i>';
     stopProgressSync(); // 停止进度同步
-    savePlaybackPosition();
     if ('mediaSession' in navigator) {
         navigator.mediaSession.playbackState = "paused";
     }
@@ -735,32 +732,15 @@ function promptManualCopy(text) {
     });
 }
 
-// ================= 进度保存 =================
-function savePlaybackPosition() {
-    if (!state.currentBook || !state.audio.duration) return;
-    const progress = {
-        bookId: state.currentBook.book_id,
-        chapterIndex: state.currentChapterIndex,
-        currentTime: state.audio.currentTime,
-        timestamp: Date.now()
-    };
-    localStorage.setItem(`bookProgress_${state.currentBook.book_id}`, JSON.stringify(progress));
-}
-
-function restorePlaybackPosition() {
+// ================= 章节保存 =================
+function saveCurrentChapterIndex() {
     if (!state.currentBook) return;
-    const saved = localStorage.getItem(`bookProgress_${state.currentBook.book_id}`);
-    if (!saved) return;
-    const progress = JSON.parse(saved);
-    if (progress && progress.chapterIndex === state.currentChapterIndex) {
-        state.audio.currentTime = progress.currentTime;
-        updateProgressBar();
-    }
+    localStorage.setItem(`bookChapter_${state.currentBook.book_id}`, state.currentChapterIndex.toString());
 }
 
-function getSavedProgress(bookId) {
-    const saved = localStorage.getItem(`bookProgress_${bookId}`);
-    return saved ? JSON.parse(saved) : null;
+function getSavedChapterIndex(bookId) {
+    const saved = localStorage.getItem(`bookChapter_${bookId}`);
+    return saved !== null ? parseInt(saved) : null;
 }
 
 // ================= 展开按钮 =================
@@ -839,7 +819,6 @@ function setupEventListeners() {
     
     state.audio.addEventListener('loadedmetadata', () => {
         dom.totalTime.textContent = formatTime(state.audio.duration);
-        restorePlaybackPosition();
         updateBufferBar();
     });
     state.audio.addEventListener('error', () => {
@@ -918,11 +897,6 @@ function setupEventListeners() {
             // 锁屏前更新一次进度和缓冲
             updateProgressBar();
             updateBufferBar();
-            
-            // 保存播放进度
-            if (state.isPlaying) {
-                savePlaybackPosition();
-            }
         }
     });
     
@@ -930,9 +904,6 @@ function setupEventListeners() {
     window.addEventListener('blur', () => {
         console.log('窗口失去焦点');
         state.isScreenLocked = true;
-        if (state.isPlaying) {
-            savePlaybackPosition();
-        }
     });
     
     window.addEventListener('focus', () => {
@@ -954,9 +925,6 @@ function setupEventListeners() {
     
     // 添加页面beforeunload事件处理
     window.addEventListener('beforeunload', () => {
-        if (state.isPlaying) {
-            savePlaybackPosition();
-        }
         releaseWakeLock();
     });
 }
