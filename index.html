@@ -703,7 +703,7 @@
     position: fixed;
     top: 50%; /* 垂直居中 */
     transform: translateY(-50%); /* 精确居中对齐 */
-    right: 30px;
+    right: calc((100vw - 1200px) / 2 + 20px); /* 计算到主容器右边界的距离 */
     width: 50px;
     height: 50px;
     background: linear-gradient(135deg, #01a982, #02b38d);
@@ -742,7 +742,7 @@
 /* 移动端优化 */
 @media (max-width: 768px) {
     .back-to-top {
-        right: 20px; /* 移动端靠近边缘 */
+        right: 20px; /* 小屏幕直接靠近边缘 */
         width: 45px;
         height: 45px;
         font-size: 16px;
@@ -872,6 +872,13 @@
         min-width: max-content;
     }
 }
+
+/* 宽屏幕下的按钮位置优化 */
+@media (min-width: 1240px) {
+    .back-to-top {
+        right: calc((100vw - 1200px) / 2 + 10px); /* 在超宽屏幕下稍微内移 */
+    }
+}
     </style>
 </head>
 <body>
@@ -963,10 +970,10 @@
                         <a class="nav-link" onclick="handleNavClick('养生调理')" data-target="养生调理">养生</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" onclick="handleNavClick('影视软件更新下载')" data-target="影视软件更新下载">软件下载</a>
+                        <a class="nav-link" onclick="handleNavClick('影视软件更新下载')" data-target="影视软件更新下载">软件</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" onclick="handleNavClick('学习导航资源')" data-target="学习导航资源">导航资源</a>
+                        <a class="nav-link" onclick="handleNavClick('学习导航资源')" data-target="学习导航资源">资源</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" onclick="handleNavClick('专用工具')" data-target="专用工具">专用</a>
