@@ -746,6 +746,22 @@
         width: 45px;
         height: 45px;
         font-size: 16px;
+        z-index: 9999; /* 提高层级确保在移动端可见 */
+        bottom: 80px; /* 在移动端使用固定底部位置，避免顶部居中问题 */
+        top: auto; /* 取消顶部定位 */
+        transform: none; /* 取消垂直居中变换 */
+    }
+    
+    .back-to-top.show {
+        transform: none; /* 移动端不使用垂直居中 */
+    }
+    
+    .back-to-top:hover {
+        transform: translateY(-2px) scale(1.05); /* 移动端悬停效果 */
+    }
+    
+    .back-to-top:active {
+        transform: scale(0.95); /* 移动端点击效果 */
     }
 }
 
@@ -755,6 +771,10 @@
         width: 40px;
         height: 40px;
         font-size: 14px;
+        z-index: 9999; /* 确保最高层级 */
+        bottom: 70px; /* 小屏幕稍微调整位置 */
+        top: auto;
+        transform: none;
     }
 }
 
@@ -766,10 +786,13 @@
     backdrop-filter: blur(10px);
     border-bottom: 1px solid rgba(1, 169, 130, 0.2);
     padding: 10px 0;
-    z-index: 999;
+    z-index: 1000; /* 提高z-index确保在移动端正常显示在顶部 */
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease;
     margin-bottom: -1px; /* 保持略微重叠以避免缝隙 */
+    /* 移动端粘性定位优化 */
+    -webkit-position: sticky; /* Safari 兼容性 */
+    will-change: transform; /* 优化渲染性能 */
 }
 
 .nav-tabs.scrolled {
@@ -847,6 +870,15 @@
 
 /* 移动端导航优化 */
 @media (max-width: 768px) {
+    .nav-tabs {
+        position: -webkit-sticky; /* Safari 兼容性 */
+        position: sticky;
+        top: 0;
+        z-index: 1001; /* 移动端更高的z-index */
+        background: rgba(255, 255, 255, 0.98); /* 移动端更不透明的背景 */
+        backdrop-filter: blur(15px); /* 增强毛玻璃效果 */
+    }
+    
     .nav-container {
         padding: 0 8px; /* 进一步减少内边距 */
     }
@@ -862,6 +894,18 @@
 }
 
 @media (max-width: 480px) {
+    .nav-tabs {
+        position: -webkit-sticky; /* Safari 兼容性 */
+        position: sticky;
+        top: 0;
+        z-index: 1002; /* 小屏幕最高z-index */
+        background: rgba(255, 255, 255, 0.99); /* 小屏幕几乎不透明的背景 */
+        backdrop-filter: blur(20px); /* 最强毛玻璃效果 */
+        /* 强制触发硬件加速 */
+        transform: translateZ(0);
+        -webkit-transform: translateZ(0);
+    }
+    
     .nav-container {
         padding: 0 5px; /* 小屏幕进一步减少内边距 */
     }
