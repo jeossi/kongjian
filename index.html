@@ -752,7 +752,7 @@
     .wrapper {
         padding: 20px 15px 80px; /* 减少移动端内边距 */
         max-width: 100%;
-        overflow-x: hidden;
+        /* 不设置overflow-x: hidden，避免影响sticky定位 */
     }
     
     .back-to-top {
@@ -790,7 +790,7 @@
     .wrapper {
         padding: 15px 10px 80px; /* 小屏幕进一步减少内边距 */
         max-width: 100%;
-        overflow-x: hidden;
+        /* 不设置overflow-x: hidden，避免影响sticky定位 */
     }
     
     .back-to-top {
@@ -813,20 +813,14 @@
     top: 0;
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px); /* Safari 兼容性 */
     border-bottom: 1px solid rgba(1, 169, 130, 0.2);
     padding: 10px 0;
-    z-index: 1000; /* 提高z-index确保在移动端正常显示在顶部 */
+    z-index: 1000;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease;
     margin-bottom: -1px; /* 保持略微重叠以避免缝隙 */
-    /* 移动端粘性定位优化 */
-    will-change: transform; /* 优化渲染性能 */
-    /* 强制触发GPU加速 */
-    transform: translateZ(0);
-    -webkit-transform: translateZ(0);
-    /* 确保粘性定位在iOS Safari中正常工作 */
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
+    width: 100%;
 }
 
 .nav-tabs.scrolled {
@@ -905,36 +899,34 @@
 /* 移动端导航优化 */
 @media (max-width: 768px) {
     .nav-tabs {
-        position: -webkit-sticky !important; /* Safari 兼容性 */
-        position: sticky !important;
-        top: 0 !important;
-        z-index: 1001 !important; /* 移动端更高的z-index */
-        background: rgba(255, 255, 255, 0.98) !important; /* 移动端更不透明的背景 */
-        backdrop-filter: blur(15px); /* 增强毛玻璃效果 */
-        /* 强制触发硬件加速 */
-        transform: translateZ(0);
-        -webkit-transform: translateZ(0);
-        /* 确保在移动端正常工作 */
-        -webkit-backface-visibility: hidden;
-        backface-visibility: hidden;
-        will-change: transform;
+        /* 确保sticky定位在小屏幕下正常工作 */
+        position: -webkit-sticky;
+        position: sticky;
+        top: 0;
+        z-index: 1001;
+        background: rgba(255, 255, 255, 0.98);
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        /* 确保容器完整性 */
+        width: 100%;
+        box-sizing: border-box;
     }
     
     .nav-container {
-        padding: 0 8px; /* 进一步减少内边距 */
+        padding: 0 8px;
         max-width: 100%;
         overflow-x: hidden;
     }
     
     .nav-list {
-        gap: 10px; /* 移动端使用固定间距 */
+        gap: 10px;
         max-width: 100%;
         overflow-x: hidden;
     }
     
     .nav-link {
-        padding: 6px 12px; /* 在移动端减小内边距 */
-        font-size: 1.1rem; /* 符合移动端最佳实践 */
+        padding: 6px 12px;
+        font-size: 1.1rem;
         white-space: nowrap;
         flex-shrink: 0;
     }
@@ -942,29 +934,28 @@
 
 @media (max-width: 480px) {
     .nav-tabs {
-        position: -webkit-sticky !important; /* Safari 兼容性 */
-        position: sticky !important;
-        top: 0 !important;
-        z-index: 1002 !important; /* 小屏幕最高z-index */
-        background: rgba(255, 255, 255, 0.99) !important; /* 小屏幕几乎不透明的背景 */
-        backdrop-filter: blur(20px); /* 最强毛玻璃效果 */
-        /* 强制触发硬件加速 */
-        transform: translateZ(0);
-        -webkit-transform: translateZ(0);
-        -webkit-backface-visibility: hidden;
-        backface-visibility: hidden;
-        will-change: transform;
+        /* 确保sticky定位在小屏幕下正常工作 */
+        position: -webkit-sticky;
+        position: sticky;
+        top: 0;
+        z-index: 1002;
+        background: rgba(255, 255, 255, 0.99);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        /* 确保容器完整性 */
+        width: 100%;
+        box-sizing: border-box;
     }
     
     .nav-container {
-        padding: 0 5px; /* 小屏幕进一步减少内边距 */
+        padding: 0 5px;
         max-width: 100%;
         overflow-x: hidden;
     }
     
     .nav-list {
-        gap: 8px; /* 小屏幕使用更小的固定间距 */
-        overflow-x: auto; /* 如果内容超出则滚动 */
+        gap: 8px;
+        overflow-x: auto;
         -webkit-overflow-scrolling: touch;
         scrollbar-width: none;
         -ms-overflow-style: none;
@@ -977,8 +968,8 @@
     
     .nav-link {
         padding: 6px 10px;
-        font-size: 1.0rem; /* 小屏幕下保持可读性 */
-        flex-shrink: 0; /* 防止按钮被挤压 */
+        font-size: 1.0rem;
+        flex-shrink: 0;
         white-space: nowrap;
     }
 }
