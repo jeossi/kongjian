@@ -785,9 +785,9 @@
 
 .nav-list {
     display: flex;
-    justify-content: center;
+    justify-content: center; /* 改回居中，通过gap保证均匀间距 */
     align-items: center;
-    gap: 2px; /* 减小按钮之间的间距从5px到2px */
+    gap: 15px; /* 使用固定间距确保多行显示时一致 */
     flex-wrap: wrap;
     list-style: none;
     margin: 0;
@@ -800,17 +800,19 @@
 
 .nav-link {
     display: inline-block;
-    padding: 6px 18px; /* 增加内边距 */
+    padding: 6px 16px; /* 稍微减小内边距以适应平铺布局 */
     color: #333;
     text-decoration: none;
     border-radius: 25px;
-    font-size: 1.2rem; /* 增大字体 */
+    font-size: 1.15rem; /* 稍微减小字体以适应更多按钮 */
     font-weight: 500;
     transition: all 0.3s ease;
     cursor: pointer;
     background: rgba(1, 169, 130, 0.1);
     border: 1px solid transparent;
     white-space: nowrap;
+    text-align: center; /* 文字居中对齐 */
+    /* 移除flex-grow等属性，使用固定宽度确保间距一致 */
 }
 
 .nav-link:hover {
@@ -832,6 +834,17 @@
     box-shadow: 0 2px 10px rgba(1, 169, 130, 0.4);
 }
 
+/* 中等屏幕优化 */
+@media (max-width: 1024px) and (min-width: 769px) {
+    .nav-list {
+        gap: 15px; /* 中等屏幕稍微减小间距 */
+    }
+    
+    .nav-link {
+        font-size: 1.1rem;
+    }
+}
+
 /* 移动端导航优化 */
 @media (max-width: 768px) {
     .nav-container {
@@ -839,11 +852,11 @@
     }
     
     .nav-list {
-        gap: 1px; /* 移动端进一步减小间距 */
+        gap: 10px; /* 移动端使用固定间距 */
     }
     
     .nav-link {
-        padding: 6px 14px; /* 在移动端保持适当大小 */
+        padding: 6px 12px; /* 在移动端减小内边距 */
         font-size: 1.1rem; /* 符合移动端最佳实践 */
     }
 }
@@ -854,9 +867,8 @@
     }
     
     .nav-list {
-        gap: 1px; /* 小屏幕保持最小间距 */
-        justify-content: flex-start;
-        overflow-x: auto;
+        gap: 10px; /* 小屏幕使用固定最小间距 */
+        overflow-x: auto; /* 如果内容超出则滚动 */
         -webkit-overflow-scrolling: touch;
         scrollbar-width: none;
         -ms-overflow-style: none;
@@ -867,9 +879,9 @@
     }
     
     .nav-link {
-        padding: 6px 12px;
+        padding: 6px 10px;
         font-size: 1.0rem; /* 小屏幕下保持可读性 */
-        min-width: max-content;
+        flex-shrink: 0; /* 防止按钮被挤压 */
     }
 }
 
@@ -984,7 +996,7 @@
         
         <div class="content">
             <div class="content-top">
-                <h2>请使用 Ctrl+D 收藏本页｜手动添加到书签</h2>
+                <h2>请 Ctrl+D 收藏本页｜手动添加书签</h2>
                 <p class="subtitle">保存到浏览器收藏夹，随时访问资源</p>
 				
                 <!-- 新增的功能按钮 -->
