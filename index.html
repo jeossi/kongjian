@@ -121,7 +121,7 @@
         }
         
         .header p {
-            color: rgba(255, 255, 255, 0.85);
+            color: rgba(255, 255, 255, 0.9);
             font-size: 1.8rem;
             max-width: 700px;
             margin: 0 auto;
@@ -131,16 +131,18 @@
             border-radius: 50px;
             display: inline-block;
             margin-top: 10px;
+            font-family: 'KaiTi', 'STKaiti', '华文楷体', '楷体', serif;
         }
         
         /* 内容卡片 */
         .content {
             background: white;
-            border-radius: 16px;
+            border-radius: 16px; /* 恢复完整的圆角设计 */
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
             overflow: hidden;
             margin-bottom: 30px;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
+            margin-top: 5px; /* 与方角导航栏保持适当间距 */
         }
         
         .content:hover {
@@ -176,9 +178,39 @@
         }
         
         .content-top .subtitle {
-            font-size: 0.9rem;
+            font-size: 1.1rem;
             opacity: 0.9;
             position: relative;
+        }
+        
+        /* 按钮容器样式 */
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .action-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 18px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50px;
+            color: white;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+        
+        .action-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
         }
         
         /* 资源列表 */
@@ -356,10 +388,10 @@
             }
             
             .content-top h2 {
-                font-size: 0.7rem;
+                font-size: 0.9rem;
             }
             .content-top .subtitle {
-            font-size: 0.6rem;
+            font-size: 0.95rem;
 			}
             .category-title {
                 font-size: 1.3rem;
@@ -369,6 +401,11 @@
             .category-links {
                 padding-left: 25px;
             }
+            
+            .action-btn {
+                padding: 8px 15px;
+                font-size: 0.8rem;
+            }
         }
         
         @media (max-width: 480px) {
@@ -377,12 +414,16 @@
             }
             
             .header p {
-                font-size: 0.9rem;
+                font-size: 1.3rem;
                 padding: 10px 15px;
             }
             
             .content-top {
                 padding: 15px 10px;
+            }
+            
+            .content-top h2 {
+                font-size: 0.9rem;
             }
             
             .resource-list {
@@ -413,6 +454,16 @@
             
             .link-item .link-text .title {
                 font-size: 1.1rem;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .action-btn {
+                width: 80%;
+                justify-content: center;
             }
         }
         
@@ -553,6 +604,258 @@
     50% { opacity: 1; }
     100% { opacity: 0.7; }
 }
+
+/* 分享选项面板 */
+.share-options {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    padding: 20px;
+    border-radius: 20px 20px 0 0;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
+    z-index: 1000;
+    transform: translateY(100%);
+    transition: transform 0.3s ease;
+}
+
+.share-options.show {
+    transform: translateY(0);
+}
+
+.share-options h3 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #01a982;
+}
+
+.share-buttons {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.share-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 15px;
+    background: #f8f9fa;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background 0.3s;
+    min-width: 80px;
+}
+
+.share-btn:hover {
+    background: #e9f7f3;
+}
+
+.share-btn i {
+    font-size: 24px;
+    margin-bottom: 8px;
+    color: #01a982;
+}
+
+.share-btn span {
+    font-size: 12px;
+    color: #333;
+}
+
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 999;
+    display: none;
+}
+
+.overlay.show {
+    display: block;
+}
+
+/* 回到顶部按钮样式 */
+.back-to-top {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #01a982, #02b38d);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 18px;
+    box-shadow: 0 4px 15px rgba(1, 169, 130, 0.3);
+    transition: all 0.3s ease;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(20px);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.back-to-top.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.back-to-top:hover {
+    background: linear-gradient(135deg, #02b38d, #01a982);
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 6px 20px rgba(1, 169, 130, 0.4);
+}
+
+.back-to-top:active {
+    transform: translateY(0) scale(0.95);
+    box-shadow: 0 2px 10px rgba(1, 169, 130, 0.3);
+}
+
+/* 移动端优化 */
+@media (max-width: 768px) {
+    .back-to-top {
+        bottom: 20px;
+        right: 20px;
+        width: 45px;
+        height: 45px;
+        font-size: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .back-to-top {
+        bottom: 15px;
+        right: 15px;
+        width: 40px;
+        height: 40px;
+        font-size: 14px;
+    }
+}
+
+/* 导航栏样式 */
+.nav-tabs {
+    position: sticky;
+    top: 0;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(1, 169, 130, 0.2);
+    padding: 10px 0;
+    z-index: 999;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    margin-bottom: -1px; /* 保持略微重叠以避免缝隙 */
+}
+
+.nav-tabs.scrolled {
+    background: rgba(255, 255, 255, 0.98);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.nav-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.nav-list {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    flex-wrap: wrap;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.nav-item {
+    margin: 0;
+}
+
+.nav-link {
+    display: inline-block;
+    padding: 8px 16px;
+    color: #333;
+    text-decoration: none;
+    border-radius: 25px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    background: rgba(1, 169, 130, 0.1);
+    border: 1px solid transparent;
+    white-space: nowrap;
+}
+
+.nav-link:hover {
+    background: linear-gradient(135deg, #01a982, #02b38d);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(1, 169, 130, 0.3);
+    text-decoration: none;
+}
+
+.nav-link:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(1, 169, 130, 0.3);
+}
+
+.nav-link.active {
+    background: linear-gradient(135deg, #01a982, #02b38d);
+    color: white;
+    box-shadow: 0 2px 10px rgba(1, 169, 130, 0.4);
+}
+
+/* 移动端导航优化 */
+@media (max-width: 768px) {
+    .nav-container {
+        padding: 0 15px;
+    }
+    
+    .nav-list {
+        gap: 3px;
+    }
+    
+    .nav-link {
+        padding: 6px 12px;
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .nav-container {
+        padding: 0 10px;
+    }
+    
+    .nav-list {
+        gap: 2px;
+        justify-content: flex-start;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+    
+    .nav-list::-webkit-scrollbar {
+        display: none;
+    }
+    
+    .nav-link {
+        padding: 5px 10px;
+        font-size: 0.75rem;
+        min-width: max-content;
+    }
+}
     </style>
 </head>
 <body>
@@ -568,6 +871,39 @@
         <i class="fas fa-check-circle"></i>
         <span>接口地址已复制到剪贴板！</span>
     </div>
+    
+    <!-- 分享选项面板 -->
+    <div class="overlay" id="shareOverlay"></div>
+    <div class="share-options" id="shareOptions">
+        <h3>分享到</h3>
+        <div class="share-buttons">
+            <button class="share-btn" data-platform="weibo">
+                <i class="fab fa-weibo"></i>
+                <span>微博</span>
+            </button>
+            <button class="share-btn" data-platform="qq">
+                <i class="fab fa-qq"></i>
+                <span>QQ</span>
+            </button>
+            <button class="share-btn" data-platform="wechat">
+                <i class="fab fa-weixin"></i>
+                <span>微信</span>
+            </button>
+            <button class="share-btn" data-platform="douban">
+                <i class="fab fa-weixin"></i>
+                <span>豆瓣</span>
+            </button>
+            <button class="share-btn" data-platform="link">
+                <i class="fas fa-link"></i>
+                <span>复制链接</span>
+            </button>
+        </div>
+    </div>
+    
+    <!-- 回到顶部按钮 -->
+    <button class="back-to-top" id="backToTop" onclick="handleBackToTop()" title="回到顶部">
+        <i class="fas fa-chevron-up"></i>
+    </button>
     
     <div class="wrapper">
         <div class="header">
@@ -585,18 +921,71 @@
             <p>无人扶我青云志，我自踏雪至山巅</p>
         </div>
         
+        <!-- 导航栏 -->
+        <nav class="nav-tabs" id="navTabs">
+            <div class="nav-container">
+                <ul class="nav-list">
+                    <li class="nav-item">
+                        <a class="nav-link active" onclick="handleNavClick('平台资源')" data-target="平台资源">平台</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" onclick="handleNavClick('新闻 娱乐 生活')" data-target="新闻 娱乐 生活">新闻</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" onclick="handleNavClick('在线体育直播')" data-target="在线体育直播">体育</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" onclick="handleNavClick('AI人工智能')" data-target="AI人工智能">AI智能</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" onclick="handleNavClick('办公工具')" data-target="办公工具">办公</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" onclick="handleNavClick('技术资料')" data-target="技术资料">技术</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" onclick="handleNavClick('养生调理')" data-target="养生调理">养生</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" onclick="handleNavClick('影视软件更新下载')" data-target="影视软件更新下载">下载</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" onclick="handleNavClick('学习导航资源')" data-target="学习导航资源">导航</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" onclick="handleNavClick('专用工具')" data-target="专用工具">专用</a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+        
         <div class="content">
             <div class="content-top">
                 <h2>请使用 Ctrl+D 收藏本页</h2>
                 <p class="subtitle">保存到浏览器收藏夹，随时访问资源</p>
 				
+                <!-- 新增的功能按钮 -->
+                <div class="action-buttons">
+                    <button class="action-btn" id="bookmarkBtn">
+                        <i class="fas fa-bookmark"></i>
+                        <span>一键收藏</span>
+                    </button>
+                    <button class="action-btn" id="copyUrlBtn">
+                        <i class="fas fa-link"></i>
+                        <span>复制链接</span>
+                    </button>
+                    <button class="action-btn" id="shareBtn">
+                        <i class="fas fa-share-alt"></i>
+                        <span>分享本页</span>
+                    </button>
+                </div>
             </div>
             
             <div class="resource-list">
                 <ul>
                     <!-- 平台资源类别 -->
                     <li>
-                        <span class="category-title">平台资源</span>
+                        <span class="category-title" id="平台资源">平台资源</span>
                         <div class="category-links">
 						    <a href="./denglu/shouhou.html" target="_blank" class="link-item">
                                 <i class="fas fa-network-wired"></i>
@@ -680,7 +1069,7 @@
                     </li>
 					 <!-- 影音娱乐类别 -->
                     <li>
-                        <span class="category-title">新闻 娱乐 生活</span>
+                        <span class="category-title" id="新闻 娱乐 生活">新闻 娱乐 生活</span>
                         <div class="category-links">
 						       <a href="https://www.zz123.com/" target="_blank" class="link-item">
                                 <i class="fas fa-music"></i>
@@ -786,7 +1175,7 @@
                     </li>
                       <!-- 在线体育 -->
                     <li>
-                        <span class="category-title">在线体育直播</span>
+                        <span class="category-title" id="在线体育直播">在线体育直播</span>
                         <div class="category-links">
 						    <a href="https://www.ilengcang.cc/" target="_blank" class="link-item">
                                 <i class="fas fa-futbol"></i>
@@ -816,7 +1205,7 @@
                     </li>					
                       <!-- AI人工智能类别 -->
                     <li>
-                        <span class="category-title">AI人工智能</span>
+                        <span class="category-title" id="AI人工智能">AI人工智能</span>
                         <div class="category-links">
 						     <a href="https://www.zxgj.cn/q/ceshi?t=1&ob=2" target="_blank" class="link-item">
                                 <i class="fas fa-tools"></i>
@@ -858,7 +1247,7 @@
                     </li>
                     <!-- 办公工具类别 -->
                     <li>
-                        <span class="category-title">办公工具</span>
+                        <span class="category-title" id="办公工具">办公工具</span>
                         <div class="category-links">
                              <a href="https://www.lanrenexcel.com/" target="_blank" class="link-item">
                                 <i class="fas fa-tools"></i>
@@ -926,7 +1315,7 @@
                     </li>
                     <!-- 技术资料类别 -->
                     <li>
-                        <span class="category-title">技术资料</span>
+                        <span class="category-title" id="技术资料">技术资料</span>
                         <div class="category-links">
 							 <a href="./东讯电机驱动器故障代码.html" target="_blank" class="link-item">
                                 <i class="fas fa-file-alt"></i>
@@ -1029,7 +1418,7 @@
                     </li>
 					<!-- 养生调理类别 -->
                     <li>
-                        <span class="category-title">养生调理</span>
+                        <span class="category-title" id="养生调理">养生调理</span>
                         <div class="category-links">
 						     <a href="https://www.xjlz365.com/" target="_blank" class="link-item">
                                 <i class="fas fa-medkit"></i>
@@ -1047,7 +1436,7 @@
                     </li>
 					<!-- 视频软件类别 -->
                     <li>
-                        <span class="category-title">影视软件更新下载</span>
+                        <span class="category-title" id="影视软件更新下载">影视软件更新下载</span>
                         <div class="category-links">
 						    <a href="https://d.kstore.dev/download/8043/ys/fenghuangTV.apk" target="_blank" class="link-item">
                                 <i class="fas fa-tv"></i>
@@ -1090,7 +1479,7 @@
                     </li>
 					<!-- 平台资源类别 -->
                     <li>
-                        <span class="category-title">学习导航资源</span>
+                        <span class="category-title" id="学习导航资源">学习导航资源</span>
                         <div class="category-links">
 						    
 							<a href="https://tuostudy.upnb.top/" target="_blank" class="link-item">
@@ -1147,7 +1536,7 @@
                     </li>
                      <!-- 加密工具类别 -->
                     <li>
-                        <span class="category-title">专用工具</span>
+                        <span class="category-title" id="专用工具">专用工具</span>
                         <div class="category-links">
 						      <a href="https://tiqu.cc/" target="_blank" class="link-item">
                                 <i class="fas fa-tools"></i>
@@ -1195,15 +1584,17 @@
                             <p><span class="red">使用说明：</span>自用资源，请勿恶意传播，尊重开发者劳动成果</p>
                             <p><span class="red">更新说明：</span>资源将不定期更新，请收藏本页面获取最新资源</p>
                         </div>
+                        
+                        <!-- 版权信息 -->
+                        <div class="footer" style="margin-top: 20px; background: none; color: #333; font-size: 0.8rem;">
+                            <p>© 2025 Ajossi网络. All Rights Reserved</p>
+                            <p>关注我，<a href="#" style="color: #01a982;">永不迷路</a> | <a href="#" style="color: #01a982;">资源更新8.26</a></p>
+                        </div>
                     </li>
                 </ul>
             </div>
         </div>
-        
-        <div class="footer">
-            <p>© 2019-2025 Ajossi网络. All Rights Reserved</p>
-            <p>关注我，<a href="#">永不迷路</a> | <a href="#">资源更新8.25</a></p>
-        </div>
+
     </div>
 
     <script>
@@ -1215,6 +1606,12 @@
             // 设置favicon
             const faviconLink = document.getElementById('custom-favicon');
             faviconLink.href = IMAGE_URL;
+            
+            // 初始化回到顶部按钮
+            initBackToTop();
+            
+            // 初始化导航栏
+            initNavigation();
             
             // 创建动态粒子背景
             function createParticles() {
@@ -1299,7 +1696,297 @@
                     copyNotification.classList.remove('show');
                 }, 3000);
             });
+            
+            // 新增功能按钮逻辑
+            const bookmarkBtn = document.getElementById('bookmarkBtn');
+            const copyUrlBtn = document.getElementById('copyUrlBtn');
+            const shareBtn = document.getElementById('shareBtn');
+            const shareOptions = document.getElementById('shareOptions');
+            const shareOverlay = document.getElementById('shareOverlay');
+            
+            // 一键收藏功能
+            bookmarkBtn.addEventListener('click', function() {
+                const pageTitle = document.title;
+                const pageUrl = window.location.href;
+                
+                // 判断浏览器是否支持书签API
+                if (window.sidebar && window.sidebar.addPanel) {
+                    // Firefox
+                    window.sidebar.addPanel(pageTitle, pageUrl, '');
+                } else if (window.external && ('AddFavorite' in window.external)) {
+                    // IE
+                    window.external.AddFavorite(pageUrl, pageTitle);
+                } else if (window.opera && window.print) {
+                    // Opera
+                    const elem = document.createElement('a');
+                    elem.setAttribute('href', pageUrl);
+                    elem.setAttribute('title', pageTitle);
+                    elem.setAttribute('rel', 'sidebar');
+                    elem.click();
+                } else {
+                    // 其他浏览器（包括Chrome、Safari等现代浏览器）
+                    // 现代浏览器由于安全限制，不能直接添加书签，所以提示用户手动添加
+                    alert('您的浏览器不支持自动添加书签功能。\n\n请使用 Ctrl+D（Windows/Linux）或 Command+D（Mac）手动添加书签。');
+                }
+            });
+            
+            // 复制链接功能
+            copyUrlBtn.addEventListener('click', function() {
+                const pageUrl = window.location.href;
+                
+                // 创建临时textarea元素用于复制
+                const textarea = document.createElement('textarea');
+                textarea.value = pageUrl;
+                textarea.setAttribute('readonly', '');
+                textarea.style.position = 'absolute';
+                textarea.style.left = '-9999px';
+                document.body.appendChild(textarea);
+                
+                // 选择文本并复制
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                
+                // 显示复制成功通知
+                copyNotification.querySelector('span').textContent = '页面链接已复制到剪贴板！';
+                copyNotification.classList.add('show');
+                
+                // 3秒后隐藏通知
+                setTimeout(() => {
+                    copyNotification.classList.remove('show');
+                }, 3000);
+            });
+            
+            // 分享本页功能
+            shareBtn.addEventListener('click', function() {
+                const pageTitle = document.title;
+                const pageUrl = window.location.href;
+                
+                // 检查浏览器是否支持Web Share API
+                if (navigator.share) {
+                    navigator.share({
+                        title: pageTitle,
+                        url: pageUrl
+                    })
+                    .then(() => console.log('分享成功'))
+                    .catch((error) => console.log('分享失败', error));
+                } else {
+                    // 如果不支持Web Share API，显示分享选项面板
+                    shareOptions.classList.add('show');
+                    shareOverlay.classList.add('show');
+                }
+            });
+            
+            // 关闭分享选项面板
+            shareOverlay.addEventListener('click', function() {
+                shareOptions.classList.remove('show');
+                shareOverlay.classList.remove('show');
+            });
+            
+            // 处理分享选项点击
+            const shareButtons = document.querySelectorAll('.share-btn');
+            shareButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const platform = this.getAttribute('data-platform');
+                    const pageTitle = encodeURIComponent(document.title);
+                    const pageUrl = encodeURIComponent(window.location.href);
+                    
+                    let shareUrl;
+                    
+                    switch(platform) {
+                        case 'weibo':
+                            shareUrl = `https://service.weibo.com/share/share.php?url=${pageUrl}&title=${pageTitle}`;
+                            break;
+                        case 'qq':
+                            shareUrl = `https://connect.qq.com/widget/shareqq/index.html?url=${pageUrl}&title=${pageTitle}`;
+                            break;
+                        case 'wechat':
+                            // 微信分享需要特殊处理，这里只是简单提示
+                            alert('请使用微信内置浏览器打开此页面，然后使用微信分享功能。');
+                            return;
+                        case 'douban':
+                            shareUrl = `https://www.douban.com/share/service?url=${pageUrl}&title=${pageTitle}`;
+                            break;
+                        case 'link':
+                            // 复制链接
+                            const textarea = document.createElement('textarea');
+                            textarea.value = window.location.href;
+                            textarea.setAttribute('readonly', '');
+                            textarea.style.position = 'absolute';
+                            textarea.style.left = '-9999px';
+                            document.body.appendChild(textarea);
+                            
+                            textarea.select();
+                            document.execCommand('copy');
+                            document.body.removeChild(textarea);
+                            
+                            // 显示复制成功通知
+                            copyNotification.querySelector('span').textContent = '页面链接已复制到剪贴板！';
+                            copyNotification.classList.add('show');
+                            
+                            setTimeout(() => {
+                                copyNotification.classList.remove('show');
+                            }, 3000);
+                            
+                            // 关闭分享面板
+                            shareOptions.classList.remove('show');
+                            shareOverlay.classList.remove('show');
+                            return;
+                    }
+                    
+                    window.open(shareUrl, '_blank');
+                    
+                    // 关闭分享面板
+                    shareOptions.classList.remove('show');
+                    shareOverlay.classList.remove('show');
+                });
+            });
         });
+        
+        // 回到顶部按钮初始化函数
+        function initBackToTop() {
+            const backToTopBtn = document.getElementById('backToTop');
+            
+            // 检查元素是否存在（遵循最佳实践）
+            if (!backToTopBtn) {
+                console.error('回到顶部按钮元素未找到');
+                return;
+            }
+            
+            // 滚动监听器
+            window.addEventListener('scroll', function() {
+                if (window.pageYOffset > 300) {
+                    backToTopBtn.classList.add('show');
+                } else {
+                    backToTopBtn.classList.remove('show');
+                }
+            });
+            
+            console.log('回到顶部按钮初始化成功');
+        }
+        
+        // 全局回到顶部处理函数（遵循最佳实践）
+        function handleBackToTop() {
+            // 平滑滚动到顶部
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+            
+            console.log('执行回到顶部操作');
+        }
+        
+        // 导航栏初始化函数
+        function initNavigation() {
+            const navTabs = document.getElementById('navTabs');
+            
+            // 检查元素是否存在（遵循最佳实践）
+            if (!navTabs) {
+                console.error('导航栏元素未找到');
+                return;
+            }
+            
+            // 滚动监听器 - 处理导航栏样式变化
+            let lastScrollTop = 0;
+            window.addEventListener('scroll', function() {
+                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                
+                // 滚动时添加样式
+                if (scrollTop > 50) {
+                    navTabs.classList.add('scrolled');
+                } else {
+                    navTabs.classList.remove('scrolled');
+                }
+                
+                // 更新活跃导航项
+                updateActiveNav();
+                
+                lastScrollTop = scrollTop;
+            });
+            
+            console.log('导航栏初始化成功');
+        }
+        
+        // 统一的位置计算函数，确保点击定位和滚动切换的一致性
+        function getElementPosition(elementId) {
+            const element = document.getElementById(elementId);
+            if (!element) return null;
+            
+            const navHeight = document.getElementById('navTabs').offsetHeight;
+            const offset = 15; // 统一的偏移量
+            
+            return element.offsetTop - navHeight - offset;
+        }
+        
+        // 更新活跃导航项
+        function updateActiveNav() {
+            const navLinks = document.querySelectorAll('.nav-link');
+            const sections = [];
+            
+            // 获取所有章节位置（使用统一的位置计算函数）
+            navLinks.forEach(link => {
+                const targetId = link.getAttribute('data-target');
+                const position = getElementPosition(targetId);
+                if (position !== null) {
+                    sections.push({
+                        id: targetId,
+                        top: position,
+                        element: link
+                    });
+                }
+            });
+            
+            // 排序并找到当前可见章节
+            sections.sort((a, b) => a.top - b.top);
+            
+            const scrollPos = window.pageYOffset;
+            let activeSection = sections[0];
+            
+            // 找到当前滚动位置对应的章节
+            for (let i = 0; i < sections.length; i++) {
+                if (scrollPos >= sections[i].top) {
+                    activeSection = sections[i];
+                } else {
+                    break;
+                }
+            }
+            
+            // 更新活跃状态
+            navLinks.forEach(link => link.classList.remove('active'));
+            if (activeSection && activeSection.element) {
+                activeSection.element.classList.add('active');
+            }
+        }
+        
+        // 全局导航点击处理函数（遵循最佳实践）
+        function handleNavClick(targetId) {
+            const targetElement = document.getElementById(targetId);
+            
+            if (!targetElement) {
+                console.error('目标元素未找到:', targetId);
+                return;
+            }
+            
+            // 使用统一的位置计算函数
+            const targetTop = getElementPosition(targetId);
+            
+            // 平滑滚动到目标位置
+            window.scrollTo({
+                top: Math.max(0, targetTop),
+                behavior: 'smooth'
+            });
+            
+            // 更新活跃状态
+            const navLinks = document.querySelectorAll('.nav-link');
+            navLinks.forEach(link => link.classList.remove('active'));
+            
+            const clickedLink = document.querySelector(`[data-target="${targetId}"]`);
+            if (clickedLink) {
+                clickedLink.classList.add('active');
+            }
+            
+            console.log('导航到:', targetId, '位置:', targetTop);
+        }
 		// 获取API数据并更新内容
 fetch('https://api.cenguigui.cn/api/djt/api/')
     .then(response => response.json())
@@ -1308,7 +1995,7 @@ fetch('https://api.cenguigui.cn/api/djt/api/')
             const subtitleElement = document.querySelector('.subtitle');
             if (subtitleElement) {
                 subtitleElement.innerHTML = `
-                    <span style="color: #FFFFFF;">
+                    <span style="color: rgba(255, 255, 255, 0.92); font-family: 'KaiTi', 'STKaiti', '华文楷体', '楷体', serif; font-size: 1.15rem;">
                         每日一言：${data.data.content}<br>
                         
                     </span>
