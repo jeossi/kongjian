@@ -62,6 +62,9 @@
             z-index: 10;
             width: 100%; /* 确保容器宽度不超出 */
             box-sizing: border-box; /* 包含padding在宽度计算内 */
+            /* 确保不创建新的堆叠上下文以免影响sticky */
+            transform: none;
+            will-change: auto;
         }
         
         /* 页眉样式 */
@@ -747,37 +750,45 @@
     body {
         overflow-x: hidden; /* 强制隐藏横向滚动 */
         max-width: 100vw;
+        /* 确保不影响sticky定位 */
+        position: relative;
     }
     
     .wrapper {
         padding: 20px 15px 80px; /* 减少移动端内边距 */
         max-width: 100%;
         /* 不设置overflow-x: hidden，避免影响sticky定位 */
+        position: relative;
+        /* 确保不创建新的stacking context */
+        transform: none;
+        will-change: auto;
     }
     
     .back-to-top {
         /* 使用主容器右边界计算，不再使用屏幕右边缘 */
-        right: 20px; /* 相对于可视区域的右边距 */
-        width: 45px;
-        height: 45px;
-        font-size: 16px;
-        z-index: 9999; /* 提高层级确保在移动端可见 */
-        bottom: 80px; /* 在移动端使用固定底部位置，避免顶部居中问题 */
-        top: auto; /* 取消顶部定位 */
-        transform: none; /* 取消垂直居中变换 */
-        position: fixed; /* 确保固定定位 */
+        right: 20px !important; /* 相对于可视区域的右边距 */
+        width: 45px !important;
+        height: 45px !important;
+        font-size: 16px !important;
+        z-index: 9999 !important; /* 提高层级确保在移动端可见 */
+        bottom: 80px !important; /* 在移动端使用固定底部位置，避免顶部居中问题 */
+        top: auto !important; /* 取消顶部定位 */
+        transform: none !important; /* 取消垂直居中变换 */
+        position: fixed !important; /* 确保固定定位 */
     }
     
     .back-to-top.show {
-        transform: none; /* 移动端不使用垂直居中 */
+        transform: none !important; /* 移动端不使用垂直居中 */
+        opacity: 1 !important;
+        visibility: visible !important;
     }
     
     .back-to-top:hover {
-        transform: translateY(-2px) scale(1.05); /* 移动端悬停效果 */
+        transform: translateY(-2px) scale(1.05) !important; /* 移动端悬停效果 */
     }
     
     .back-to-top:active {
-        transform: scale(0.95); /* 移动端点击效果 */
+        transform: scale(0.95) !important; /* 移动端点击效果 */
     }
 }
 
@@ -785,24 +796,30 @@
     body {
         overflow-x: hidden; /* 强制隐藏横向滚动 */
         max-width: 100vw;
+        /* 确保不影响sticky定位 */
+        position: relative;
     }
     
     .wrapper {
         padding: 15px 10px 80px; /* 小屏幕进一步减少内边距 */
         max-width: 100%;
         /* 不设置overflow-x: hidden，避免影响sticky定位 */
+        position: relative;
+        /* 确保不创建新的stacking context */
+        transform: none;
+        will-change: auto;
     }
     
     .back-to-top {
-        right: 15px; /* 小屏幕进一步靠近边缘，但仍在可视区域内 */
-        width: 40px;
-        height: 40px;
-        font-size: 14px;
-        z-index: 9999; /* 确保最高层级 */
-        bottom: 70px; /* 小屏幕稍微调整位置 */
-        top: auto;
-        transform: none;
-        position: fixed;
+        right: 15px !important; /* 小屏幕进一步靠近边缘，但仍在可视区域内 */
+        width: 40px !important;
+        height: 40px !important;
+        font-size: 14px !important;
+        z-index: 9999 !important; /* 确保最高层级 */
+        bottom: 70px !important; /* 小屏幕稍微调整位置 */
+        top: auto !important;
+        transform: none !important;
+        position: fixed !important;
     }
 }
 
@@ -821,6 +838,9 @@
     transition: all 0.3s ease;
     margin-bottom: -1px; /* 保持略微重叠以避免缝隙 */
     width: 100%;
+    /* 移动端sticky优化 */
+    will-change: transform;
+    contain: layout style paint;
 }
 
 .nav-tabs.scrolled {
@@ -900,16 +920,23 @@
 @media (max-width: 768px) {
     .nav-tabs {
         /* 确保sticky定位在小屏幕下正常工作 */
-        position: -webkit-sticky;
-        position: sticky;
-        top: 0;
-        z-index: 1001;
-        background: rgba(255, 255, 255, 0.98);
+        position: -webkit-sticky !important;
+        position: sticky !important;
+        top: 0 !important;
+        z-index: 1001 !important;
+        background: rgba(255, 255, 255, 0.98) !important;
         backdrop-filter: blur(15px);
         -webkit-backdrop-filter: blur(15px);
         /* 确保容器完整性 */
-        width: 100%;
+        width: 100% !important;
         box-sizing: border-box;
+        /* 移动端关键属性 */
+        transform: none !important;
+        will-change: auto;
+        contain: none;
+        /* Safari移动端特殊优化 */
+        -webkit-transform: translateZ(0);
+        transform: translateZ(0);
     }
     
     .nav-container {
@@ -935,16 +962,23 @@
 @media (max-width: 480px) {
     .nav-tabs {
         /* 确保sticky定位在小屏幕下正常工作 */
-        position: -webkit-sticky;
-        position: sticky;
-        top: 0;
-        z-index: 1002;
-        background: rgba(255, 255, 255, 0.99);
+        position: -webkit-sticky !important;
+        position: sticky !important;
+        top: 0 !important;
+        z-index: 1002 !important;
+        background: rgba(255, 255, 255, 0.99) !important;
         backdrop-filter: blur(20px);
         -webkit-backdrop-filter: blur(20px);
         /* 确保容器完整性 */
-        width: 100%;
+        width: 100% !important;
         box-sizing: border-box;
+        /* 小屏幕关键属性 */
+        transform: none !important;
+        will-change: auto;
+        contain: none;
+        /* Safari移动端特殊优化 */
+        -webkit-transform: translateZ(0);
+        transform: translateZ(0);
     }
     
     .nav-container {
@@ -978,6 +1012,55 @@
 @media (min-width: 1240px) {
     .back-to-top {
         right: calc((100vw - 1200px) / 2 + 10px); /* 在超宽屏幕下稍微内移 */
+    }
+}
+        
+/* 移动端特殊兼容性修复 */
+@media screen and (max-width: 768px) {
+    /* iOS Safari 兼容性 */
+    @supports (-webkit-touch-callout: none) {
+        .nav-tabs {
+            position: -webkit-sticky !important;
+            position: sticky !important;
+            top: 0 !important;
+            z-index: 10000 !important;
+            /* 针对iOS Safari的特殊优化 */
+            -webkit-transform: translate3d(0, 0, 0) !important;
+            transform: translate3d(0, 0, 0) !important;
+        }
+                
+        .back-to-top {
+            /* iOS特殊优化 */
+            -webkit-transform: translate3d(0, 0, 0) !important;
+            transform: translate3d(0, 0, 0) !important;
+        }
+    }
+            
+    /* Android Chrome 兼容性 */
+    .nav-tabs {
+        /* 防止transform属性干扰sticky */
+        transform: none !important;
+        will-change: scroll-position !important;
+    }
+}
+        
+/* 超小屏幕设备优化 */
+@media screen and (max-width: 360px) {
+    .nav-tabs {
+        padding: 8px 0 !important;
+    }
+            
+    .nav-link {
+        padding: 5px 8px !important;
+        font-size: 0.9rem !important;
+    }
+            
+    .back-to-top {
+        right: 10px !important;
+        width: 35px !important;
+        height: 35px !important;
+        font-size: 12px !important;
+        bottom: 60px !important;
     }
 }
     </style>
@@ -1946,25 +2029,87 @@
                 return;
             }
             
-            // 滚动监听器
-            window.addEventListener('scroll', function() {
-                if (window.pageYOffset > 300) {
-                    backToTopBtn.classList.add('show');
-                } else {
-                    backToTopBtn.classList.remove('show');
+            // 移动端优化的滚动监听器
+            let scrollTimer = null;
+            function handleScroll() {
+                // 使用防抖优化性能
+                if (scrollTimer) {
+                    clearTimeout(scrollTimer);
                 }
-            });
+                
+                scrollTimer = setTimeout(function() {
+                    const scrollY = window.pageYOffset || document.documentElement.scrollTop;
+                    
+                    // 移动端降低触发阈值，提高可用性
+                    const threshold = window.innerWidth <= 768 ? 200 : 300;
+                    
+                    if (scrollY > threshold) {
+                        backToTopBtn.classList.add('show');
+                        // 移动端强制显示
+                        if (window.innerWidth <= 768) {
+                            backToTopBtn.style.display = 'flex';
+                            backToTopBtn.style.opacity = '1';
+                            backToTopBtn.style.visibility = 'visible';
+                        }
+                    } else {
+                        backToTopBtn.classList.remove('show');
+                        // 移动端强制隐藏
+                        if (window.innerWidth <= 768) {
+                            backToTopBtn.style.opacity = '0';
+                            backToTopBtn.style.visibility = 'hidden';
+                        }
+                    }
+                }, 50); // 50ms防抖
+            }
+            
+            // 添加滚动监听器
+            window.addEventListener('scroll', handleScroll, { passive: true });
+            
+            // 移动端触摸事件优化
+            if ('ontouchstart' in window) {
+                backToTopBtn.addEventListener('touchstart', function(e) {
+                    e.preventDefault();
+                    this.style.transform = 'scale(0.95)';
+                }, { passive: false });
+                
+                backToTopBtn.addEventListener('touchend', function(e) {
+                    e.preventDefault();
+                    this.style.transform = '';
+                    handleBackToTop();
+                }, { passive: false });
+            }
             
             console.log('回到顶部按钮初始化成功');
         }
         
         // 全局回到顶部处理函数（遵循最佳实践）
         function handleBackToTop() {
-            // 平滑滚动到顶部
-            window.scrollTo({
+            // 移动端优化的平滑滚动
+            const isMobile = window.innerWidth <= 768;
+            const scrollOptions = {
                 top: 0,
                 behavior: 'smooth'
-            });
+            };
+            
+            // 移动端特殊处理
+            if (isMobile) {
+                // 对于部分移动浏览器，使用备用方案
+                try {
+                    window.scrollTo(scrollOptions);
+                } catch (e) {
+                    // 备用方案：使用动画滚动
+                    const scrollToTop = () => {
+                        const currentScroll = document.documentElement.scrollTop || document.body.scrollTop;
+                        if (currentScroll > 0) {
+                            window.requestAnimationFrame(scrollToTop);
+                            window.scrollTo(0, currentScroll - (currentScroll / 8));
+                        }
+                    };
+                    scrollToTop();
+                }
+            } else {
+                window.scrollTo(scrollOptions);
+            }
             
             console.log('执行回到顶部操作');
         }
@@ -1979,35 +2124,63 @@
                 return;
             }
             
+            // 移动端特殊处理：确保sticky定位正常工作
+            const isMobile = window.innerWidth <= 768;
+            if (isMobile) {
+                // 强制设置移动端样式
+                navTabs.style.position = '-webkit-sticky';
+                navTabs.style.position = 'sticky';
+                navTabs.style.top = '0';
+                navTabs.style.zIndex = '10000';
+                navTabs.style.transform = 'none';
+                navTabs.style.willChange = 'auto';
+                
+                // Safari移动端特殊优化
+                if (/Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent)) {
+                    navTabs.style.webkitTransform = 'translate3d(0, 0, 0)';
+                    navTabs.style.transform = 'translate3d(0, 0, 0)';
+                }
+            }
+            
             // 添加全局变量追踪手动点击状态
             window.isManualClick = false;
             window.scrollTimeout = null;
             
             // 滚动监听器 - 处理导航栏样式变化
             let lastScrollTop = 0;
-            window.addEventListener('scroll', function() {
-                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                
-                // 滚动时添加样式
-                if (scrollTop > 50) {
-                    navTabs.classList.add('scrolled');
-                } else {
-                    navTabs.classList.remove('scrolled');
+            let scrollTimer = null;
+            
+            function handleNavScroll() {
+                if (scrollTimer) {
+                    clearTimeout(scrollTimer);
                 }
                 
-                // 防抖处理：如果是手动点击触发的滚动，延迟更新活跃导航项
-                if (window.isManualClick) {
-                    clearTimeout(window.scrollTimeout);
-                    window.scrollTimeout = setTimeout(() => {
-                        window.isManualClick = false;
+                scrollTimer = setTimeout(() => {
+                    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                    
+                    // 滚动时添加样式
+                    if (scrollTop > 50) {
+                        navTabs.classList.add('scrolled');
+                    } else {
+                        navTabs.classList.remove('scrolled');
+                    }
+                    
+                    // 防抖处理：如果是手动点击触发的滚动，延迟更新活跃导航项
+                    if (window.isManualClick) {
+                        clearTimeout(window.scrollTimeout);
+                        window.scrollTimeout = setTimeout(() => {
+                            window.isManualClick = false;
+                            updateActiveNav();
+                        }, 800); // 800ms后恢复自动更新
+                    } else {
                         updateActiveNav();
-                    }, 800); // 800ms后恢复自动更新
-                } else {
-                    updateActiveNav();
-                }
-                
-                lastScrollTop = scrollTop;
-            });
+                    }
+                    
+                    lastScrollTop = scrollTop;
+                }, 16); // 60fps
+            }
+            
+            window.addEventListener('scroll', handleNavScroll, { passive: true });
             
             console.log('导航栏初始化成功');
         }
@@ -2114,6 +2287,83 @@ fetch('https://api.cenguigui.cn/api/djt/api/')
     .catch(error => {
         console.error('获取数据失败:', error);
     });
+    
+// 移动端兼容性初始化
+function initMobileCompatibility() {
+    const isMobile = window.innerWidth <= 768;
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const isSafari = /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
+    
+    if (isMobile) {
+        console.log('移动端设备检测到，应用移动端优化');
+        
+        // 修复移动端sticky定位问题
+        const navTabs = document.getElementById('navTabs');
+        const backToTop = document.getElementById('backToTop');
+        
+        if (navTabs) {
+            // 强制设置移动端样式
+            navTabs.style.cssText += `
+                position: -webkit-sticky !important;
+                position: sticky !important;
+                top: 0 !important;
+                z-index: 10000 !important;
+                transform: none !important;
+                will-change: auto !important;
+            `;
+            
+            // iOS Safari特殊处理
+            if (isIOS && isSafari) {
+                navTabs.style.cssText += `
+                    -webkit-transform: translate3d(0, 0, 0) !important;
+                    transform: translate3d(0, 0, 0) !important;
+                `;
+                console.log('应用iOS Safari特殊优化');
+            }
+        }
+        
+        if (backToTop) {
+            // 强制设置移动端回到顶部按钮样式
+            backToTop.style.cssText += `
+                position: fixed !important;
+                right: 20px !important;
+                bottom: 80px !important;
+                top: auto !important;
+                transform: none !important;
+                z-index: 9999 !important;
+                width: 45px !important;
+                height: 45px !important;
+                display: flex !important;
+            `;
+        }
+        
+        // 添加视口变化监听
+        window.addEventListener('orientationchange', function() {
+            setTimeout(function() {
+                // 重新初始化移动端样式
+                initMobileCompatibility();
+            }, 300);
+        });
+        
+        // 防止移动端横向滚动
+        document.body.style.cssText += `
+            overflow-x: hidden !important;
+            max-width: 100vw !important;
+        `;
+    }
+}
+
+// 初始化所有功能
+document.addEventListener('DOMContentLoaded', function() {
+    // 移动端兼容性初始化
+    initMobileCompatibility();
+    
+    // 初始化各个模块
+    initNavigation();
+    initBackToTop();
+    
+    console.log('所有功能初始化完成');
+});
     </script>
 </body>
     <script type="text/javascript" src="https://myhkw.cn/player/js/jquery.min.js"></script>
