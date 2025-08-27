@@ -755,22 +755,26 @@
     .wrapper {
         padding: 20px 15px 80px; /* 减少移动端内边距 */
         max-width: 100%;
-        /* 不设置overflow-x: hidden，避免影响sticky定位 */
+        /* 为fixed导航栏添加顶部间距 */
+        padding-top: 80px;
     }
     
     .nav-tabs {
+        /* 在移动端强制使用fixed定位解决sticky间歇性失效 */
         position: fixed !important;
         top: 0 !important;
-        left: 0;
-        right: 0;
+        left: 0 !important;
+        right: 0 !important;
+        width: 100% !important;
         transform: none !important;
-        will-change: unset;
+        will-change: unset !important;
         background: rgba(255, 255, 255, 0.99) !important;
         backdrop-filter: blur(15px);
         -webkit-backdrop-filter: blur(15px);
         padding: 8px 0;
         height: auto;
-        z-index: 1001;
+        z-index: 10001 !important;
+        margin-bottom: 0;
     }
     
     .nav-container {
@@ -939,27 +943,7 @@
 
 /* 移动端导航优化 */
 @media (max-width: 768px) {
-    .nav-tabs {
-        /* 确保sticky定位在小屏幕下正常工作 */
-        position: -webkit-sticky !important;
-        position: sticky !important;
-        top: 0 !important;
-        z-index: 1001 !important;
-        background: rgba(255, 255, 255, 0.98) !important;
-        backdrop-filter: blur(15px);
-        -webkit-backdrop-filter: blur(15px);
-        /* 确保容器完整性 */
-        width: 100% !important;
-        box-sizing: border-box;
-        /* 移动端关键属性 */
-        transform: none !important;
-        will-change: auto;
-        contain: none;
-        /* Safari移动端特殊优化 */
-        -webkit-transform: translateZ(0);
-        transform: translateZ(0);
-    }
-    
+    /* 移除重复的nav-tabs定义，使用上面的fixed定位 */
     .nav-container {
         padding: 0 8px;
         max-width: 100%;
@@ -981,31 +965,20 @@
 }
 
 @media (max-width: 480px) {
+    /* 480px下的特殊设置，继承768px的fixed定位 */
+    .wrapper {
+        padding: 15px 10px 80px;
+        padding-top: 75px; /* 小屏幕调整顶部间距 */
+    }
+    
     .nav-tabs {
-        /* 确保sticky定位在小屏幕下正常工作 */
-        position: -webkit-sticky !important;
-        position: sticky !important;
-        top: 0 !important;
-        z-index: 1002 !important;
-        background: rgba(255, 255, 255, 0.99) !important;
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        /* 确保容器完整性 */
-        width: 100% !important;
-        box-sizing: border-box;
-        /* 小屏幕关键属性 */
-        transform: none !important;
-        will-change: auto;
-        contain: none;
-        /* Safari移动端特殊优化 */
-        -webkit-transform: translateZ(0);
-        transform: translateZ(0);
+        padding: 6px 0 !important;
     }
     
     .nav-container {
         padding: 0 5px;
-        max-width: 100%;
-        overflow-x: hidden;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
     }
     
     .nav-list {
@@ -1014,7 +987,9 @@
         -webkit-overflow-scrolling: touch;
         scrollbar-width: none;
         -ms-overflow-style: none;
-        max-width: 100%;
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        padding-bottom: 5px;
     }
     
     .nav-list::-webkit-scrollbar {
@@ -1035,35 +1010,7 @@
         right: calc((100vw - 1200px) / 2 + 10px); /* 在超宽屏幕下稍微内移 */
     }
 }
-        
-/* 移动端特殊兼容性修复 */
-@media screen and (max-width: 768px) {
-    /* iOS Safari 兼容性 */
-    @supports (-webkit-touch-callout: none) {
-        .nav-tabs {
-            position: -webkit-sticky !important;
-            position: sticky !important;
-            top: 0 !important;
-            z-index: 10000 !important;
-            /* 针对iOS Safari的特殊优化 */
-            -webkit-transform: translate3d(0, 0, 0) !important;
-            transform: translate3d(0, 0, 0) !important;
-        }
-                
-        .back-to-top {
-            /* iOS特殊优化 */
-            -webkit-transform: translate3d(0, 0, 0) !important;
-            transform: translate3d(0, 0, 0) !important;
-        }
-    }
-            
-    /* Android Chrome 兼容性 */
-    .nav-tabs {
-        /* 防止transform属性干扰sticky */
-        transform: none !important;
-        will-change: scroll-position !important;
-    }
-}
+
         
 /* 超小屏幕设备优化 */
 @media screen and (max-width: 360px) {
@@ -2381,19 +2328,36 @@ function optimizeMobileNav() {
     if (window.innerWidth <= 768) {
         const navTabs = document.getElementById('navTabs');
         if (navTabs) {
-            // 确保导航栏始终可见
+            // 确保导航栏始终可见（使用fixed定位）
             navTabs.style.position = 'fixed';
             navTabs.style.top = '0';
             navTabs.style.left = '0';
             navTabs.style.right = '0';
+            navTabs.style.width = '100%';
+            navTabs.style.zIndex = '10001';
             navTabs.style.transform = 'none';
             
-            // 添加导航栏占位符以防止内容被遮挡
-            if (!document.getElementById('nav-placeholder')) {
-                const placeholder = document.createElement('div');
+            // 获取导航栏高度并创建占位符
+            const navHeight = navTabs.offsetHeight || 60; // 默认高度60px
+            
+            // 检查是否已存在占位符
+            let placeholder = document.getElementById('nav-placeholder');
+            if (!placeholder) {
+                // 创建占位符元素
+                placeholder = document.createElement('div');
                 placeholder.id = 'nav-placeholder';
-                placeholder.style.height = navTabs.offsetHeight + 'px';
-                navTabs.parentNode.insertBefore(placeholder, navTabs);
+                placeholder.style.height = navHeight + 'px';
+                placeholder.style.width = '100%';
+                placeholder.style.display = 'block';
+                
+                // 在导航栏前插入占位符
+                const wrapper = document.querySelector('.wrapper');
+                if (wrapper && wrapper.parentNode) {
+                    wrapper.parentNode.insertBefore(placeholder, wrapper);
+                }
+            } else {
+                // 更新现有占位符的高度
+                placeholder.style.height = navHeight + 'px';
             }
         }
         
@@ -2408,12 +2372,18 @@ function optimizeMobileNav() {
             backToTop.style.bottom = 'auto';
             backToTop.style.right = '15px';
             backToTop.style.transform = 'translateY(-50%)';
+            backToTop.style.zIndex = '10000';
         }
+        
+        console.log('移动端导航栏优化完成');
     }
 }
 
 // 初始化所有功能
 document.addEventListener('DOMContentLoaded', function() {
+    // 优先初始化移动端导航栏优化
+    optimizeMobileNav();
+    
     // 移动端兼容性初始化
     initMobileCompatibility();
     
@@ -2423,8 +2393,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 窗口大小变化时重新优化
     window.addEventListener('resize', function() {
-        initMobileCompatibility();
         optimizeMobileNav();
+        initMobileCompatibility();
     });
     
     // 防止移动端横向滑动
