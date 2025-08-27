@@ -744,7 +744,7 @@
     box-shadow: 0 2px 10px rgba(1, 169, 130, 0.3);
 }
 
-/* 移动端优化 */
+/* 移动端优化 - 统一处理 */
 @media (max-width: 768px) {
     body, html {
         overflow-x: hidden;
@@ -753,32 +753,33 @@
     }
     
     .wrapper {
-        padding: 20px 15px 80px; /* 减少移动端内边距 */
+        padding: 20px 15px 80px;
         max-width: 100%;
-        /* 为fixed导航栏添加顶部间距 */
-        padding-top: 80px;
+        /* 移动端不需要默认顶部间距，导航栏会动态显示 */
     }
     
+    /* 移动端导航栏：初始状态隐藏，滚动时显示 */
     .nav-tabs {
-        /* 在移动端强制使用fixed定位解决sticky间歇性失效 */
         position: fixed !important;
-        top: 0 !important;
-        left: 0 !important;
-        right: 0 !important;
-        width: 100% !important;
-        transform: none !important;
-        will-change: unset !important;
-        background: rgba(255, 255, 255, 0.99) !important;
+        top: -80px !important; /* 初始状态隐藏在屏幕上方 */
+        left: 0;
+        right: 0;
+        width: 100%;
+        background: rgba(255, 255, 255, 0.98);
         backdrop-filter: blur(15px);
         -webkit-backdrop-filter: blur(15px);
         padding: 8px 0;
-        height: auto;
-        z-index: 10001 !important;
-        margin-bottom: 0;
+        z-index: 10001;
+        transition: top 0.3s ease; /* 添加平滑过渡效果 */
+    }
+    
+    /* 滚动时显示导航栏 */
+    .nav-tabs.mobile-show {
+        top: 0 !important;
     }
     
     .nav-container {
-        padding: 0 5px;
+        padding: 0 8px;
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
     }
@@ -786,65 +787,71 @@
     .nav-list {
         flex-wrap: nowrap;
         justify-content: flex-start;
+        gap: 10px;
         padding-bottom: 5px;
     }
     
     .nav-link {
-        font-size: 0.9rem;
+        font-size: 1.0rem;
         padding: 6px 12px;
         white-space: nowrap;
+        flex-shrink: 0;
     }
     
     .back-to-top {
-        /* 回到顶部按钮移动端位置调整 */
-        top: 50% !important;
-        bottom: auto !important;
-        right: 15px !important;
-        transform: translateY(-50%) !important;
+        top: 50%;
+        right: 15px;
+        transform: translateY(-50%);
         width: 45px;
         height: 45px;
         z-index: 10000;
     }
     
     .back-to-top.show {
-        transform: translateY(-50%) !important;
-    }
-    
-    .back-to-top.show {
-        transform: none; /* 移动端不使用垂直居中 */
+        transform: translateY(-50%);
     }
     
     .back-to-top:hover {
-        transform: translateY(-50%) translateX(-2px) scale(1.05) !important; /* 移动端悬停效果 */
+        transform: translateY(-50%) translateX(-2px) scale(1.05);
     }
     
     .back-to-top:active {
-        transform: translateY(-50%) scale(0.95) !important; /* 移动端点击效果 */
+        transform: translateY(-50%) scale(0.95);
     }
 }
 
 @media (max-width: 480px) {
-    body {
-        overflow-x: hidden; /* 强制隐藏横向滚动 */
-        max-width: 100vw;
+    .wrapper {
+        padding: 15px 10px 80px;
     }
     
-    .wrapper {
-        padding: 15px 10px 80px; /* 小屏幕进一步减少内边距 */
-        max-width: 100%;
-        /* 不设置overflow-x: hidden，避免影响sticky定位 */
+    .nav-tabs {
+        padding: 6px 0 !important;
+    }
+    
+    .nav-container {
+        padding: 0 5px;
+    }
+    
+    .nav-list {
+        gap: 8px;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+    
+    .nav-list::-webkit-scrollbar {
+        display: none;
+    }
+    
+    .nav-link {
+        padding: 6px 10px;
+        font-size: 0.9rem;
     }
     
     .back-to-top {
-        right: 15px; /* 小屏幕进一步靠近边缘，但仍在可视区域内 */
         width: 40px;
         height: 40px;
         font-size: 14px;
-        z-index: 9999; /* 确保最高层级 */
-        bottom: 70px; /* 小屏幕稍微调整位置 */
-        top: auto;
-        transform: none;
-        position: fixed;
     }
 }
 
@@ -941,93 +948,12 @@
     }
 }
 
-/* 移动端导航优化 */
-@media (max-width: 768px) {
-    /* 移除重复的nav-tabs定义，使用上面的fixed定位 */
-    .nav-container {
-        padding: 0 8px;
-        max-width: 100%;
-        overflow-x: hidden;
-    }
-    
-    .nav-list {
-        gap: 10px;
-        max-width: 100%;
-        overflow-x: hidden;
-    }
-    
-    .nav-link {
-        padding: 6px 12px;
-        font-size: 1.1rem;
-        white-space: nowrap;
-        flex-shrink: 0;
-    }
-}
-
-@media (max-width: 480px) {
-    /* 480px下的特殊设置，继承768px的fixed定位 */
-    .wrapper {
-        padding: 15px 10px 80px;
-        padding-top: 75px; /* 小屏幕调整顶部间距 */
-    }
-    
-    .nav-tabs {
-        padding: 6px 0 !important;
-    }
-    
-    .nav-container {
-        padding: 0 5px;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-    }
-    
-    .nav-list {
-        gap: 8px;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: none;
-        -ms-overflow-style: none;
-        flex-wrap: nowrap;
-        justify-content: flex-start;
-        padding-bottom: 5px;
-    }
-    
-    .nav-list::-webkit-scrollbar {
-        display: none;
-    }
-    
-    .nav-link {
-        padding: 6px 10px;
-        font-size: 1.0rem;
-        flex-shrink: 0;
-        white-space: nowrap;
-    }
-}
+/* 移除重复的移动端导航优化代码 */
 
 /* 宽屏幕下的按钮位置优化 */
 @media (min-width: 1240px) {
     .back-to-top {
         right: calc((100vw - 1200px) / 2 + 10px); /* 在超宽屏幕下稍微内移 */
-    }
-}
-
-        
-/* 超小屏幕设备优化 */
-@media screen and (max-width: 360px) {
-    .nav-tabs {
-        padding: 6px 0 !important;
-    }
-            
-    .nav-link {
-        padding: 5px 10px !important;
-        font-size: 0.85rem !important;
-    }
-            
-    .back-to-top {
-        right: 10px !important;
-        width: 40px !important;
-        height: 40px !important;
-        font-size: 14px !important;
     }
 }
     </style>
@@ -2081,39 +2007,20 @@
             console.log('执行回到顶部操作');
         }
         
-        // 导航栏初始化函数
+        // 导航栏初始化函数（优化版）
         function initNavigation() {
             const navTabs = document.getElementById('navTabs');
             
-            // 检查元素是否存在（遵循最佳实践）
             if (!navTabs) {
                 console.error('导航栏元素未找到');
                 return;
-            }
-            
-            // 移动端特殊处理：确保sticky定位正常工作
-            const isMobile = window.innerWidth <= 768;
-            if (isMobile) {
-                // 强制设置移动端样式
-                navTabs.style.position = '-webkit-sticky';
-                navTabs.style.position = 'sticky';
-                navTabs.style.top = '0';
-                navTabs.style.zIndex = '10000';
-                navTabs.style.transform = 'none';
-                navTabs.style.willChange = 'auto';
-                
-                // Safari移动端特殊优化
-                if (/Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent)) {
-                    navTabs.style.webkitTransform = 'translate3d(0, 0, 0)';
-                    navTabs.style.transform = 'translate3d(0, 0, 0)';
-                }
             }
             
             // 添加全局变量追踪手动点击状态
             window.isManualClick = false;
             window.scrollTimeout = null;
             
-            // 滚动监听器 - 处理导航栏样式变化
+            // 统一的滚动监听器
             let lastScrollTop = 0;
             let scrollTimer = null;
             
@@ -2124,12 +2031,23 @@
                 
                 scrollTimer = setTimeout(() => {
                     const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                    const isMobile = window.innerWidth <= 768;
                     
-                    // 滚动时添加样式
+                    // 桌面端和移动端的滚动效果
                     if (scrollTop > 50) {
                         navTabs.classList.add('scrolled');
+                        
+                        // 移动端动态显示导航栏
+                        if (isMobile) {
+                            navTabs.classList.add('mobile-show');
+                        }
                     } else {
                         navTabs.classList.remove('scrolled');
+                        
+                        // 移动端隐藏导航栏
+                        if (isMobile) {
+                            navTabs.classList.remove('mobile-show');
+                        }
                     }
                     
                     // 防抖处理：如果是手动点击触发的滚动，延迟更新活跃导航项
@@ -2138,7 +2056,7 @@
                         window.scrollTimeout = setTimeout(() => {
                             window.isManualClick = false;
                             updateActiveNav();
-                        }, 800); // 800ms后恢复自动更新
+                        }, 800);
                     } else {
                         updateActiveNav();
                     }
@@ -2148,7 +2066,6 @@
             }
             
             window.addEventListener('scroll', handleNavScroll, { passive: true });
-            
             console.log('导航栏初始化成功');
         }
         
@@ -2255,146 +2172,16 @@ fetch('https://api.cenguigui.cn/api/djt/api/')
         console.error('获取数据失败:', error);
     });
     
-// 移动端兼容性初始化
-function initMobileCompatibility() {
-    const isMobile = window.innerWidth <= 768;
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-    const isSafari = /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
-    
-    if (isMobile) {
-        console.log('移动端设备检测到，应用移动端优化');
-        
-        // 移动端导航栏优化
-        optimizeMobileNav();
-        
-        // 修复移动端sticky定位问题
-        const navTabs = document.getElementById('navTabs');
-        const backToTop = document.getElementById('backToTop');
-        
-        if (navTabs) {
-            // 强制设置移动端样式
-            navTabs.style.cssText += `
-                position: -webkit-sticky !important;
-                position: sticky !important;
-                top: 0 !important;
-                z-index: 10000 !important;
-                transform: none !important;
-                will-change: auto !important;
-            `;
-            
-            // iOS Safari特殊处理
-            if (isIOS && isSafari) {
-                navTabs.style.cssText += `
-                    -webkit-transform: translate3d(0, 0, 0) !important;
-                    transform: translate3d(0, 0, 0) !important;
-                `;
-                console.log('应用iOS Safari特殊优化');
-            }
-        }
-        
-        if (backToTop) {
-            // 强制设置移动端回到顶部按钮样式（右边中部）
-            backToTop.style.cssText += `
-                position: fixed !important;
-                right: 15px !important;
-                top: 50% !important;
-                bottom: auto !important;
-                transform: translateY(-50%) !important;
-                z-index: 10000 !important;
-                width: 45px !important;
-                height: 45px !important;
-                display: flex !important;
-            `;
-        }
-        
-        // 添加视口变化监听
-        window.addEventListener('orientationchange', function() {
-            setTimeout(function() {
-                // 重新初始化移动端样式
-                initMobileCompatibility();
-            }, 300);
-        });
-        
-        // 防止移动端横向滚动
-        document.body.style.cssText += `
-            overflow-x: hidden !important;
-            max-width: 100vw !important;
-        `;
-    }
-}
-
-// 移动端导航栏优化
-function optimizeMobileNav() {
-    if (window.innerWidth <= 768) {
-        const navTabs = document.getElementById('navTabs');
-        if (navTabs) {
-            // 确保导航栏始终可见（使用fixed定位）
-            navTabs.style.position = 'fixed';
-            navTabs.style.top = '0';
-            navTabs.style.left = '0';
-            navTabs.style.right = '0';
-            navTabs.style.width = '100%';
-            navTabs.style.zIndex = '10001';
-            navTabs.style.transform = 'none';
-            
-            // 获取导航栏高度并创建占位符
-            const navHeight = navTabs.offsetHeight || 60; // 默认高度60px
-            
-            // 检查是否已存在占位符
-            let placeholder = document.getElementById('nav-placeholder');
-            if (!placeholder) {
-                // 创建占位符元素
-                placeholder = document.createElement('div');
-                placeholder.id = 'nav-placeholder';
-                placeholder.style.height = navHeight + 'px';
-                placeholder.style.width = '100%';
-                placeholder.style.display = 'block';
-                
-                // 在导航栏前插入占位符
-                const wrapper = document.querySelector('.wrapper');
-                if (wrapper && wrapper.parentNode) {
-                    wrapper.parentNode.insertBefore(placeholder, wrapper);
-                }
-            } else {
-                // 更新现有占位符的高度
-                placeholder.style.height = navHeight + 'px';
-            }
-        }
-        
-        // 确保页面不能左右滚动
-        document.body.style.overflowX = 'hidden';
-        document.documentElement.style.overflowX = 'hidden';
-        
-        // 调整回到顶部按钮位置
-        const backToTop = document.getElementById('backToTop');
-        if (backToTop) {
-            backToTop.style.top = '50%';
-            backToTop.style.bottom = 'auto';
-            backToTop.style.right = '15px';
-            backToTop.style.transform = 'translateY(-50%)';
-            backToTop.style.zIndex = '10000';
-        }
-        
-        console.log('移动端导航栏优化完成');
-    }
-}
-
-// 初始化所有功能
+// 初始化所有功能（优化版）
 document.addEventListener('DOMContentLoaded', function() {
-    // 优先初始化移动端导航栏优化
-    optimizeMobileNav();
-    
-    // 移动端兼容性初始化
-    initMobileCompatibility();
-    
     // 初始化各个模块
     initNavigation();
     initBackToTop();
     
-    // 窗口大小变化时重新优化
+    // 窗口大小变化时重新初始化
     window.addEventListener('resize', function() {
-        optimizeMobileNav();
-        initMobileCompatibility();
+        // 只重新初始化必要的功能
+        initNavigation();
     });
     
     // 防止移动端横向滑动
@@ -2407,13 +2194,14 @@ document.addEventListener('DOMContentLoaded', function() {
     }, { passive: true });
     
     document.addEventListener('touchmove', function(e) {
-        // 如果横向滑动距离大于纵向滑动距离，则阻止默认行为
-        if (Math.abs(e.touches[0].clientX - startX) > Math.abs(e.touches[0].clientY - startY)) {
+        const deltaX = Math.abs(e.touches[0].clientX - startX);
+        const deltaY = Math.abs(e.touches[0].clientY - startY);
+        
+        // 如果横向滑动距离大于竖直滑动，防止默认事件
+        if (deltaX > deltaY && deltaX > 10) {
             e.preventDefault();
         }
     }, { passive: false });
-    
-    console.log('所有功能初始化完成');
 });
     </script>
 </body>
