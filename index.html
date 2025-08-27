@@ -761,7 +761,7 @@
     /* 移动端导航栏：初始状态隐藏，滚动时显示 */
     .nav-tabs {
         position: fixed !important;
-        top: -80px !important; /* 初始状态隐藏在屏幕上方 */
+        top: -100px !important; /* 初始状态隐藏在屏幕上方 */
         left: 0;
         right: 0;
         width: 100%;
@@ -787,7 +787,7 @@
     .nav-list {
         flex-wrap: nowrap;
         justify-content: flex-start;
-        gap: 10px;
+        gap: 5px;
         padding-bottom: 5px;
     }
     
@@ -834,7 +834,7 @@
     }
     
     .nav-list {
-        gap: 8px;
+        gap: 5px;
         scrollbar-width: none;
         -ms-overflow-style: none;
     }
@@ -890,7 +890,7 @@
     display: flex;
     justify-content: center; /* 改回居中，通过gap保证均匀间距 */
     align-items: center;
-    gap: 15px; /* 使用固定间距确保多行显示时一致 */
+    gap: 5px; /* 使用固定间距确保多行显示时一致 */
     flex-wrap: wrap;
     list-style: none;
     margin: 0;
@@ -940,7 +940,7 @@
 /* 中等屏幕优化 */
 @media (max-width: 1024px) and (min-width: 769px) {
     .nav-list {
-        gap: 15px; /* 中等屏幕稍微减小间距 */
+        gap: 5px; /* 中等屏幕稍微减小间距 */
     }
     
     .nav-link {
