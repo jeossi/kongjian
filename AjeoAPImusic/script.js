@@ -1,11 +1,12 @@
 // 修复版 script.js（修复分享链接播放问题 + 循环请求问题 + 保持其他功能）
 const hotKeywords = [
- "王佳音","鱼蛋","窝窝","艺凌","洋澜","任夏","魏佳艺","韩小欠","单依纯","DJ","喝茶","古筝","助眠", 
-  "经典老歌","70后","80后","热歌","热门","新歌","飙升","流行",
-  "治愈房车","周杰伦","林俊杰","邓紫棋","陈奕迅","汪苏泷","林宥嘉",
-  "薛之谦","吴亦凡","刀郎","跳楼机","搀扶",
-  "周深","王子健","Beyond","五月天","伍佰","王一佳","王菲","陶喆",
-  "七月上","于春洋","周传雄","张杰","半吨兄弟","张学友"
+ "大潞","烟嗓船长","文夫","马键涛","就是南方凯","程响","郭静","赵乃吉",
+ "王佳音","鱼蛋","窝窝","艺凌","洋澜一","任夏","魏佳艺","韩小欠","单依纯",
+ "DJ","喝茶","古筝","助眠","治愈房车", "经典老歌","70后","80后","热歌","热门","新歌","飙升","流行",
+ "周杰伦","林俊杰","邓紫棋","陈奕迅","汪苏泷","林宥嘉","薛之谦","吴亦凡","刀郎",
+ "周深","王子健","Beyond","五月天","伍佰","王一佳","王菲","陶喆",
+ "七月上","于春洋","周传雄","张杰","半吨兄弟","张学友",
+ "跳楼机","搀扶"
 ];
 
 const searchInput       = document.getElementById('searchInput');
@@ -178,7 +179,7 @@ function renderHotTags() {
 
 function searchMusic(keyword, callback = null) {
   currentSearchKeyword = keyword;
-  baseApiUrl = `https://www.hhlqilongzhu.cn/api/joox/juhe_music.php?msg=${encodeURIComponent(keyword)}&type=json&n=`;
+  baseApiUrl = `https://sdkapi.hhlqilongzhu.cn/api/juhe_dgmusic/?key=Dragon9430124081FEABFA626884BD28AF1BDF&msg=${encodeURIComponent(keyword)}&type=json&n=`;
   
   // 更新结果计数为"搜索中"
   resultCountEl.textContent = '搜索中...';
@@ -427,7 +428,7 @@ function updateBufferProgress() {
 document.addEventListener('DOMContentLoaded', () => {
   document.documentElement.classList.add('dark-theme');
   renderHotTags();
-  if (!handleShareUrl()) searchMusic('窝窝');
+  if (!handleShareUrl()) searchMusic('大潞');
   renderFavorites();
   
   // 初始化MediaSession
