@@ -181,6 +181,9 @@ function renderSearchResults(books) {
                     <button class="book-btn share-book-btn" data-bookid="${b.book_id}" title="分享">
                         <i class="fas fa-share-alt"></i> 分享
                     </button>
+                    <button class="book-btn play-book-btn" data-bookid="${b.book_id}" title="播放">
+                        <i class="fas fa-play"></i> 播放
+                    </button>
                 </div>
             </div>`;
         card.addEventListener('click', (e) => {
@@ -190,6 +193,7 @@ function renderSearchResults(books) {
         });
         card.querySelector('.favorite-book-btn').addEventListener('click', toggleFavorite);
         card.querySelector('.share-book-btn').addEventListener('click', shareBook);
+        card.querySelector('.play-book-btn').addEventListener('click', playBook);
         card.querySelector('.expand-btn').addEventListener('click', toggleExpand);
         dom.resultsGrid.appendChild(card);
     });
@@ -700,6 +704,12 @@ function shareBook(e) {
             promptManualCopy(shareText);
         }
     }
+}
+
+function playBook(e) {
+    e.stopPropagation();
+    const bookId = e.currentTarget.dataset.bookid;
+    loadBookDetails(bookId);
 }
 
 // ================= 工具函数 =================
