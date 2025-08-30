@@ -296,8 +296,8 @@
         .time-range-tags .tag {
             flex-shrink: 0;
             min-width: auto;
-            padding: 5px 8px;
-            font-size: 15px;
+            padding: 10px 13px; /* 增大5px */
+            font-size: 20px; /* 增大5px */
             white-space: nowrap;
         }
         
@@ -309,8 +309,8 @@
             }
             
             .time-range-tags .tag {
-                padding: 6px 12px;
-                font-size: 17px;
+                padding: 11px 17px; /* 增大5px */
+                font-size: 22px; /* 增大5px */
             }
         }
 
@@ -342,7 +342,7 @@
             border-radius: 20px;
             padding: 6px 16px;
             color: white;
-            font-size: 15px;
+            font-size: 20px; /* 增大5px */
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -583,7 +583,7 @@
         // API配置和工具函数
         const API_ENDPOINTS = {
             BIRTHDAY: 'https://api.mxin.moe/api/v1/birthday',
-            FORTUNE: 'http://api.suxun.site/api/constellation'
+            FORTUNE: 'https://api.suxun.site/api/constellation'
         };
 
         const CONSTELLATIONS = {
@@ -817,9 +817,9 @@
                     e.stopPropagation();
                     e.stopImmediatePropagation();
                     
-                    // 防抖机制 - 使用真实时间戳
+                    // 防抖机制 - 使用真实时间戳，减少防抖时间以提高响应速度
                     const now = Date.now();
-                    if (now - lastScrollTimeRef.current < 100) {
+                    if (now - lastScrollTimeRef.current < 30) { // 从100ms减少到30ms
                         return false;
                     }
                     lastScrollTimeRef.current = now;
@@ -925,8 +925,8 @@
                         const deltaY = startY - currentY;
                         const now = Date.now();
                         
-                        // 降低阈值并优化防抖，提高滚动频率
-                        if (Math.abs(deltaY) > 8 && now - lastTouchTime > 50) { // 阈值从20改为8，防抖从100ms改为50ms
+                        // 进一步降低阈值并减少防抖时间，大幅提高滚动频率
+                        if (Math.abs(deltaY) > 5 && now - lastTouchTime > 20) { // 阈值从8改为5，防抖从50ms改为20ms
                             const mockWheelEvent = { 
                                 deltaY, 
                                 preventDefault: () => {}, 
@@ -1058,17 +1058,30 @@
                     <div className="constellation-section">
                         <h4 style={{ color: '#87CEEB', marginBottom: '6px', textAlign: 'left', fontSize: '16px' }}>选择星座</h4>
                         <div className="constellation-tags">
-                            {Object.entries(CONSTELLATIONS).map(([key, constellation]) => (
-                                <div
-                                    key={key}
-                                    className={`tag ${selectedConstellation === key ? 'selected' : ''}`}
-                                    onClick={() => handleConstellationChange(key)}
-                                    style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '10px 16px' }}
-                                >
-                                    <span style={{ fontSize: '18px', fontWeight: '600' }}>{constellation.name}</span>
-                                    <span style={{ fontSize: '14px', opacity: '0.8', marginTop: '4px' }}>{constellation.dates}</span>
-                                </div>
-                            ))}
+                            {Object.entries(CONSTELLATIONS).map(([key, constellation]) => {
+                                // 为天蝎座和射手座设置最小内边距
+                                const isScorpioOrSagittarius = key === 'scorpio' || key === 'sagittarius';
+                                const paddingStyle = isScorpioOrSagittarius 
+                                    ? { padding: '6px 8px' } // 最小内边距
+                                    : { padding: '10px 16px' }; // 原始内边距
+                                    
+                                return (
+                                    <div
+                                        key={key}
+                                        className={`tag ${selectedConstellation === key ? 'selected' : ''}`}
+                                        onClick={() => handleConstellationChange(key)}
+                                        style={{ 
+                                            display: 'flex', 
+                                            flexDirection: 'column', 
+                                            alignItems: 'center', 
+                                            ...paddingStyle 
+                                        }}
+                                    >
+                                        <span style={{ fontSize: '18px', fontWeight: '600' }}>{constellation.name}</span>
+                                        <span style={{ fontSize: '14px', opacity: '0.8', marginTop: '4px' }}>{constellation.dates}</span>
+                                    </div>
+                                );
+                            })}
                         </div>
                     </div>
 
@@ -1331,7 +1344,7 @@
                                     className="button" 
                                     onClick={handleGetBirthdayInfo}
                                     disabled={birthdayLoading || !dateTime.birthday}
-                                    style={{ fontSize: '15px', padding: '8px 14px', whiteSpace: 'nowrap' }}
+                                    style={{ fontSize: '20px', padding: '8px 14px', whiteSpace: 'nowrap' }}
                                 >
                                     {birthdayLoading ? '查询中...' : '查询星座'}
                                 </button>
@@ -1340,7 +1353,7 @@
                                     onClick={clearResults}
                                     style={{ 
                                         background: 'rgba(255, 255, 255, 0.2)', 
-                                        fontSize: '15px', 
+                                        fontSize: '20px', 
                                         padding: '8px 14px', 
                                         whiteSpace: 'nowrap' 
                                     }}
@@ -1385,6 +1398,7 @@
                                     className="button" 
                                     onClick={handleGetFortune}
                                     disabled={fortuneLoading || !constellation.constellation || !constellation.timeRange}
+                                    style={{ fontSize: '20px' }}
                                 >
                                     {fortuneLoading ? '查询中...' : '查询运势'}
                                 </button>
