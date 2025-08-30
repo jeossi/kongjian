@@ -1,9 +1,13 @@
 <!DOCTYPE html>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>星座运势查询</title>
+	<link rel="icon" href="./Aje128.png" type="image/png" sizes="32x32">
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -31,30 +35,31 @@
         .app {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 10px;
             min-height: 100vh;
         }
 
         .container {
             max-width: 800px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 10px;
         }
 
         .card {
             background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 30px;
-            margin: 20px 0;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 15px 0;
             border: 1px solid rgba(255, 255, 255, 0.2);
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            overflow: visible;
         }
 
         .title {
             color: #fff;
-            font-size: 2.5rem;
-            margin-bottom: 2rem;
+            font-size: 2.2rem;
+            margin-bottom: 1.5rem;
             text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
             text-align: center;
         }
@@ -63,8 +68,8 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 10px;
-            margin: 20px 0;
+            gap: 8px;
+            margin: 15px 0;
             flex-wrap: wrap;
         }
 
@@ -73,19 +78,19 @@
             display: flex;
             justify-content: center;
             align-items: flex-start;
-            gap: 12px;
-            margin: 20px 0;
-            flex-wrap: nowrap; /* 强制不换行 */
-            overflow-x: auto; /* 如果屏幕太小，允许水平滚动 */
-            padding: 10px 0;
+            gap: 10px;
+            margin: 1px 0;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            padding: 8px 5px;
         }
 
         /* 分隔符样式 */
         .separator {
             color: white;
-            font-size: 24px;
+            font-size: 22px;
             font-weight: bold;
-            margin: 30px 8px 0 8px;
+            margin: 25px 6px 0 6px;
             opacity: 0.7;
             flex-shrink: 0;
         }
@@ -102,7 +107,7 @@
         .picker-label {
             color: white;
             font-weight: 600;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             font-size: 14px;
             text-align: center;
         }
@@ -128,7 +133,7 @@
             outline: none;
             /* 完全隔离滚动行为 */
             overscroll-behavior: contain;
-            touch-action: none;
+            touch-action: manipulation; /* 修改为manipulation支持触摸 */
             user-select: none;
             box-shadow: 
                 0 8px 16px rgba(0, 0, 0, 0.15),
@@ -254,8 +259,56 @@
             display: flex;
             justify-content: center;
             flex-wrap: wrap;
-            gap: 10px;
-            margin: 20px 0;
+            gap: 8px;
+            margin: 15px 0;
+        }
+        
+        /* 星座标签容器移动端3列4行 */
+        .constellation-tags {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin: 15px 0;
+            justify-items: center;
+        }
+        
+        /* 时间范围标签移动端一行显示 */
+        .time-range-tags {
+            display: flex;
+            justify-content: center;
+            flex-wrap: nowrap;
+            gap: 6px;
+            margin: 15px 0;
+            overflow-x: auto;
+            padding: 8px 8px;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        
+        /* 隐藏 webkit 浏览器的滚动条 */
+        .time-range-tags::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .time-range-tags .tag {
+            flex-shrink: 0;
+            min-width: auto;
+            padding: 5px 8px;
+            font-size: 13px;
+            white-space: nowrap;
+        }
+        
+        @media (min-width: 769px) {
+            .time-range-tags {
+                flex-wrap: wrap;
+                gap: 8px;
+                overflow-x: visible;
+            }
+            
+            .time-range-tags .tag {
+                padding: 6px 12px;
+                font-size: 15px;
+            }
         }
 
         .tag {
@@ -283,14 +336,14 @@
         .button {
             background: linear-gradient(45deg, #667eea, #764ba2);
             border: none;
-            border-radius: 25px;
-            padding: 12px 30px;
+            border-radius: 20px;
+            padding: 6px 16px;
             color: white;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
-            margin: 10px;
+            margin: 5px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
         }
 
@@ -308,9 +361,9 @@
         .result-card {
             background: rgba(255, 255, 255, 0.95);
             color: #333;
-            border-radius: 15px;
-            padding: 25px;
-            margin: 20px 0;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 15px 0;
             text-align: left;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
         }
@@ -319,44 +372,44 @@
         .two-column-layout {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-top: 15px;
+            gap: 15px;
+            margin-top: 10px;
         }
 
         .column {
             background: rgba(102, 126, 234, 0.05);
-            border-radius: 10px;
-            padding: 15px;
-            border-left: 4px solid #667eea;
+            border-radius: 8px;
+            padding: 12px;
+            border-left: 3px solid #667eea;
         }
 
         .column h4 {
             color: #667eea;
-            margin-bottom: 10px;
-            font-size: 1.1rem;
+            margin-bottom: 6px;
+            font-size: 1rem;
             font-weight: 600;
         }
 
         @media (max-width: 768px) {
             .two-column-layout {
-                grid-template-columns: 1fr; /* 移动端改为单列 */
-                gap: 15px;
+                grid-template-columns: 1fr;
+                gap: 10px;
             }
         }
 
         .result-section {
-            margin: 15px 0;
-            padding: 15px;
+            margin: 12px 0;
+            padding: 12px;
             background: rgba(102, 126, 234, 0.05);
-            border-radius: 10px;
-            border-left: 4px solid #667eea;
+            border-radius: 8px;
+            border-left: 3px solid #667eea;
         }
 
         .result-title {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             font-weight: 600;
             color: #667eea;
-            margin-bottom: 10px;
+            margin-bottom: 6px;
         }
 
         .result-content {
@@ -368,32 +421,38 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 40px;
+            padding: 30px;
             color: white;
-            font-size: 18px;
+            font-size: 16px;
         }
 
         .error {
             background: rgba(255, 0, 0, 0.1);
             border: 1px solid rgba(255, 0, 0, 0.3);
             color: #ff6b6b;
-            padding: 15px;
-            border-radius: 10px;
-            margin: 20px 0;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 15px 0;
             text-align: center;
         }
 
         .section-title {
-            color: white;
-            font-size: 1.2rem;
-            margin-bottom: 15px;
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 6px;
             text-align: center;
+            text-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+            letter-spacing: 1px;
         }
 
         .selected-info {
             color: white;
-            margin-top: 15px;
-            font-size: 14px;
+            margin-top: 2px;
+            font-size: 13px;
             opacity: 0.8;
             text-align: center;
         }
@@ -409,11 +468,12 @@
             }
             
             .picker-container-unified {
-                flex-wrap: nowrap; /* 强制不换行 */
-                gap: 8px;
+                flex-wrap: nowrap;
+                gap: 6px;
                 overflow-x: auto;
-                justify-content: flex-start;
-                padding: 10px 5px;
+                justify-content: center;
+                padding: 10px 2px;
+                margin: 1px 0;
             }
             
             .picker-wheel {
@@ -444,8 +504,8 @@
             }
             
             .separator {
-                font-size: 20px;
-                margin: 25px 4px 0 4px;
+                font-size: 18px;
+                margin: 18px 4px 0 4px;
                 flex-shrink: 0;
             }
             
@@ -454,7 +514,7 @@
             }
             
             .card {
-                padding: 20px;
+                padding: 15px;
             }
             
             .two-column-layout {
@@ -465,11 +525,11 @@
         
         @media (max-width: 480px) {
             .picker-container-unified {
-                flex-wrap: nowrap; /* 仍然不换行 */
-                gap: 6px;
+                flex-wrap: nowrap;
+                gap: 5px;
                 overflow-x: auto;
-                justify-content: flex-start;
-                padding: 10px 2px;
+                justify-content: center;
+                padding: 8px 2px;
             }
             
             .picker-wheel {
@@ -490,8 +550,8 @@
             }
             
             .separator {
-                font-size: 18px;
-                margin: 20px 2px 0 2px;
+                font-size: 16px;
+                margin: 15px 2px 0 2px;
                 flex-shrink: 0;
             }
             
@@ -520,7 +580,7 @@
         // API配置和工具函数
         const API_ENDPOINTS = {
             BIRTHDAY: 'https://api.mxin.moe/api/v1/birthday',
-            FORTUNE: 'http://api.suxun.site/api/constellation'
+            FORTUNE: 'https://corsproxy.io/?http://api.suxun.site/api/constellation'
         };
 
         const CONSTELLATIONS = {
@@ -544,6 +604,88 @@
             'week': '周',
             'month': '月',
             'year': '年'
+        };
+
+        // 星标等级计算函数
+        const calculateStarRating = (fortuneValue) => {
+            // 将运势值转换为数字（移除%号）
+            const numericValue = parseFloat(String(fortuneValue).replace('%', ''));
+            
+            if (isNaN(numericValue)) return 0;
+            
+            if (numericValue >= 90) return 5;
+            if (numericValue >= 80) return 4;
+            if (numericValue >= 70) return 3;
+            if (numericValue >= 60) return 2;
+            if (numericValue >= 50) return 1;
+            return 0;
+        };
+        
+        // 星星显示组件
+        const StarRating = ({ rating }) => {
+            const stars = [];
+            for (let i = 0; i < 5; i++) {
+                const isActive = i < rating;
+                stars.push(
+                    <span 
+                        key={i} 
+                        style={{ 
+                            color: isActive ? 'transparent' : 'transparent',
+                            background: isActive 
+                                ? 'linear-gradient(45deg, #FF6B35, #F7931E, #FFD23F)' 
+                                : 'transparent',
+                            WebkitBackgroundClip: isActive ? 'text' : 'border-box',
+                            WebkitTextFillColor: isActive ? 'transparent' : 'transparent',
+                            backgroundClip: isActive ? 'text' : 'border-box',
+                            WebkitTextStroke: isActive ? 'none' : '1.5px #888',
+                            fontSize: '32px',
+                            marginRight: '4px',
+                            textShadow: isActive 
+                                ? '0 2px 4px rgba(255, 107, 53, 0.4), 0 0 8px rgba(255, 210, 63, 0.3)'
+                                : 'none',
+                            filter: isActive ? 'drop-shadow(0 0 6px rgba(255, 165, 0, 0.5))' : 'none',
+                            transition: 'all 0.3s ease'
+                        }}
+                    >
+                        ★
+                    </span>
+                );
+            }
+            return <span>{stars}</span>;
+        };
+
+        // 日期修正函数
+        const correctDateForTimeRange = (data, timeRange) => {
+            if (!data || (timeRange !== 'today' && timeRange !== 'nextday')) {
+                return data; // 只修正今天和明天的数据
+            }
+            
+            // 获取当前日期
+            const currentDate = new Date();
+            const today = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
+            
+            // 计算期望的日期
+            const expectedDate = new Date(today);
+            if (timeRange === 'nextday') {
+                expectedDate.setDate(expectedDate.getDate() + 1);
+            }
+            
+            // 格式化期望日期为字符串 (YYYY-MM-DD)
+            const expectedDateStr = expectedDate.getFullYear() + '-' + 
+                (expectedDate.getMonth() + 1).toString().padStart(2, '0') + '-' + 
+                expectedDate.getDate().toString().padStart(2, '0');
+            
+            // 如果数据有date字段但不正确，则修正它
+            if (data.date && data.date !== expectedDateStr) {
+                console.log(`日期修正: ${timeRange === 'today' ? '今天' : '明天'}数据日期从 ${data.date} 修正为 ${expectedDateStr}`);
+                data.date = expectedDateStr;
+            } else if (!data.date) {
+                // 如果没有date字段，添加正确的日期
+                console.log(`日期添加: 为${timeRange === 'today' ? '今天' : '明天'}数据添加日期 ${expectedDateStr}`);
+                data.date = expectedDateStr;
+            }
+            
+            return data;
         };
 
         // API函数
@@ -753,13 +895,49 @@
                         return false;
                     };
                     
+                    // 触摸事件处理
+                    let startY = 0;
+                    let isDragging = false;
+                    
+                    const handleTouchStart = (e) => {
+                        startY = e.touches[0].clientY;
+                        isDragging = true;
+                    };
+                    
+                    const handleTouchMove = (e) => {
+                        if (!isDragging) return;
+                        e.preventDefault();
+                        
+                        const currentY = e.touches[0].clientY;
+                        const deltaY = startY - currentY;
+                        
+                        // 模拟滚轮事件
+                        if (Math.abs(deltaY) > 20) { // 阈值避免过敏感
+                            const mockWheelEvent = { deltaY, preventDefault: () => {}, stopPropagation: () => {}, stopImmediatePropagation: () => {} };
+                            handleWheel(mockWheelEvent);
+                            startY = currentY; // 重置起点
+                        }
+                    };
+                    
+                    const handleTouchEnd = () => {
+                        isDragging = false;
+                    };
+                    
                     // 同时添加捕获和冒泡阶段的事件监听
                     wheelElement.addEventListener('wheel', handleWheelCapture, { passive: false, capture: true });
                     wheelElement.addEventListener('wheel', handleWheelCapture, { passive: false, capture: false });
                     
+                    // 添加触摸事件
+                    wheelElement.addEventListener('touchstart', handleTouchStart, { passive: false });
+                    wheelElement.addEventListener('touchmove', handleTouchMove, { passive: false });
+                    wheelElement.addEventListener('touchend', handleTouchEnd, { passive: false });
+                    
                     return () => {
                         wheelElement.removeEventListener('wheel', handleWheelCapture, { capture: true });
                         wheelElement.removeEventListener('wheel', handleWheelCapture, { capture: false });
+                        wheelElement.removeEventListener('touchstart', handleTouchStart);
+                        wheelElement.removeEventListener('touchmove', handleTouchMove);
+                        wheelElement.removeEventListener('touchend', handleTouchEnd);
                     };
                 }, [handleWheel]);
 
@@ -810,7 +988,7 @@
                     <h3 className="section-title">星座 生辰八字查询</h3>
                     
                     <div className="unified-picker">
-                        <h4 style={{ color: 'white', marginBottom: '15px', textAlign: 'center' }}>
+                        <h4 style={{ color: '#9ca3af', marginBottom: '1px', textAlign: 'center', fontSize: '13px', whiteSpace: 'nowrap' }}>
                             出生日期 (必填) 和 出生时间 (可选)
                         </h4>
                         <div className="picker-container-unified">
@@ -854,8 +1032,8 @@
                     <h3 className="section-title">星座运势查询</h3>
                     
                     <div className="constellation-section">
-                        <h4 style={{ color: 'white', marginBottom: '15px', textAlign: 'center' }}>选择星座</h4>
-                        <div className="tags-container">
+                        <h4 style={{ color: '#87CEEB', marginBottom: '6px', textAlign: 'left' }}>选择星座</h4>
+                        <div className="constellation-tags">
                             {Object.entries(CONSTELLATIONS).map(([key, constellation]) => (
                                 <div
                                     key={key}
@@ -871,8 +1049,8 @@
                     </div>
 
                     <div className="time-range-section">
-                        <h4 style={{ color: 'white', margin: '30px 0 15px', textAlign: 'center' }}>选择周期</h4>
-                        <div className="tags-container">
+                        <h4 style={{ color: '#87CEEB', margin: '5px 0 2px', textAlign: 'left' }}>选择周期</h4>
+                        <div className="time-range-tags" style={{ margin: '2px 0 2px' }}>
                             {Object.entries(TIME_RANGES).map(([key, name]) => (
                                 <div
                                     key={key}
@@ -933,7 +1111,10 @@
                             <h3 className="result-title">✨ 星座运势</h3>
                             
                             <div className="result-section">
-                                <div className="result-title">运势概览</div>
+                                <div className="result-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <span>运势概览</span>
+                                    <StarRating rating={calculateStarRating(fortuneResult.all)} />
+                                </div>
                                 <div className="result-content">
                                     <p><strong>日期：</strong>{fortuneResult.date}</p>
                                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '10px', marginTop: '10px' }}>
@@ -942,7 +1123,7 @@
                                         <div><strong>工作运势：</strong>{fortuneResult.work}</div>
                                         <div><strong>财运运势：</strong>{fortuneResult.money}</div>
                                         <div><strong>健康运势：</strong>{fortuneResult.health}</div>
-                                        <div><strong>讨论运势：</strong>{fortuneResult.discuss}</div>
+                                        <div><strong>关注热度：</strong>{fortuneResult.discuss}</div>
                                     </div>
                                 </div>
                             </div>
@@ -968,22 +1149,22 @@
                             <div className="result-section">
                                 <div className="result-title">详细解析</div>
                                 <div className="result-content">
-                                    <div style={{ marginBottom: '15px' }}>
+                                    <div style={{ marginBottom: '6px' }}>
                                         <strong>整体运势：</strong>
                                         <p style={{ marginTop: '5px', lineHeight: '1.6' }}>{fortuneResult.all_text}</p>
                                     </div>
                                     
-                                    <div style={{ marginBottom: '15px' }}>
+                                    <div style={{ marginBottom: '6px' }}>
                                         <strong>爱情运势：</strong>
                                         <p style={{ marginTop: '5px', lineHeight: '1.6' }}>{fortuneResult.love_text}</p>
                                     </div>
                                     
-                                    <div style={{ marginBottom: '15px' }}>
+                                    <div style={{ marginBottom: '6px' }}>
                                         <strong>工作运势：</strong>
                                         <p style={{ marginTop: '5px', lineHeight: '1.6' }}>{fortuneResult.work_text}</p>
                                     </div>
                                     
-                                    <div style={{ marginBottom: '15px' }}>
+                                    <div style={{ marginBottom: '6px' }}>
                                         <strong>财运分析：</strong>
                                         <p style={{ marginTop: '5px', lineHeight: '1.6' }}>{fortuneResult.money_text}</p>
                                     </div>
@@ -1075,6 +1256,9 @@
                             targetData = result.data.year || result.data;
                         }
                         
+                        // 修正今天和明天的日期
+                        targetData = correctDateForTimeRange(targetData, timeRange);
+                        
                         // 在结果中添加时间范围信息，用于显示
                         targetData.selectedTimeRange = constellation.timeRange;
                         
@@ -1110,18 +1294,32 @@
                         {/* 日期时间选择器 */}
                         <div className="card">
                             <DateTimePicker onDateTimeChange={handleDateTimeChange} />
-                            <div style={{ textAlign: 'center', display: 'flex', justifyContent: 'center', gap: '15px', flexWrap: 'wrap' }}>
+                            <div style={{ 
+                                textAlign: 'center', 
+                                display: 'flex', 
+                                justifyContent: 'center', 
+                                gap: '8px', 
+                                flexWrap: 'nowrap', 
+                                alignItems: 'center',
+                                marginTop: '6px'
+                            }}>
                                 <button 
                                     className="button" 
                                     onClick={handleGetBirthdayInfo}
                                     disabled={birthdayLoading || !dateTime.birthday}
+                                    style={{ fontSize: '13px', padding: '8px 14px', whiteSpace: 'nowrap' }}
                                 >
                                     {birthdayLoading ? '查询中...' : '查询星座'}
                                 </button>
                                 <button 
                                     className="button" 
                                     onClick={clearResults}
-                                    style={{ background: 'rgba(255, 255, 255, 0.2)' }}
+                                    style={{ 
+                                        background: 'rgba(255, 255, 255, 0.2)', 
+                                        fontSize: '13px', 
+                                        padding: '8px 14px', 
+                                        whiteSpace: 'nowrap' 
+                                    }}
                                 >
                                     清除结果
                                 </button>
@@ -1158,7 +1356,7 @@
                         {/* 星座选择器 */}
                         <div className="card">
                             <ConstellationSelector onSelectionChange={handleConstellationChange} />
-                            <div style={{ textAlign: 'center' }}>
+                            <div style={{ textAlign: 'center', marginTop: '5px' }}>
                                 <button 
                                     className="button" 
                                     onClick={handleGetFortune}
@@ -1174,7 +1372,10 @@
                                     <h3 className="result-title">✨ 星座运势 - {TIME_RANGES[fortuneResult.selectedTimeRange] || '运势'}</h3>
                                     
                                     <div className="result-section">
-                                        <div className="result-title">运势概览</div>
+                                        <div className="result-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <span>运势概览</span>
+                                            <StarRating rating={calculateStarRating(fortuneResult.all)} />
+                                        </div>
                                         <div className="result-content">
                                             <p><strong>日期：</strong>{fortuneResult.date || '今日'}</p>
                                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '10px', marginTop: '10px' }}>
@@ -1183,9 +1384,9 @@
                                                 <div><strong>工作运势：</strong>{fortuneResult.work || '暂无数据'}</div>
                                                 <div><strong>财运运势：</strong>{fortuneResult.money || '暂无数据'}</div>
                                                 <div><strong>健康运势：</strong>{fortuneResult.health || '暂无数据'}</div>
-                                                {/* 周、月、年时隐藏讨论运势 */}
+                                                {/* 周、月、年时隐藏关注热度 */}
                                                 {fortuneResult.selectedTimeRange !== 'week' && fortuneResult.selectedTimeRange !== 'month' && fortuneResult.selectedTimeRange !== 'year' && (
-                                                    <div><strong>讨论运势：</strong>{fortuneResult.discuss || '暂无数据'}</div>
+                                                    <div><strong>关注热度：</strong>{fortuneResult.discuss || '暂无数据'}</div>
                                                 )}
                                             </div>
                                         </div>
@@ -1215,22 +1416,22 @@
                                     <div className="result-section">
                                         <div className="result-title">详细解析</div>
                                         <div className="result-content">
-                                            <div style={{ marginBottom: '15px' }}>
+                                            <div style={{ marginBottom: '6px' }}>
                                                 <strong>整体运势：</strong>
                                                 <p style={{ marginTop: '5px', lineHeight: '1.6' }}>{fortuneResult.all_text || '暂无详细解析'}</p>
                                             </div>
                                             
-                                            <div style={{ marginBottom: '15px' }}>
+                                            <div style={{ marginBottom: '6px' }}>
                                                 <strong>爱情运势：</strong>
                                                 <p style={{ marginTop: '5px', lineHeight: '1.6' }}>{fortuneResult.love_text || '暂无详细解析'}</p>
                                             </div>
                                             
-                                            <div style={{ marginBottom: '15px' }}>
+                                            <div style={{ marginBottom: '6px' }}>
                                                 <strong>工作运势：</strong>
                                                 <p style={{ marginTop: '5px', lineHeight: '1.6' }}>{fortuneResult.work_text || '暂无详细解析'}</p>
                                             </div>
                                             
-                                            <div style={{ marginBottom: '15px' }}>
+                                            <div style={{ marginBottom: '6px' }}>
                                                 <strong>财运分析：</strong>
                                                 <p style={{ marginTop: '5px', lineHeight: '1.6' }}>{fortuneResult.money_text || '暂无详细解析'}</p>
                                             </div>
@@ -1264,10 +1465,10 @@
                         {/* 运势结果展示区域已移至星座选择器卡片内部 */}
 
                         {/* 版权信息 */}
-                        <div className="card" style={{ marginTop: '40px', fontSize: '14px', opacity: 0.8, textAlign: 'center' }}>
+                        <div className="card" style={{ marginTop: '20px', fontSize: '14px', opacity: 0.8, textAlign: 'center' }}>
                             <div style={{ color: 'white', lineHeight: '1.6' }}>
-                                <p style={{ fontSize: '16px', marginBottom: '10px' }}>✨ 星座运势查询系统 ✨</p>
-                                <p style={{ fontSize: '12px', opacity: '0.7' }}>© 2025 Ajeo 星座运势 | 仅供娱乐参考，请勿过度迷信</p>
+                                <p style={{ fontSize: '14px', marginBottom: '6px' }}>✨ 星座运势查询系统 ✨</p>
+                                <p style={{ fontSize: '12px', opacity: '0.7' }}>© 2024 星座运势网 | 仅供娱乐参考，请勿过度迷信</p>
                                 <p style={{ fontSize: '11px', opacity: '0.6', marginTop: '5px' }}>数据来源于专业星座API接口</p>
                             </div>
                         </div>
