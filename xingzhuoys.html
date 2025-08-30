@@ -1,0 +1,1283 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>星座运势查询</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        :root {
+            font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+            line-height: 1.5;
+            font-weight: 400;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            overflow-x: hidden;
+        }
+
+        .app {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin: 20px 0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .title {
+            color: #fff;
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+
+        .picker-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        /* 统一拨盘容器样式 */
+        .picker-container-unified {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 12px;
+            margin: 20px 0;
+            flex-wrap: nowrap; /* 强制不换行 */
+            overflow-x: auto; /* 如果屏幕太小，允许水平滚动 */
+            padding: 10px 0;
+        }
+
+        /* 分隔符样式 */
+        .separator {
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            margin: 30px 8px 0 8px;
+            opacity: 0.7;
+            flex-shrink: 0;
+        }
+
+        /* 拨盘列样式 */
+        .picker-column {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0 2px;
+            flex-shrink: 0; /* 防止收缩 */
+        }
+
+        .picker-label {
+            color: white;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .picker-wheel {
+            background: linear-gradient(180deg, 
+                rgba(255, 255, 255, 0.3) 0%, 
+                rgba(255, 255, 255, 0.9) 15%, 
+                rgba(255, 255, 255, 0.95) 50%, 
+                rgba(255, 255, 255, 0.9) 85%, 
+                rgba(255, 255, 255, 0.3) 100%);
+            border-radius: 15px;
+            padding: 0;
+            min-width: 70px;
+            width: 70px;
+            height: 120px;
+            overflow: hidden;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            outline: none;
+            /* 完全隔离滚动行为 */
+            overscroll-behavior: contain;
+            touch-action: none;
+            user-select: none;
+            box-shadow: 
+                0 8px 16px rgba(0, 0, 0, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.5),
+                inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+        }
+
+        /* 年份拨盘保持较宽 */
+        .picker-wheel.year-picker {
+            min-width: 80px;
+            width: 80px;
+        }
+
+        /* 月日时分拨盘变窄 */
+        .picker-wheel.narrow-picker {
+            min-width: 55px;
+            width: 55px;
+        }
+
+        /* 拨盘焦点样式 */
+        .picker-wheel:focus {
+            border-color: rgba(102, 126, 234, 0.8);
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.3);
+        }
+
+        .picker-wheel.time-picker:focus {
+            border-color: rgba(255, 165, 0, 0.8);
+            box-shadow: 0 0 0 2px rgba(255, 165, 0, 0.3);
+        }
+
+        /* 时间拨盘的区别样式 */
+        .picker-wheel.time-picker {
+            background: linear-gradient(180deg, 
+                rgba(255, 223, 186, 0.3) 0%, 
+                rgba(255, 223, 186, 0.9) 15%, 
+                rgba(255, 223, 186, 0.95) 50%, 
+                rgba(255, 223, 186, 0.9) 85%, 
+                rgba(255, 223, 186, 0.3) 100%);
+            border-color: rgba(255, 165, 0, 0.4);
+        }
+
+        .picker-wheel.time-picker:hover {
+            border-color: rgba(255, 165, 0, 0.7);
+        }
+
+        .picker-wheel.time-picker .picker-option.selected {
+            background: #ff8c00; /* 橙色选中 */
+            box-shadow: 0 2px 8px rgba(255, 140, 0, 0.3);
+        }
+
+        .picker-wheel:hover {
+            border-color: rgba(102, 126, 234, 0.5);
+        }
+
+        /* 拨盘内部容器 */
+        .picker-wheel-inner {
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s ease;
+            position: relative;
+        }
+
+        .picker-option {
+            padding: 12px 6px;
+            text-align: center;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            color: #333;
+            font-weight: 500;
+            font-size: 16px;
+            line-height: 1.2;
+            user-select: none;
+            height: 40px; /* 固定高度 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0.4; /* 非选中项透明度 */
+        }
+
+        .picker-option:hover {
+            background: rgba(102, 126, 234, 0.1);
+            opacity: 0.7;
+        }
+
+        .picker-option.selected {
+            background: #667eea;
+            color: white;
+            font-weight: 600;
+            font-size: 18px;
+            opacity: 1; /* 选中项完全不透明 */
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+            z-index: 10;
+        }
+
+        /* 中心指示线 */
+        .picker-wheel::before,
+        .picker-wheel::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: rgba(102, 126, 234, 0.3);
+            z-index: 5;
+        }
+
+        .picker-wheel::before {
+            top: calc(50% - 20px); /* 选中区域顶部线 */
+        }
+
+        .picker-wheel::after {
+            bottom: calc(50% - 20px); /* 选中区域底部线 */
+        }
+
+        /* 空白选项样式 */
+        .picker-option.empty {
+            pointer-events: none;
+            opacity: 0;
+        }
+
+        .tags-container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .tag {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 25px;
+            padding: 8px 16px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .tag:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .tag.selected {
+            background: #667eea;
+            border-color: #667eea;
+            transform: scale(1.05);
+        }
+
+        .button {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border: none;
+            border-radius: 25px;
+            padding: 12px 30px;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result-card {
+            background: rgba(255, 255, 255, 0.95);
+            color: #333;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            text-align: left;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 两列布局样式 */
+        .two-column-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 15px;
+        }
+
+        .column {
+            background: rgba(102, 126, 234, 0.05);
+            border-radius: 10px;
+            padding: 15px;
+            border-left: 4px solid #667eea;
+        }
+
+        .column h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .two-column-layout {
+                grid-template-columns: 1fr; /* 移动端改为单列 */
+                gap: 15px;
+            }
+        }
+
+        .result-section {
+            margin: 15px 0;
+            padding: 15px;
+            background: rgba(102, 126, 234, 0.05);
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .result-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .result-content {
+            line-height: 1.6;
+            color: #555;
+        }
+
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            color: white;
+            font-size: 18px;
+        }
+
+        .error {
+            background: rgba(255, 0, 0, 0.1);
+            border: 1px solid rgba(255, 0, 0, 0.3);
+            color: #ff6b6b;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .section-title {
+            color: white;
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .selected-info {
+            color: white;
+            margin-top: 15px;
+            font-size: 14px;
+            opacity: 0.8;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .title {
+                font-size: 2rem;
+            }
+            
+            .picker-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .picker-container-unified {
+                flex-wrap: nowrap; /* 强制不换行 */
+                gap: 8px;
+                overflow-x: auto;
+                justify-content: flex-start;
+                padding: 10px 5px;
+            }
+            
+            .picker-wheel {
+                width: 60px;
+                min-width: 60px;
+                height: 100px;
+                flex-shrink: 0;
+            }
+            
+            .picker-wheel.year-picker {
+                width: 65px;
+                min-width: 65px;
+            }
+            
+            .picker-wheel.narrow-picker {
+                width: 50px;
+                min-width: 50px;
+            }
+            
+            .picker-option {
+                padding: 8px 4px;
+                font-size: 14px;
+                height: 32px;
+            }
+            
+            .picker-option.selected {
+                font-size: 16px;
+            }
+            
+            .separator {
+                font-size: 20px;
+                margin: 25px 4px 0 4px;
+                flex-shrink: 0;
+            }
+            
+            .picker-label {
+                font-size: 12px;
+            }
+            
+            .card {
+                padding: 20px;
+            }
+            
+            .two-column-layout {
+                grid-template-columns: 1fr; /* 移动端改为单列 */
+                gap: 15px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .picker-container-unified {
+                flex-wrap: nowrap; /* 仍然不换行 */
+                gap: 6px;
+                overflow-x: auto;
+                justify-content: flex-start;
+                padding: 10px 2px;
+            }
+            
+            .picker-wheel {
+                width: 55px;
+                min-width: 55px;
+                height: 90px;
+                flex-shrink: 0;
+            }
+            
+            .picker-wheel.year-picker {
+                width: 60px;
+                min-width: 60px;
+            }
+            
+            .picker-wheel.narrow-picker {
+                width: 45px;
+                min-width: 45px;
+            }
+            
+            .separator {
+                font-size: 18px;
+                margin: 20px 2px 0 2px;
+                flex-shrink: 0;
+            }
+            
+            .picker-option {
+                padding: 6px 2px;
+                font-size: 12px;
+                height: 28px;
+            }
+            
+            .picker-option.selected {
+                font-size: 14px;
+            }
+            
+            .picker-label {
+                font-size: 11px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // API配置和工具函数
+        const API_ENDPOINTS = {
+            BIRTHDAY: 'https://api.mxin.moe/api/v1/birthday',
+            FORTUNE: 'http://api.suxun.site/api/constellation'
+        };
+
+        const CONSTELLATIONS = {
+            'aries': { name: '白羊座', dates: '3.21-4.19' },
+            'taurus': { name: '金牛座', dates: '4.20-5.20' }, 
+            'gemini': { name: '双子座', dates: '5.21-6.21' },
+            'cancer': { name: '巨蟹座', dates: '6.22-7.22' },
+            'leo': { name: '狮子座', dates: '7.23-8.22' },
+            'virgo': { name: '处女座', dates: '8.23-9.22' },
+            'libra': { name: '天秤座', dates: '9.23-10.23' },
+            'scorpio': { name: '天蝎座', dates: '10.24-11.22' },
+            'sagittarius': { name: '射手座', dates: '11.23-12.21' },
+            'capricorn': { name: '摩羯座', dates: '12.22-1.19' },
+            'aquarius': { name: '水瓶座', dates: '1.20-2.18' },
+            'pisces': { name: '双鱼座', dates: '2.19-3.20' }
+        };
+
+        const TIME_RANGES = {
+            'today': '今天',
+            'nextday': '明天', 
+            'week': '周',
+            'month': '月',
+            'year': '年'
+        };
+
+        // API函数
+        const getBirthdayInfo = async (birthday, time = null) => {
+            try {
+                let url = `${API_ENDPOINTS.BIRTHDAY}?birthday=${birthday}`;
+                if (time) {
+                    url += `&time=${time}`;
+                }
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.code === 0) {
+                    return { success: true, data: data.data };
+                } else {
+                    return { success: false, error: data.message || '获取失败' };
+                }
+            } catch (error) {
+                return { success: false, error: '网络请求失败：' + error.message };
+            }
+        };
+
+        const getConstellation = async (type, time) => {
+            try {
+                const url = `${API_ENDPOINTS.FORTUNE}?type=${type}&time=${time}`;
+                console.log('请求URL:', url);
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                console.log('原始API响应:', data);
+                
+                // 兼容数字和字符串类型的状态码
+                if (data.code === 200 || data.code === "200") {
+                    console.log('解析成功，返回数据:', data.data);
+                    return { success: true, data: data.data };
+                } else {
+                    console.log('解析失败，错误信息:', data.msg || data.message);
+                    return { success: false, error: data.msg || data.message || '获取运势失败' };
+                }
+            } catch (error) {
+                console.error('网络请求异常:', error);
+                return { success: false, error: '网络请求失败：' + error.message };
+            }
+        };
+
+        // 日期时间选择器组件
+        const DateTimePicker = ({ onDateTimeChange }) => {
+            const [selectedYear, setSelectedYear] = useState(2000);
+            const [selectedMonth, setSelectedMonth] = useState(1);
+            const [selectedDay, setSelectedDay] = useState(1);
+            const [selectedHour, setSelectedHour] = useState(12);
+            const [selectedMinute, setSelectedMinute] = useState(0);
+
+            const years = Array.from({ length: 75 }, (_, i) => 1950 + i);
+            const months = Array.from({ length: 12 }, (_, i) => i + 1);
+            const hours = Array.from({ length: 24 }, (_, i) => i);
+            const minutes = Array.from({ length: 60 }, (_, i) => i);
+
+            const getDaysInMonth = (year, month) => {
+                return new Date(year, month, 0).getDate();
+            };
+
+            const days = Array.from({ length: getDaysInMonth(selectedYear, selectedMonth) }, (_, i) => i + 1);
+
+            useEffect(() => {
+                const maxDays = getDaysInMonth(selectedYear, selectedMonth);
+                if (selectedDay > maxDays) {
+                    setSelectedDay(maxDays);
+                }
+            }, [selectedYear, selectedMonth, selectedDay]);
+
+            useEffect(() => {
+                const birthday = `${selectedYear}-${selectedMonth.toString().padStart(2, '0')}-${selectedDay.toString().padStart(2, '0')}`;
+                const time = `${selectedHour.toString().padStart(2, '0')}:${selectedMinute.toString().padStart(2, '0')}`;
+                
+                if (typeof onDateTimeChange === 'function') {
+                    onDateTimeChange({ birthday, time });
+                }
+            }, [selectedYear, selectedMonth, selectedDay, selectedHour, selectedMinute]);
+
+            const PickerWheel = ({ options, selected, onChange, label, isTimePicker = false, isYearPicker = false }) => {
+                const selectedIndex = options.indexOf(selected);
+                const wheelRef = useRef(null);
+                const lastScrollTimeRef = useRef(0); // 使用ref管理防抖时间
+                
+                // 获取当前选中项前后的项目，确保只显示3个
+                const getVisibleOptions = () => {
+                    const result = [];
+                    
+                    // 查找当前选中项的索引
+                    let selectedIndex = -1;
+                    for (let i = 0; i < options.length; i++) {
+                        if (options[i] === selected) {
+                            selectedIndex = i;
+                            break;
+                        }
+                    }
+                    
+                    // 生成三个可见选项
+                    for (let i = selectedIndex - 1; i <= selectedIndex + 1; i++) {
+                        if (i >= 0 && i < options.length) {
+                            result.push({
+                                value: options[i],
+                                index: i,
+                                isSelected: i === selectedIndex
+                            });
+                        } else {
+                            result.push({
+                                value: '',
+                                index: i,
+                                isSelected: false,
+                                isEmpty: true
+                            });
+                        }
+                    }
+                    
+                    return result;
+                };
+
+                // 改进的滚轮处理
+                const handleWheel = (e) => {
+                    // 立即阻止事件传播
+                    e.preventDefault();
+                    e.stopPropagation();
+                    e.stopImmediatePropagation();
+                    
+                    // 防抖机制 - 使用真实时间戳
+                    const now = Date.now();
+                    if (now - lastScrollTimeRef.current < 100) {
+                        return false;
+                    }
+                    lastScrollTimeRef.current = now;
+                    
+                    // 直接根据滚轮方向决定操作
+                    if (e.deltaY < 0) {
+                        // 向上滚动 - 减小值
+                        for (let i = 0; i < options.length; i++) {
+                            if (options[i] === selected && i > 0) {
+                                onChange(options[i - 1]);
+                                break;
+                            }
+                        }
+                    } else if (e.deltaY > 0) {
+                        // 向下滚动 - 增大值
+                        for (let i = 0; i < options.length; i++) {
+                            if (options[i] === selected && i < options.length - 1) {
+                                onChange(options[i + 1]);
+                                break;
+                            }
+                        }
+                    }
+                    
+                    return false;
+                };
+
+                const handleClick = (optionValue) => {
+                    if (optionValue && optionValue !== selected) {
+                        onChange(optionValue);
+                    }
+                };
+                
+                // 键盘支持（上下箭头键）
+                const handleKeyDown = (e) => {
+                    if (e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        let currentIndex = -1;
+                        for (let i = 0; i < options.length; i++) {
+                            if (options[i] === selected) {
+                                currentIndex = i;
+                                break;
+                            }
+                        }
+                        if (currentIndex > 0) {
+                            onChange(options[currentIndex - 1]);
+                        }
+                    } else if (e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        let currentIndex = -1;
+                        for (let i = 0; i < options.length; i++) {
+                            if (options[i] === selected) {
+                                currentIndex = i;
+                                break;
+                            }
+                        }
+                        if (currentIndex < options.length - 1 && currentIndex >= 0) {
+                            onChange(options[currentIndex + 1]);
+                        }
+                    }
+                };
+
+                // 添加滚轮事件监听器
+                useEffect(() => {
+                    const wheelElement = wheelRef.current;
+                    if (!wheelElement) return;
+                    
+                    const handleWheelCapture = (e) => {
+                        // 立即阻止事件传播和默认行为
+                        e.preventDefault();
+                        e.stopPropagation();
+                        e.stopImmediatePropagation();
+                        
+                        // 调用实际的滚轮处理逻辑
+                        handleWheel(e);
+                        
+                        return false;
+                    };
+                    
+                    // 同时添加捕获和冒泡阶段的事件监听
+                    wheelElement.addEventListener('wheel', handleWheelCapture, { passive: false, capture: true });
+                    wheelElement.addEventListener('wheel', handleWheelCapture, { passive: false, capture: false });
+                    
+                    return () => {
+                        wheelElement.removeEventListener('wheel', handleWheelCapture, { capture: true });
+                        wheelElement.removeEventListener('wheel', handleWheelCapture, { capture: false });
+                    };
+                }, [handleWheel]);
+
+                const visibleOptions = getVisibleOptions();
+
+                return (
+                    <div className="picker-column">
+                        <div className="picker-label">{label}</div>
+                        <div 
+                            ref={wheelRef}
+                            className={`picker-wheel ${
+                                isTimePicker ? 'time-picker' : ''
+                            } ${
+                                isYearPicker ? 'year-picker' : 'narrow-picker'
+                            }`}
+                            onKeyDown={handleKeyDown}
+                            tabIndex={0} // 让拨盘可以获取焦点，支持键盘操作
+                            role="listbox"
+                            aria-label={`选择${label}`}
+                        >
+                            <div className="picker-wheel-inner">
+                                {visibleOptions.map((option, index) => (
+                                    <div
+                                        key={`${option.index}-${option.value}`}
+                                        className={`picker-option ${
+                                            option.isSelected ? 'selected' : ''
+                                        } ${
+                                            option.isEmpty ? 'empty' : ''
+                                        }`}
+                                        onClick={() => handleClick(option.value)}
+                                        style={{
+                                            visibility: option.isEmpty ? 'hidden' : 'visible'
+                                        }}
+                                        role="option"
+                                        aria-selected={option.isSelected}
+                                    >
+                                        {option.value}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                );
+            };
+
+            return (
+                <div className="datetime-picker">
+                    <h3 className="section-title">星座 生辰八字查询</h3>
+                    
+                    <div className="unified-picker">
+                        <h4 style={{ color: 'white', marginBottom: '15px', textAlign: 'center' }}>
+                            出生日期 (必填) 和 出生时间 (可选)
+                        </h4>
+                        <div className="picker-container-unified">
+                            <PickerWheel options={years} selected={selectedYear} onChange={setSelectedYear} label="年" isYearPicker={true} />
+                            <PickerWheel options={months} selected={selectedMonth} onChange={setSelectedMonth} label="月" />
+                            <PickerWheel options={days} selected={selectedDay} onChange={setSelectedDay} label="日" />
+                            <div className="separator">|</div>
+                            <PickerWheel options={hours} selected={selectedHour} onChange={setSelectedHour} label="时" isTimePicker={true} />
+                            <PickerWheel options={minutes} selected={selectedMinute} onChange={setSelectedMinute} label="分" isTimePicker={true} />
+                        </div>
+                    </div>
+
+                    <div className="selected-info">
+                        已选择: {selectedYear}年{selectedMonth}月{selectedDay}日 {selectedHour.toString().padStart(2, '0')}:{selectedMinute.toString().padStart(2, '0')}
+                    </div>
+                </div>
+            );
+        };
+
+        // 星座选择器组件
+        const ConstellationSelector = ({ onSelectionChange }) => {
+            const [selectedConstellation, setSelectedConstellation] = useState('');
+            const [selectedTimeRange, setSelectedTimeRange] = useState('');
+
+            const handleConstellationChange = (constellation) => {
+                setSelectedConstellation(constellation);
+                if (typeof onSelectionChange === 'function') {
+                    onSelectionChange({ constellation, timeRange: selectedTimeRange });
+                }
+            };
+
+            const handleTimeRangeChange = (timeRange) => {
+                setSelectedTimeRange(timeRange);
+                if (typeof onSelectionChange === 'function') {
+                    onSelectionChange({ constellation: selectedConstellation, timeRange });
+                }
+            };
+
+            return (
+                <div className="constellation-selector">
+                    <h3 className="section-title">星座运势查询</h3>
+                    
+                    <div className="constellation-section">
+                        <h4 style={{ color: 'white', marginBottom: '15px', textAlign: 'center' }}>选择星座</h4>
+                        <div className="tags-container">
+                            {Object.entries(CONSTELLATIONS).map(([key, constellation]) => (
+                                <div
+                                    key={key}
+                                    className={`tag ${selectedConstellation === key ? 'selected' : ''}`}
+                                    onClick={() => handleConstellationChange(key)}
+                                    style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '10px 16px' }}
+                                >
+                                    <span style={{ fontSize: '16px', fontWeight: '600' }}>{constellation.name}</span>
+                                    <span style={{ fontSize: '12px', opacity: '0.8', marginTop: '4px' }}>{constellation.dates}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="time-range-section">
+                        <h4 style={{ color: 'white', margin: '30px 0 15px', textAlign: 'center' }}>选择周期</h4>
+                        <div className="tags-container">
+                            {Object.entries(TIME_RANGES).map(([key, name]) => (
+                                <div
+                                    key={key}
+                                    className={`tag ${selectedTimeRange === key ? 'selected' : ''}`}
+                                    onClick={() => handleTimeRangeChange(key)}
+                                >
+                                    {name}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {selectedConstellation && selectedTimeRange && (
+                        <div className="selected-info">
+                            已选择: {CONSTELLATIONS[selectedConstellation].name} - {TIME_RANGES[selectedTimeRange]}
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        // 结果展示组件
+        const ResultDisplay = ({ birthdayResult, fortuneResult }) => {
+            if (!birthdayResult && !fortuneResult) {
+                return null;
+            }
+
+            return (
+                <div className="result-display">
+                    {birthdayResult && (
+                        <div className="result-card">
+                            <h3 className="result-title">🔮 星座与生辰八字</h3>
+                            
+                            <div className="two-column-layout">
+                                <div className="column">
+                                    <h4>基本信息</h4>
+                                    <div className="result-content">
+                                        <p><strong>星座：</strong>{birthdayResult.constellation}</p>
+                                        <p><strong>生肖：</strong>{birthdayResult.zodiac}</p>
+                                    </div>
+                                </div>
+                                
+                                <div className="column">
+                                    <h4>生辰八字</h4>
+                                    <div className="result-content">
+                                        <p><strong>年柱：</strong>{birthdayResult.bazi.year}</p>
+                                        <p><strong>月柱：</strong>{birthdayResult.bazi.month}</p>
+                                        <p><strong>日柱：</strong>{birthdayResult.bazi.day}</p>
+                                        <p><strong>时柱：</strong>{birthdayResult.bazi.hour}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {fortuneResult && (
+                        <div className="result-card">
+                            <h3 className="result-title">✨ 星座运势</h3>
+                            
+                            <div className="result-section">
+                                <div className="result-title">运势概览</div>
+                                <div className="result-content">
+                                    <p><strong>日期：</strong>{fortuneResult.date}</p>
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '10px', marginTop: '10px' }}>
+                                        <div><strong>综合运势：</strong>{fortuneResult.all}</div>
+                                        <div><strong>爱情运势：</strong>{fortuneResult.love}</div>
+                                        <div><strong>工作运势：</strong>{fortuneResult.work}</div>
+                                        <div><strong>财运运势：</strong>{fortuneResult.money}</div>
+                                        <div><strong>健康运势：</strong>{fortuneResult.health}</div>
+                                        <div><strong>讨论运势：</strong>{fortuneResult.discuss}</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="result-section">
+                                <div className="result-title">幸运信息</div>
+                                <div className="result-content">
+                                    <p><strong>幸运颜色：</strong>{fortuneResult.lucky_color}</p>
+                                    <p><strong>幸运数字：</strong>{fortuneResult.lucky_number}</p>
+                                    <p><strong>幸运星座：</strong>{fortuneResult.lucky_star}</p>
+                                </div>
+                            </div>
+
+                            <div className="result-section">
+                                <div className="result-title">今日宜忌</div>
+                                <div className="result-content">
+                                    <p><strong>宜：</strong>{fortuneResult.yi}</p>
+                                    <p><strong>忌：</strong>{fortuneResult.ji}</p>
+                                    <p><strong>注意事项：</strong>{fortuneResult.notice}</p>
+                                </div>
+                            </div>
+
+                            <div className="result-section">
+                                <div className="result-title">详细解析</div>
+                                <div className="result-content">
+                                    <div style={{ marginBottom: '15px' }}>
+                                        <strong>整体运势：</strong>
+                                        <p style={{ marginTop: '5px', lineHeight: '1.6' }}>{fortuneResult.all_text}</p>
+                                    </div>
+                                    
+                                    <div style={{ marginBottom: '15px' }}>
+                                        <strong>爱情运势：</strong>
+                                        <p style={{ marginTop: '5px', lineHeight: '1.6' }}>{fortuneResult.love_text}</p>
+                                    </div>
+                                    
+                                    <div style={{ marginBottom: '15px' }}>
+                                        <strong>工作运势：</strong>
+                                        <p style={{ marginTop: '5px', lineHeight: '1.6' }}>{fortuneResult.work_text}</p>
+                                    </div>
+                                    
+                                    <div style={{ marginBottom: '15px' }}>
+                                        <strong>财运分析：</strong>
+                                        <p style={{ marginTop: '5px', lineHeight: '1.6' }}>{fortuneResult.money_text}</p>
+                                    </div>
+                                    
+                                    <div>
+                                        <strong>健康建议：</strong>
+                                        <p style={{ marginTop: '5px', lineHeight: '1.6' }}>{fortuneResult.health_text}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        // 主应用组件
+        const App = () => {
+            const [dateTime, setDateTime] = useState({ birthday: '', time: '' });
+            const [constellation, setConstellation] = useState({ constellation: '', timeRange: '' });
+            const [birthdayResult, setBirthdayResult] = useState(null);
+            const [fortuneResult, setFortuneResult] = useState(null);
+            const [birthdayLoading, setBirthdayLoading] = useState(false);
+            const [fortuneLoading, setFortuneLoading] = useState(false);
+            const [error, setError] = useState('');
+
+            const handleDateTimeChange = (newDateTime) => {
+                setDateTime(newDateTime);
+            };
+
+            const handleConstellationChange = (newConstellation) => {
+                setConstellation(newConstellation);
+            };
+
+            const handleGetBirthdayInfo = async () => {
+                if (!dateTime.birthday) {
+                    setError('请选择出生日期');
+                    return;
+                }
+
+                setBirthdayLoading(true);
+                setError('');
+                
+                try {
+                    const result = await getBirthdayInfo(dateTime.birthday, dateTime.time);
+                    if (result.success) {
+                        setBirthdayResult(result.data);
+                        setError('');
+                    } else {
+                        setError(result.error);
+                        setBirthdayResult(null);
+                    }
+                } catch (err) {
+                    setError('获取星座信息失败：' + err.message);
+                    setBirthdayResult(null);
+                } finally {
+                    setBirthdayLoading(false);
+                }
+            };
+
+            const handleGetFortune = async () => {
+                if (!constellation.constellation || !constellation.timeRange) {
+                    setError('请选择星座和时间范围');
+                    return;
+                }
+
+                console.log('开始查询运势:', constellation);
+                setFortuneLoading(true);
+                setError('');
+                
+                try {
+                    const result = await getConstellation(constellation.constellation, constellation.timeRange);
+                    console.log('运势查询结果:', result);
+                    if (result.success) {
+                        // 根据时间范围获取对应的数据
+                        let targetData = result.data;
+                        const timeRange = constellation.timeRange;
+                        
+                        // 映射关系：today -> day, nextday -> tomorrow, week -> week, month -> month, year -> year
+                        if (timeRange === 'today') {
+                            targetData = result.data.day || result.data;
+                        } else if (timeRange === 'nextday') {
+                            targetData = result.data.tomorrow || result.data;
+                        } else if (timeRange === 'week') {
+                            targetData = result.data.week || result.data;
+                        } else if (timeRange === 'month') {
+                            targetData = result.data.month || result.data;
+                        } else if (timeRange === 'year') {
+                            targetData = result.data.year || result.data;
+                        }
+                        
+                        // 在结果中添加时间范围信息，用于显示
+                        targetData.selectedTimeRange = constellation.timeRange;
+                        
+                        setFortuneResult(targetData);
+                        console.log('运势数据设置成功:', targetData);
+                        setError('');
+                    } else {
+                        console.log('运势查询失败:', result.error);
+                        setError(result.error);
+                        setFortuneResult(null);
+                    }
+                } catch (err) {
+                    console.error('运势查询异常:', err);
+                    setError('获取运势信息失败：' + err.message);
+                    setFortuneResult(null);
+                } finally {
+                    setFortuneLoading(false);
+                    console.log('运势查询结束');
+                }
+            };
+
+            const clearResults = () => {
+                setBirthdayResult(null);
+                setFortuneResult(null);
+                setError('');
+            };
+
+            return (
+                <div className="app">
+                    <div className="container">
+                        <h1 className="title">🌟 星座运势查询 🌟</h1>
+                        
+                        {/* 日期时间选择器 */}
+                        <div className="card">
+                            <DateTimePicker onDateTimeChange={handleDateTimeChange} />
+                            <div style={{ textAlign: 'center', display: 'flex', justifyContent: 'center', gap: '15px', flexWrap: 'wrap' }}>
+                                <button 
+                                    className="button" 
+                                    onClick={handleGetBirthdayInfo}
+                                    disabled={birthdayLoading || !dateTime.birthday}
+                                >
+                                    {birthdayLoading ? '查询中...' : '查询星座'}
+                                </button>
+                                <button 
+                                    className="button" 
+                                    onClick={clearResults}
+                                    style={{ background: 'rgba(255, 255, 255, 0.2)' }}
+                                >
+                                    清除结果
+                                </button>
+                            </div>
+                            
+                            {/* 星座与生辰八字结果显示在查询按钮下方 */}
+                            {birthdayResult && (
+                                <div className="result-card" style={{ marginTop: '20px' }}>
+                                    <h3 className="result-title">🔮 星座与生辰八字</h3>
+                                    
+                                    <div className="two-column-layout">
+                                        <div className="column">
+                                            <h4>基本信息</h4>
+                                            <div className="result-content">
+                                                <p><strong>星座：</strong>{birthdayResult.constellation}</p>
+                                                <p><strong>生肖：</strong>{birthdayResult.zodiac}</p>
+                                            </div>
+                                        </div>
+                                        
+                                        <div className="column">
+                                            <h4>生辰八字</h4>
+                                            <div className="result-content">
+                                                <p><strong>年柱：</strong>{birthdayResult.bazi.year}</p>
+                                                <p><strong>月柱：</strong>{birthdayResult.bazi.month}</p>
+                                                <p><strong>日柱：</strong>{birthdayResult.bazi.day}</p>
+                                                <p><strong>时柱：</strong>{birthdayResult.bazi.hour}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* 星座选择器 */}
+                        <div className="card">
+                            <ConstellationSelector onSelectionChange={handleConstellationChange} />
+                            <div style={{ textAlign: 'center' }}>
+                                <button 
+                                    className="button" 
+                                    onClick={handleGetFortune}
+                                    disabled={fortuneLoading || !constellation.constellation || !constellation.timeRange}
+                                >
+                                    {fortuneLoading ? '查询中...' : '查询运势'}
+                                </button>
+                            </div>
+                            
+                            {/* 运势结果显示在查询运势按钮下方 */}
+                            {fortuneResult && (
+                                <div className="result-card" style={{ marginTop: '20px' }}>
+                                    <h3 className="result-title">✨ 星座运势 - {TIME_RANGES[fortuneResult.selectedTimeRange] || '运势'}</h3>
+                                    
+                                    <div className="result-section">
+                                        <div className="result-title">运势概览</div>
+                                        <div className="result-content">
+                                            <p><strong>日期：</strong>{fortuneResult.date || '今日'}</p>
+                                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '10px', marginTop: '10px' }}>
+                                                <div><strong>综合运势：</strong>{fortuneResult.all || '暂无数据'}</div>
+                                                <div><strong>爱情运势：</strong>{fortuneResult.love || '暂无数据'}</div>
+                                                <div><strong>工作运势：</strong>{fortuneResult.work || '暂无数据'}</div>
+                                                <div><strong>财运运势：</strong>{fortuneResult.money || '暂无数据'}</div>
+                                                <div><strong>健康运势：</strong>{fortuneResult.health || '暂无数据'}</div>
+                                                {/* 周、月、年时隐藏讨论运势 */}
+                                                {fortuneResult.selectedTimeRange !== 'week' && fortuneResult.selectedTimeRange !== 'month' && fortuneResult.selectedTimeRange !== 'year' && (
+                                                    <div><strong>讨论运势：</strong>{fortuneResult.discuss || '暂无数据'}</div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* 周、月、年时隐藏幸运信息 */}
+                                    {fortuneResult.selectedTimeRange !== 'week' && fortuneResult.selectedTimeRange !== 'month' && fortuneResult.selectedTimeRange !== 'year' && (
+                                        <div className="result-section">
+                                            <div className="result-title">幸运信息</div>
+                                            <div className="result-content">
+                                                <p><strong>幸运颜色：</strong>{fortuneResult.lucky_color || '暂无数据'}</p>
+                                                <p><strong>幸运数字：</strong>{fortuneResult.lucky_number || '暂无数据'}</p>
+                                                <p><strong>幸运星座：</strong>{fortuneResult.lucky_star || '暂无数据'}</p>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    <div className="result-section">
+                                        <div className="result-title">{fortuneResult.selectedTimeRange === 'today' || fortuneResult.selectedTimeRange === 'nextday' ? '今日宜忌' : '宜忌'}</div>
+                                        <div className="result-content">
+                                            <p><strong>宜：</strong>{fortuneResult.yi || '暂无数据'}</p>
+                                            <p><strong>忌：</strong>{fortuneResult.ji || '暂无数据'}</p>
+                                            <p><strong>注意事项：</strong>{fortuneResult.notice || '暂无数据'}</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="result-section">
+                                        <div className="result-title">详细解析</div>
+                                        <div className="result-content">
+                                            <div style={{ marginBottom: '15px' }}>
+                                                <strong>整体运势：</strong>
+                                                <p style={{ marginTop: '5px', lineHeight: '1.6' }}>{fortuneResult.all_text || '暂无详细解析'}</p>
+                                            </div>
+                                            
+                                            <div style={{ marginBottom: '15px' }}>
+                                                <strong>爱情运势：</strong>
+                                                <p style={{ marginTop: '5px', lineHeight: '1.6' }}>{fortuneResult.love_text || '暂无详细解析'}</p>
+                                            </div>
+                                            
+                                            <div style={{ marginBottom: '15px' }}>
+                                                <strong>工作运势：</strong>
+                                                <p style={{ marginTop: '5px', lineHeight: '1.6' }}>{fortuneResult.work_text || '暂无详细解析'}</p>
+                                            </div>
+                                            
+                                            <div style={{ marginBottom: '15px' }}>
+                                                <strong>财运分析：</strong>
+                                                <p style={{ marginTop: '5px', lineHeight: '1.6' }}>{fortuneResult.money_text || '暂无详细解析'}</p>
+                                            </div>
+                                            
+                                            <div>
+                                                <strong>健康建议：</strong>
+                                                <p style={{ marginTop: '5px', lineHeight: '1.6' }}>{fortuneResult.health_text || '暂无详细解析'}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+
+
+                        {/* 错误信息 */}
+                        {error && (
+                            <div className="error">
+                                {error}
+                            </div>
+                        )}
+
+                        {/* 加载状态 */}
+                        {(birthdayLoading || fortuneLoading) && (
+                            <div className="loading">
+                                <div>正在查询中，请稍候...</div>
+                            </div>
+                        )}
+
+                        {/* 运势结果展示区域已移至星座选择器卡片内部 */}
+
+                        {/* 版权信息 */}
+                        <div className="card" style={{ marginTop: '40px', fontSize: '14px', opacity: 0.8, textAlign: 'center' }}>
+                            <div style={{ color: 'white', lineHeight: '1.6' }}>
+                                <p style={{ fontSize: '16px', marginBottom: '10px' }}>✨ 星座运势查询系统 ✨</p>
+                                <p style={{ fontSize: '12px', opacity: '0.7' }}>© 2025 Ajeo 星座运势 | 仅供娱乐参考，请勿过度迷信</p>
+                                <p style={{ fontSize: '11px', opacity: '0.6', marginTop: '5px' }}>数据来源于专业星座API接口</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // 渲染应用
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>
