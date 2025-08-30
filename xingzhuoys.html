@@ -83,6 +83,9 @@
             flex-wrap: nowrap;
             overflow-x: auto;
             padding: 8px 5px;
+            /* 防止主页滚动 */
+            overscroll-behavior: contain;
+            touch-action: pan-x; /* 只允许水平滚动 */
         }
 
         /* 分隔符样式 */
@@ -133,7 +136,7 @@
             outline: none;
             /* 完全隔离滚动行为 */
             overscroll-behavior: contain;
-            touch-action: manipulation; /* 修改为manipulation支持触摸 */
+            touch-action: none; /* 禁止所有触摸手势，防止主页滚动 */
             user-select: none;
             box-shadow: 
                 0 8px 16px rgba(0, 0, 0, 0.15),
@@ -294,7 +297,7 @@
             flex-shrink: 0;
             min-width: auto;
             padding: 5px 8px;
-            font-size: 13px;
+            font-size: 15px;
             white-space: nowrap;
         }
         
@@ -307,7 +310,7 @@
             
             .time-range-tags .tag {
                 padding: 6px 12px;
-                font-size: 15px;
+                font-size: 17px;
             }
         }
 
@@ -452,14 +455,14 @@
         .selected-info {
             color: white;
             margin-top: 2px;
-            font-size: 13px;
+            font-size: 15px;
             opacity: 0.8;
             text-align: center;
         }
 
         @media (max-width: 768px) {
             .title {
-                font-size: 2rem;
+                font-size: 2.125rem;
             }
             
             .picker-container {
@@ -495,22 +498,22 @@
             
             .picker-option {
                 padding: 8px 4px;
-                font-size: 14px;
+                font-size: 16px;
                 height: 32px;
             }
             
             .picker-option.selected {
-                font-size: 16px;
+                font-size: 18px;
             }
             
             .separator {
-                font-size: 18px;
+                font-size: 20px;
                 margin: 18px 4px 0 4px;
                 flex-shrink: 0;
             }
             
             .picker-label {
-                font-size: 12px;
+                font-size: 14px;
             }
             
             .card {
@@ -550,23 +553,23 @@
             }
             
             .separator {
-                font-size: 16px;
+                font-size: 18px;
                 margin: 15px 2px 0 2px;
                 flex-shrink: 0;
             }
             
             .picker-option {
                 padding: 6px 2px;
-                font-size: 12px;
+                font-size: 14px;
                 height: 28px;
             }
             
             .picker-option.selected {
-                font-size: 14px;
+                font-size: 16px;
             }
             
             .picker-label {
-                font-size: 11px;
+                font-size: 13px;
             }
         }
     </style>
@@ -580,7 +583,7 @@
         // API配置和工具函数
         const API_ENDPOINTS = {
             BIRTHDAY: 'https://api.mxin.moe/api/v1/birthday',
-            FORTUNE: 'https://corsproxy.io/?http://api.suxun.site/api/constellation'
+            FORTUNE: 'http://api.suxun.site/api/constellation'
         };
 
         const CONSTELLATIONS = {
@@ -898,28 +901,49 @@
                     // 触摸事件处理
                     let startY = 0;
                     let isDragging = false;
+                    let lastTouchTime = 0;
                     
                     const handleTouchStart = (e) => {
+                        // 阻止事件冒泡，防止主页滚动
+                        e.preventDefault();
+                        e.stopPropagation();
+                        
                         startY = e.touches[0].clientY;
                         isDragging = true;
+                        lastTouchTime = Date.now();
                     };
                     
                     const handleTouchMove = (e) => {
                         if (!isDragging) return;
+                        
+                        // 阻止事件冒泡和默认行为，防止主页滚动
                         e.preventDefault();
+                        e.stopPropagation();
+                        e.stopImmediatePropagation();
                         
                         const currentY = e.touches[0].clientY;
                         const deltaY = startY - currentY;
+                        const now = Date.now();
                         
-                        // 模拟滚轮事件
-                        if (Math.abs(deltaY) > 20) { // 阈值避免过敏感
-                            const mockWheelEvent = { deltaY, preventDefault: () => {}, stopPropagation: () => {}, stopImmediatePropagation: () => {} };
+                        // 降低阈值并优化防抖，提高滚动频率
+                        if (Math.abs(deltaY) > 8 && now - lastTouchTime > 50) { // 阈值从20改为8，防抖从100ms改为50ms
+                            const mockWheelEvent = { 
+                                deltaY, 
+                                preventDefault: () => {}, 
+                                stopPropagation: () => {}, 
+                                stopImmediatePropagation: () => {} 
+                            };
                             handleWheel(mockWheelEvent);
                             startY = currentY; // 重置起点
+                            lastTouchTime = now; // 更新防抖时间
                         }
                     };
                     
-                    const handleTouchEnd = () => {
+                    const handleTouchEnd = (e) => {
+                        // 阻止事件冒泡
+                        e.preventDefault();
+                        e.stopPropagation();
+                        
                         isDragging = false;
                     };
                     
@@ -927,17 +951,17 @@
                     wheelElement.addEventListener('wheel', handleWheelCapture, { passive: false, capture: true });
                     wheelElement.addEventListener('wheel', handleWheelCapture, { passive: false, capture: false });
                     
-                    // 添加触摸事件
-                    wheelElement.addEventListener('touchstart', handleTouchStart, { passive: false });
-                    wheelElement.addEventListener('touchmove', handleTouchMove, { passive: false });
-                    wheelElement.addEventListener('touchend', handleTouchEnd, { passive: false });
+                    // 添加触摸事件，设置passive: false确保可以preventDefault
+                    wheelElement.addEventListener('touchstart', handleTouchStart, { passive: false, capture: true });
+                    wheelElement.addEventListener('touchmove', handleTouchMove, { passive: false, capture: true });
+                    wheelElement.addEventListener('touchend', handleTouchEnd, { passive: false, capture: true });
                     
                     return () => {
                         wheelElement.removeEventListener('wheel', handleWheelCapture, { capture: true });
                         wheelElement.removeEventListener('wheel', handleWheelCapture, { capture: false });
-                        wheelElement.removeEventListener('touchstart', handleTouchStart);
-                        wheelElement.removeEventListener('touchmove', handleTouchMove);
-                        wheelElement.removeEventListener('touchend', handleTouchEnd);
+                        wheelElement.removeEventListener('touchstart', handleTouchStart, { capture: true });
+                        wheelElement.removeEventListener('touchmove', handleTouchMove, { capture: true });
+                        wheelElement.removeEventListener('touchend', handleTouchEnd, { capture: true });
                     };
                 }, [handleWheel]);
 
@@ -988,7 +1012,7 @@
                     <h3 className="section-title">星座 生辰八字查询</h3>
                     
                     <div className="unified-picker">
-                        <h4 style={{ color: '#9ca3af', marginBottom: '1px', textAlign: 'center', fontSize: '13px', whiteSpace: 'nowrap' }}>
+                        <h4 style={{ color: '#9ca3af', marginBottom: '1px', textAlign: 'center', fontSize: '15px', whiteSpace: 'nowrap' }}>
                             出生日期 (必填) 和 出生时间 (可选)
                         </h4>
                         <div className="picker-container-unified">
@@ -1001,7 +1025,7 @@
                         </div>
                     </div>
 
-                    <div className="selected-info">
+                    <div className="selected-info" style={{ fontSize: '15px' }}>
                         已选择: {selectedYear}年{selectedMonth}月{selectedDay}日 {selectedHour.toString().padStart(2, '0')}:{selectedMinute.toString().padStart(2, '0')}
                     </div>
                 </div>
@@ -1032,7 +1056,7 @@
                     <h3 className="section-title">星座运势查询</h3>
                     
                     <div className="constellation-section">
-                        <h4 style={{ color: '#87CEEB', marginBottom: '6px', textAlign: 'left' }}>选择星座</h4>
+                        <h4 style={{ color: '#87CEEB', marginBottom: '6px', textAlign: 'left', fontSize: '16px' }}>选择星座</h4>
                         <div className="constellation-tags">
                             {Object.entries(CONSTELLATIONS).map(([key, constellation]) => (
                                 <div
@@ -1041,15 +1065,15 @@
                                     onClick={() => handleConstellationChange(key)}
                                     style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '10px 16px' }}
                                 >
-                                    <span style={{ fontSize: '16px', fontWeight: '600' }}>{constellation.name}</span>
-                                    <span style={{ fontSize: '12px', opacity: '0.8', marginTop: '4px' }}>{constellation.dates}</span>
+                                    <span style={{ fontSize: '18px', fontWeight: '600' }}>{constellation.name}</span>
+                                    <span style={{ fontSize: '14px', opacity: '0.8', marginTop: '4px' }}>{constellation.dates}</span>
                                 </div>
                             ))}
                         </div>
                     </div>
 
                     <div className="time-range-section">
-                        <h4 style={{ color: '#87CEEB', margin: '5px 0 2px', textAlign: 'left' }}>选择周期</h4>
+                        <h4 style={{ color: '#87CEEB', margin: '5px 0 2px', textAlign: 'left', fontSize: '16px' }}>选择周期</h4>
                         <div className="time-range-tags" style={{ margin: '2px 0 2px' }}>
                             {Object.entries(TIME_RANGES).map(([key, name]) => (
                                 <div
@@ -1064,7 +1088,7 @@
                     </div>
 
                     {selectedConstellation && selectedTimeRange && (
-                        <div className="selected-info">
+                        <div className="selected-info" style={{ fontSize: '15px' }}>
                             已选择: {CONSTELLATIONS[selectedConstellation].name} - {TIME_RANGES[selectedTimeRange]}
                         </div>
                     )}
@@ -1307,7 +1331,7 @@
                                     className="button" 
                                     onClick={handleGetBirthdayInfo}
                                     disabled={birthdayLoading || !dateTime.birthday}
-                                    style={{ fontSize: '13px', padding: '8px 14px', whiteSpace: 'nowrap' }}
+                                    style={{ fontSize: '15px', padding: '8px 14px', whiteSpace: 'nowrap' }}
                                 >
                                     {birthdayLoading ? '查询中...' : '查询星座'}
                                 </button>
@@ -1316,7 +1340,7 @@
                                     onClick={clearResults}
                                     style={{ 
                                         background: 'rgba(255, 255, 255, 0.2)', 
-                                        fontSize: '13px', 
+                                        fontSize: '15px', 
                                         padding: '8px 14px', 
                                         whiteSpace: 'nowrap' 
                                     }}
