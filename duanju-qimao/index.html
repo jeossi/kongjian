@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>七猫短剧</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>七猫短剧</h1>
+            <p class="subtitle">搜索并观看热门短剧</p>
+        </header>
+        
+        <main>
+            <section class="search-section">
+                <div class="search-box">
+                    <div class="search-input-container">
+                        <input type="text" id="searchInput" placeholder="请输入短剧名称，如：都市">
+                        <button id="searchBtn">搜索</button>
+                    </div>
+                </div>
+                <button id="myFavoritesBtn" class="favorites-btn">我的收藏</button>
+                <!-- 热门搜索面板 -->
+                <div class="hot-search-panel" id="hotSearchPanel">
+                    <div class="panel-header">
+                        <div class="hot-search-title">热门搜索</div>
+                        <button class="close-btn" onclick="closeHotSearchPanel()">×</button>
+                    </div>
+                    <div class="hot-search-tags" id="hotSearchTags">
+                        <!-- 热门搜索标签将在这里生成 -->
+                    </div>
+                </div>
+                <!-- 我的收藏面板 -->
+                <div class="favorites-panel" id="favoritesPanel">
+                    <div class="panel-header">
+                        <div class="favorites-title">我的收藏</div>
+                        <button class="close-btn" onclick="closeFavoritesPanel()">×</button>
+                    </div>
+                    <div class="favorites-content" id="favoritesContent">
+                        <!-- 收藏内容将在这里显示 -->
+                    </div>
+                </div>
+                <div class="pagination" id="pagination">
+                    <!-- 分页控件将在这里生成 -->
+                </div>
+            </section>
+            
+            <section class="results-section">
+                <div class="drama-list" id="dramaList">
+                    <!-- 短剧列表将在这里显示 -->
+                </div>
+            </section>
+            
+            <section class="player-section" id="playerSection" style="display: none;">
+                <div class="player-container">
+                    <div class="video-info">
+                        <h2 id="dramaTitle"></h2>
+                        <p id="dramaDescription"></p>
+                    </div>
+                    <div class="video-player">
+                        <video id="videoPlayer" controls>
+                            您的浏览器不支持视频播放。
+                        </video>
+                    </div>
+                    <div class="episode-list" id="episodeList">
+                        <!-- 播放列表将在这里显示 -->
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+    
+    <!-- 回到顶部按钮 -->
+    <button id="backToTop" class="back-to-top">↑</button>
+    
+    <!-- 版权信息 -->
+    <footer class="footer">
+        <div class="copyright">
+            <p>&copy; Ajeo-2025 七猫短剧. All rights reserved.</p>
+        </div>
+    </footer>
+    
+    <!-- 引入hls.js库以支持HLS流媒体播放 -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@1.1.5/dist/hls.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
