@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>元素周期表查询</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>元素周期表查询</h1>
+            <p class="subtitle">点击元素查看详细信息</p>
+        </header>
+        
+        <div class="content">
+            <div class="periodic-table">
+                <div class="table-grid" id="periodic-table">
+                    <!-- 元素周期表将通过JavaScript动态生成 -->
+                </div>
+            </div>
+            
+            <div class="details-panel">
+                <div class="details-header">
+                    <div class="element-large">
+                        <div class="element-symbol" id="element-symbol">Sn</div>
+                        <div class="element-info">
+                            <div class="element-name" id="element-name">锡</div>
+                            <div class="element-number" id="element-number">原子序数: 50</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="details-content" id="details-content">
+                    <!-- 详细信息将通过JavaScript动态生成 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
