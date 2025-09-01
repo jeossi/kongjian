@@ -1,0 +1,880 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Microsoft YaHei', Arial, sans-serif;
+    background-color: #f5f5f5;
+    color: #333;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 30px;
+    padding: 20px 0;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+header h1 {
+    color: #e74c3c;
+    font-size: 2.5em;
+}
+
+.subtitle {
+    color: #7f8c8d;
+    font-size: 1.2em;
+    margin-top: 10px;
+}
+
+.search-section {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    margin-bottom: 30px;
+    position: relative;
+}
+
+.search-box {
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.search-input-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    flex: 1;
+}
+
+#searchInput {
+    flex: 1;
+    padding: 12px 15px;
+    padding-right: 80px; /* 为按钮留出空间 */
+    border: 2px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+    transition: border-color 0.3s;
+}
+
+#searchInput:focus {
+    border-color: #e74c3c;
+    outline: none;
+}
+
+#searchBtn {
+    position: absolute;
+    right: 5px;
+    height: calc(100% - 10px);
+    padding: 0 15px;
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s;
+    margin: 5px;
+}
+
+#searchBtn:hover {
+    background-color: #c0392b;
+}
+
+.favorites-btn {
+    padding: 12px 20px;
+    background-color: #f39c12;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s;
+    white-space: nowrap;
+    height: fit-content;
+}
+
+.favorites-btn:hover {
+    background-color: #e67e22;
+}
+
+/* 面板通用样式 */
+.hot-search-panel, .favorites-panel {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    display: none;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.hot-search-panel.show, .favorites-panel.show {
+    display: block;
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    font-weight: bold;
+    color: #333;
+    border-bottom: 1px solid #eee;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #999;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.close-btn:hover {
+    color: #333;
+}
+
+.hot-search-tags, .favorites-content {
+    padding: 15px;
+}
+
+.hot-search-title, .favorites-title {
+    font-weight: bold;
+    color: #333;
+}
+
+.hot-search-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.hot-search-tag {
+    padding: 5px 10px;
+    background-color: #f8f9fa;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.hot-search-tag:hover {
+    background-color: #e74c3c;
+    color: white;
+}
+
+/* 收藏内容样式 */
+.favorite-item {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.favorite-cover {
+    width: 60px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 4px;
+    margin-right: 15px;
+}
+
+.favorite-info {
+    flex: 1;
+}
+
+.favorite-title {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.favorite-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.favorite-play-btn, .favorite-remove-btn {
+    padding: 5px 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.favorite-play-btn {
+    background-color: #e74c3c;
+    color: white;
+}
+
+.favorite-play-btn:hover {
+    background-color: #c0392b;
+}
+
+.favorite-remove-btn {
+    background-color: #95a5a6;
+    color: white;
+}
+
+.favorite-remove-btn:hover {
+    background-color: #7f8c8d;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding: 10px 0;
+}
+
+.pagination::-webkit-scrollbar {
+    height: 5px;
+}
+
+.pagination::-webkit-scrollbar-thumb {
+    background-color: #ccc;
+    border-radius: 3px;
+}
+
+.pagination button {
+    padding: 8px 15px;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+.pagination button:hover {
+    background-color: #2980b9;
+}
+
+.pagination button.active {
+    background-color: #e74c3c;
+}
+
+.pagination button:disabled {
+    background-color: #bdc3c7;
+    cursor: not-allowed;
+}
+
+.results-section {
+    margin-bottom: 30px;
+}
+
+.drama-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.drama-item {
+    background-color: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s;
+    cursor: pointer;
+    position: relative;
+}
+
+.drama-item:hover {
+    transform: translateY(-5px);
+}
+
+.drama-cover {
+    width: 100%;
+    height: 200px;
+    object-fit: contain;
+}
+
+.drama-info {
+    padding: 15px;
+}
+
+.drama-title {
+    font-size: 1.2em;
+    font-weight: bold;
+    margin-bottom: 8px;
+    color: #333;
+}
+
+.drama-author {
+    color: #7f8c8d;
+    font-size: 0.9em;
+    margin-bottom: 5px;
+}
+
+.drama-hot {
+    color: #e74c3c;
+    font-size: 0.9em;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.drama-desc {
+    color: #555;
+    font-size: 0.9em;
+    line-height: 1.4;
+}
+
+/* 按钮容器 */
+.drama-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.action-btn {
+    flex: 1;
+    padding: 8px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: all 0.3s;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.play-btn {
+    background-color: #e74c3c;
+    color: white;
+}
+
+.play-btn:hover {
+    background-color: #c0392b;
+}
+
+.favorite-btn {
+    background-color: #f39c12;
+    color: white;
+}
+
+.favorite-btn:hover {
+    background-color: #e67e22;
+}
+
+.share-btn {
+    background-color: #3498db;
+    color: white;
+}
+
+.share-btn:hover {
+    background-color: #2980b9;
+}
+
+.player-section {
+    background-color: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.player-container {
+    padding: 20px;
+}
+
+.video-info h2 {
+    color: #e74c3c;
+    margin-bottom: 10px;
+}
+
+.video-info p {
+    color: #555;
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+
+.video-player {
+    position: relative;
+    width: 100%;
+    padding-top: 56.25%; /* 16:9 宽高比 */
+    margin-bottom: 20px;
+}
+
+.video-player video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain; /* 保持视频比例 */
+    background-color: #000; /* 背景色 */
+}
+
+/* 添加视频播放状态指示器 */
+.video-player .playback-status {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-size: 16px;
+    z-index: 20;
+    display: none;
+}
+
+/* 播放控制按钮 */
+.player-controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+    flex-wrap: nowrap;
+    align-items: center;
+}
+
+.control-btn {
+    padding: 8px 15px;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s;
+    white-space: nowrap;
+}
+
+.control-btn:hover {
+    background-color: #2980b9;
+}
+
+.control-btn.active {
+    background-color: #e74c3c;
+}
+
+.auto-play-toggle {
+    margin-left: 0;
+}
+
+/* 剧集列表标题和线路选择 - 左对齐 */
+.episode-header {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #eee;
+    gap: 15px;
+    flex-wrap: nowrap;
+}
+
+.episode-title {
+    margin: 0;
+    color: #333;
+    white-space: nowrap;
+}
+
+.quality-selector {
+    display: flex;
+    gap: 10px;
+}
+
+.quality-btn {
+    padding: 5px 15px;
+    font-size: 0.9em;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.3s;
+    white-space: nowrap;
+}
+
+.uhd-btn {
+    background-color: #9b59b6;
+    color: white;
+}
+
+.hd-btn {
+    background-color: #f39c12;
+    color: white;
+}
+
+.sd-btn {
+    background-color: #95a5a6;
+    color: white;
+}
+
+.quality-btn:hover {
+    opacity: 0.8;
+}
+
+.quality-btn.active {
+    box-shadow: 0 0 0 2px #3498db;
+}
+
+.episode-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 15px;
+}
+
+.episode-item-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.episode-item {
+    width: 100%;
+    padding: 10px;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.episode-item:hover {
+    background-color: #e74c3c;
+    color: white;
+}
+
+.episode-item.active {
+    background-color: #e74c3c;
+    color: white;
+}
+
+.episode-item.disabled {
+    background-color: #ddd;
+    color: #999;
+    cursor: not-allowed;
+}
+
+.episode-item.disabled:hover {
+    background-color: #ddd;
+    color: #999;
+}
+
+.error {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 15px;
+    border-radius: 4px;
+    margin: 20px 0;
+}
+
+/* 返回按钮样式 */
+.back-button {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 15px;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s;
+}
+
+.back-button:hover {
+    background-color: #2980b9;
+}
+
+.back-button::before {
+    content: "←";
+    margin-right: 5px;
+}
+
+/* 回到顶部按钮样式 */
+.back-to-top {
+    position: fixed;
+    right: 30px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 50px;
+    height: 50px;
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    transition: background-color 0.3s, transform 0.2s;
+    z-index: 1000;
+    display: none;
+}
+
+.back-to-top:hover {
+    background-color: #c0392b;
+    transform: translateY(-50%) scale(1.1);
+}
+
+.back-to-top:active {
+    transform: translateY(-50%) scale(0.95);
+}
+
+/* 播放集数显示 */
+.episode-number-display {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 14px;
+    z-index: 10;
+    display: none;
+}
+
+/* 播放器返回按钮 */
+.video-back-button {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 40px;
+    height: 40px;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 24px;
+    font-weight: bold;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s;
+}
+
+.video-back-button:hover {
+    background-color: rgba(0, 0, 0, 0.9);
+}
+
+/* 播放控制按钮 */
+.control-btn {
+    padding: 8px 15px;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s;
+    white-space: nowrap;
+}
+
+.control-btn:hover {
+    background-color: #2980b9;
+}
+
+.control-btn.active {
+    background-color: #e74c3c;
+}
+
+.auto-play-toggle {
+    margin-left: auto;
+}
+
+/* 版权信息样式 */
+.footer {
+    text-align: center;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    margin-top: 30px;
+}
+
+.copyright {
+    color: #7f8c8d;
+    font-size: 0.9em;
+}
+
+.copyright p {
+    margin: 0;
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 10px;
+    }
+    
+    .search-box {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+    
+    .search-input-container {
+        margin-bottom: 0;
+    }
+    
+    #searchInput {
+        padding: 10px 12px;
+        padding-right: 70px; /* 为按钮留出空间 */
+        font-size: 14px;
+    }
+    
+    #searchBtn {
+        padding: 0 12px;
+        font-size: 12px;
+    }
+    
+    .favorites-btn {
+        padding: 10px 15px;
+        font-size: 14px;
+    }
+    
+    .drama-list {
+        grid-template-columns: 1fr;
+    }
+    
+    .drama-cover {
+        height: 250px;
+        object-fit: contain;
+    }
+    
+    .episode-grid {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    }
+    
+    .back-to-top {
+        right: 15px;
+        width: 40px;
+        height: 40px;
+        font-size: 16px;
+    }
+    
+    /* 移动端按钮始终显示在一行 */
+    .drama-actions {
+        flex-direction: row;
+    }
+    
+    .action-btn {
+        flex: 1;
+        padding: 6px;
+        font-size: 0.8em;
+    }
+    
+    .hot-search-panel, .favorites-panel {
+        max-height: 200px;
+    }
+    
+    .player-controls {
+        flex-direction: row;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding-bottom: 5px;
+    }
+    
+    .player-controls::-webkit-scrollbar {
+        height: 5px;
+    }
+    
+    .player-controls::-webkit-scrollbar-thumb {
+        background-color: #ccc;
+        border-radius: 3px;
+    }
+    
+    .control-btn {
+        flex-shrink: 0;
+        padding: 6px 10px;
+        font-size: 12px;
+    }
+    
+    .auto-play-toggle {
+        margin-left: 0;
+    }
+    
+    /* 移动端剧集头部布局 */
+    .episode-header {
+        flex-direction: row;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding-bottom: 5px;
+    }
+    
+    .episode-header::-webkit-scrollbar {
+        height: 5px;
+    }
+    
+    .episode-header::-webkit-scrollbar-thumb {
+        background-color: #ccc;
+        border-radius: 3px;
+    }
+    
+    .episode-title {
+        font-size: 16px;
+    }
+    
+    .quality-btn {
+        padding: 3px 10px;
+        font-size: 12px;
+    }
+    
+    .video-player {
+        padding-top: 56.25%; /* 16:9 宽高比 */
+    }
+    
+    .video-player video {
+        object-fit: contain;
+    }
+    
+    /* 移动端定位优化 */
+    .player-section {
+        margin-bottom: 20px;
+    }
+    
+    .player-container {
+        padding: 15px;
+    }
+    
+    .pagination {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding: 5px 0;
+        gap: 5px;
+    }
+    
+    .pagination::-webkit-scrollbar {
+        height: 5px;
+    }
+    
+    .pagination::-webkit-scrollbar-thumb {
+        background-color: #ccc;
+        border-radius: 3px;
+    }
+    
+    .pagination button {
+        padding: 6px 10px;
+        font-size: 12px;
+        flex-shrink: 0;
+    }
+}
