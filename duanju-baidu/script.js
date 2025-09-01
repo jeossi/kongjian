@@ -2,6 +2,10 @@
 const API_BASE = 'https://sdkapi.hhlqilongzhu.cn/api/baidu_duanju/';
 const API_KEY = 'Dragon9430124081FEABFA626884BD28AF1BDF';
 
+// 代理服务器配置
+const PROXY_URL = 'http://localhost:3001/?url='; // 本地代理服务器
+const USE_PROXY = false; // 是否使用代理服务器
+
 // 热门搜索关键词
 const HOT_SEARCH_KEYWORDS = [
     "家里家外", "江南时节", "好一个乖乖女", "她偏要抢", "双面权臣暗恋我",
@@ -199,9 +203,31 @@ function searchDramas() {
     // 显示加载状态
     dramaListContainer.innerHTML = '<div style="text-align: center; padding: 30px; font-size: 1.2em; color: #7f8c8d;">搜索中...</div>';
     
-    // 获取搜索结果
-    fetch(`${API_BASE}?key=${API_KEY}&name=${encodeURIComponent(keyword)}&page=${currentPage}`)
-        .then(response => response.json())
+    // 构建请求URL
+    let apiUrl = `${API_BASE}?key=${API_KEY}&name=${encodeURIComponent(keyword)}&page=${currentPage}`;
+    let requestUrl = apiUrl;
+    
+    // 如果启用代理，则使用代理服务器
+    if (USE_PROXY) {
+        requestUrl = `${PROXY_URL}${encodeURIComponent(apiUrl)}`;
+    }
+    
+    // 使用fetch API进行请求
+    fetch(requestUrl, {
+        method: 'GET',
+        headers: {
+            'Accept': 'application/json',
+        },
+        // 注意：使用代理时不能设置credentials为'include'
+        credentials: USE_PROXY ? 'omit' : 'omit'
+    })
+        .then(response => {
+            // 检查响应状态
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.code === 200 && data.data) {
                 dramaList = data.data;
@@ -216,7 +242,12 @@ function searchDramas() {
         })
         .catch(error => {
             console.error('搜索出错:', error);
-            showError(dramaListContainer, '搜索出错，请稍后重试');
+            // 如果是跨域问题且未使用代理，提示用户启动代理
+            if ((error.message.includes('CORS') || error.message.includes('Failed to fetch')) && !USE_PROXY) {
+                showError(dramaListContainer, '跨域请求被阻止，请启动代理服务器或检查网络设置');
+            } else {
+                showError(dramaListContainer, '搜索出错，请稍后重试');
+            }
         });
 }
 
@@ -336,9 +367,30 @@ function shareDrama(dramaId, title) {
 function showDramaDetails(dramaId) {
     currentDramaId = dramaId;
     
+    // 构建请求URL
+    let apiUrl = `${API_BASE}?key=${API_KEY}&id=${dramaId}`;
+    let requestUrl = apiUrl;
+    
+    // 如果启用代理，则使用代理服务器
+    if (USE_PROXY) {
+        requestUrl = `${PROXY_URL}${encodeURIComponent(apiUrl)}`;
+    }
+    
     // 获取短剧详情和剧集列表
-    fetch(`${API_BASE}?key=${API_KEY}&id=${dramaId}`)
-        .then(response => response.json())
+    fetch(requestUrl, {
+        method: 'GET',
+        headers: {
+            'Accept': 'application/json',
+        },
+        credentials: USE_PROXY ? 'omit' : 'omit'
+    })
+        .then(response => {
+            // 检查响应状态
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.code === 200 && data.data) {
                 // 显示播放器区域
@@ -396,7 +448,12 @@ function showDramaDetails(dramaId) {
         })
         .catch(error => {
             console.error('获取短剧详情出错:', error);
-            showError(dramaListContainer, '获取短剧详情出错，请稍后重试');
+            // 如果是跨域问题且未使用代理，提示用户启动代理
+            if ((error.message.includes('CORS') || error.message.includes('Failed to fetch')) && !USE_PROXY) {
+                showError(dramaListContainer, '跨域请求被阻止，请启动代理服务器或检查网络设置');
+            } else {
+                showError(dramaListContainer, '获取短剧详情出错，请稍后重试');
+            }
         });
 }
 
@@ -597,9 +654,30 @@ function playEpisodeByVideoId(videoId, index, title) {
     let playAttempted = false;
     let playStartTime = Date.now();
     
+    // 构建请求URL
+    let apiUrl = `${API_BASE}?key=${API_KEY}&video_id=${videoId}`;
+    let requestUrl = apiUrl;
+    
+    // 如果启用代理，则使用代理服务器
+    if (USE_PROXY) {
+        requestUrl = `${PROXY_URL}${encodeURIComponent(apiUrl)}`;
+    }
+    
     // 获取视频播放链接
-    fetch(`${API_BASE}?key=${API_KEY}&video_id=${videoId}`)
-        .then(response => response.json())
+    fetch(requestUrl, {
+        method: 'GET',
+        headers: {
+            'Accept': 'application/json',
+        },
+        credentials: USE_PROXY ? 'omit' : 'omit'
+    })
+        .then(response => {
+            // 检查响应状态
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
         .then(data => {
             // 显示统计数据
             const statisticsContainer = document.getElementById('videoStatistics');
@@ -867,7 +945,12 @@ function playEpisodeByVideoId(videoId, index, title) {
         })
         .catch(error => {
             console.error('获取播放链接出错:', error);
-            alert('获取播放链接出错，请稍后重试');
+            // 如果是跨域问题且未使用代理，提示用户启动代理
+            if ((error.message.includes('CORS') || error.message.includes('Failed to fetch')) && !USE_PROXY) {
+                alert('跨域请求被阻止，请启动代理服务器或检查网络设置');
+            } else {
+                alert('获取播放链接出错，请稍后重试');
+            }
         });
 }
 
