@@ -94,6 +94,19 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
+    // 监听视频播放状态变化
+    videoPlayer.addEventListener('playing', function() {
+        hidePlaybackStatus();
+    });
+    
+    videoPlayer.addEventListener('pause', function() {
+        showPlaybackStatus('已暂停');
+    });
+    
+    videoPlayer.addEventListener('waiting', function() {
+        showPlaybackStatus('加载中...');
+    });
+    
     // 监听滚动事件，控制回到顶部按钮的显示/隐藏
     window.addEventListener('scroll', function() {
         if (window.pageYOffset > 300) {
@@ -111,6 +124,26 @@ document.addEventListener('DOMContentLoaded', function() {
     loadLastPlayedEpisode();
     loadFavorites();
 });
+
+// 显示播放状态
+function showPlaybackStatus(message) {
+    let statusElement = document.querySelector('.video-player .playback-status');
+    if (!statusElement) {
+        statusElement = document.createElement('div');
+        statusElement.className = 'playback-status';
+        document.querySelector('.video-player').appendChild(statusElement);
+    }
+    statusElement.textContent = message;
+    statusElement.style.display = 'block';
+}
+
+// 隐藏播放状态
+function hidePlaybackStatus() {
+    const statusElement = document.querySelector('.video-player .playback-status');
+    if (statusElement) {
+        statusElement.style.display = 'none';
+    }
+}
 
 // 关闭热门搜索面板
 function closeHotSearchPanel() {
@@ -383,7 +416,7 @@ function renderEpisodeList(list) {
     // 添加返回按钮和线路选择
     let html = `
         <div class="player-controls">
-            <button class="back-button" onclick="backToSearch()">返回目录</button>
+            <button class="back-button" onclick="backToSearch()">返回</button>
             <button class="control-btn" onclick="playPrevEpisode()">上一集</button>
             <button class="control-btn" onclick="playNextEpisode()">下一集</button>
             <button class="control-btn" onclick="togglePictureInPicture()">画中画</button>
@@ -401,10 +434,17 @@ function renderEpisodeList(list) {
         <div class="episode-grid">
     `;
     
-    validEpisodes.forEach((episode, index) => {
+    // 遍历所有剧集，不仅仅是有效剧集
+    list.forEach((episode, index) => {
+        // 检查剧集是否有效（有播放链接且状态为1）
+        const isValid = episode.video_url && episode.status === 1;
+        
+        // 为无效剧集添加特殊类名
+        const episodeClass = isValid ? 'episode-item' : 'episode-item disabled';
+        
         html += `
             <div class="episode-item-container">
-                <div class="episode-item" onclick="playEpisodeByIndex(${index})">
+                <div class="${episodeClass}" ${isValid ? `onclick="playEpisodeByIndex(${index})"` : ''}>
                     第${episode.sort || index + 1}集
                 </div>
             </div>
@@ -419,7 +459,8 @@ function renderEpisodeList(list) {
 function playEpisodeByIndex(index) {
     if (episodeList && episodeList.length > index) {
         const episode = episodeList[index];
-        if (episode && episode.status === 1) {
+        // 检查剧集是否有效
+        if (episode && episode.status === 1 && episode.video_url) {
             // 根据当前线路质量选择播放链接
             const playUrl = currentQuality === 'hd' && episode.video_h265_url ? 
                 episode.video_h265_url : episode.video_url;
@@ -439,6 +480,9 @@ function playEpisodeByIndex(index) {
                     });
                 }
             }, 100);
+        } else {
+            // 剧集无效时给出提示
+            alert('该集暂无播放资源');
         }
     }
 }
@@ -449,7 +493,17 @@ function playPrevEpisode() {
     if (activeEpisode) {
         const index = Array.from(document.querySelectorAll('.episode-item')).indexOf(activeEpisode);
         if (index > 0) {
-            playEpisodeByIndex(index - 1);
+            // 查找上一个有效的剧集
+            let prevIndex = index - 1;
+            while (prevIndex >= 0) {
+                const episode = episodeList[prevIndex];
+                if (episode && episode.status === 1 && episode.video_url) {
+                    playEpisodeByIndex(prevIndex);
+                    return;
+                }
+                prevIndex--;
+            }
+            alert('没有上一集了');
         }
     }
 }
@@ -460,7 +514,17 @@ function playNextEpisode() {
     if (activeEpisode) {
         const index = Array.from(document.querySelectorAll('.episode-item')).indexOf(activeEpisode);
         if (index < episodeList.length - 1) {
-            playEpisodeByIndex(index + 1);
+            // 查找下一个有效的剧集
+            let nextIndex = index + 1;
+            while (nextIndex < episodeList.length) {
+                const episode = episodeList[nextIndex];
+                if (episode && episode.status === 1 && episode.video_url) {
+                    playEpisodeByIndex(nextIndex);
+                    return;
+                }
+                nextIndex++;
+            }
+            alert('没有下一集了');
         }
     }
 }
@@ -529,46 +593,144 @@ function playEpisode(playUrl, index, hdUrl = '', sdUrl = '', sort = '') {
     // 重置视频源
     videoPlayer.src = '';
     
+    // 添加播放状态检查
+    let playAttempted = false;
+    let playStartTime = Date.now();
+    
     // 检查是否支持原生HLS播放
     if (videoPlayer.canPlayType('application/vnd.apple.mpegurl')) {
         // Safari支持原生HLS
+        console.log('使用原生HLS播放');
         videoPlayer.src = playUrl;
-        videoPlayer.play().catch(error => {
+        videoPlayer.load();
+        
+        // 添加播放状态监控
+        const checkPlayStatus = () => {
+            const elapsed = Date.now() - playStartTime;
+            if (!playAttempted && videoPlayer.paused && videoPlayer.currentTime === 0 && elapsed > 3000) {
+                // 如果视频3秒后仍未播放，显示状态
+                showPlaybackStatus('正在尝试播放...');
+                // 尝试重新播放
+                videoPlayer.play().catch(error => {
+                    console.error('重新播放失败:', error);
+                    showPlaybackStatus('播放失败，请检查网络或设备兼容性');
+                });
+            } else if (!videoPlayer.paused && videoPlayer.currentTime > 0) {
+                // 正在播放
+                hidePlaybackStatus();
+            }
+        };
+        
+        videoPlayer.play().then(() => {
+            playAttempted = true;
+            hidePlaybackStatus();
+        }).catch(error => {
             console.error('播放失败:', error);
-            alert('播放失败，请稍后重试');
+            showPlaybackStatus('播放失败，正在重试...');
+            // 在某些设备上（如投影仪），可能需要延迟播放
+            setTimeout(() => {
+                videoPlayer.play().then(() => {
+                    playAttempted = true;
+                    hidePlaybackStatus();
+                }).catch(error => {
+                    console.error('延迟播放也失败:', error);
+                    showPlaybackStatus('播放失败，请稍后重试');
+                });
+            }, 1000);
         });
+        
+        // 定期检查播放状态
+        const statusCheckInterval = setInterval(checkPlayStatus, 1000);
+        // 10秒后清除检查
+        setTimeout(() => {
+            clearInterval(statusCheckInterval);
+        }, 10000);
     } else if (Hls.isSupported()) {
         // 其他浏览器使用hls.js
+        console.log('使用hls.js播放');
         hls = new Hls();
         hls.loadSource(playUrl);
         hls.attachMedia(videoPlayer);
         hls.on(Hls.Events.MANIFEST_PARSED, function() {
-            videoPlayer.play().catch(error => {
+            videoPlayer.play().then(() => {
+                playAttempted = true;
+                hidePlaybackStatus();
+            }).catch(error => {
                 console.error('播放失败:', error);
-                alert('播放失败，请稍后重试');
+                showPlaybackStatus('播放失败，正在重试...');
+                // 在某些设备上（如投影仪），可能需要延迟播放
+                setTimeout(() => {
+                    videoPlayer.play().then(() => {
+                        playAttempted = true;
+                        hidePlaybackStatus();
+                    }).catch(error => {
+                        console.error('延迟播放也失败:', error);
+                        showPlaybackStatus('播放失败，请稍后重试');
+                    });
+                }, 1000);
             });
         });
         hls.on(Hls.Events.ERROR, function(event, data) {
+            console.error('HLS错误:', data);
             if (data.fatal) {
                 switch(data.type) {
                     case Hls.ErrorTypes.NETWORK_ERROR:
                         console.error('网络错误:', data.details);
-                        alert('网络错误，无法加载视频');
+                        showPlaybackStatus('网络错误，无法加载视频');
                         break;
                     case Hls.ErrorTypes.MEDIA_ERROR:
                         console.error('媒体错误:', data.details);
-                        alert('媒体错误，无法播放视频');
+                        showPlaybackStatus('媒体错误，无法播放视频');
                         break;
                     default:
                         console.error('播放错误:', data.details);
-                        alert('播放出错，请稍后重试');
+                        showPlaybackStatus('播放出错，请稍后重试');
                         break;
                 }
             }
         });
     } else {
-        // 不支持HLS
-        alert('您的浏览器不支持HLS流媒体播放');
+        // 不支持HLS，尝试直接播放
+        console.log('使用直接播放');
+        videoPlayer.src = playUrl;
+        videoPlayer.load();
+        
+        // 添加播放状态监控
+        const checkPlayStatus = () => {
+            const elapsed = Date.now() - playStartTime;
+            if (!playAttempted && videoPlayer.paused && videoPlayer.currentTime === 0 && elapsed > 3000) {
+                // 如果视频3秒后仍未播放，显示状态
+                showPlaybackStatus('正在尝试播放...');
+            } else if (!videoPlayer.paused && videoPlayer.currentTime > 0) {
+                // 正在播放
+                hidePlaybackStatus();
+            }
+        };
+        
+        videoPlayer.play().then(() => {
+            playAttempted = true;
+            hidePlaybackStatus();
+        }).catch(error => {
+            console.error('播放失败:', error);
+            showPlaybackStatus('播放失败，正在重试...');
+            // 在某些设备上（如投影仪），可能需要延迟播放
+            setTimeout(() => {
+                videoPlayer.play().then(() => {
+                    playAttempted = true;
+                    hidePlaybackStatus();
+                }).catch(error => {
+                    console.error('延迟播放也失败:', error);
+                    showPlaybackStatus('播放失败，请稍后重试');
+                });
+            }, 1000);
+        });
+        
+        // 定期检查播放状态
+        const statusCheckInterval = setInterval(checkPlayStatus, 1000);
+        // 10秒后清除检查
+        setTimeout(() => {
+            clearInterval(statusCheckInterval);
+        }, 10000);
     }
     
     // 更新选中的剧集样式
@@ -619,10 +781,10 @@ function showEpisodeNumber(episodeNumber) {
     episodeDisplay.textContent = `正在播放：第${episodeNumber}集`;
     episodeDisplay.style.display = 'block';
     
-    // 5秒后隐藏
+    // 10秒后隐藏
     setTimeout(() => {
         episodeDisplay.style.display = 'none';
-    }, 5000);
+    }, 10000);
 }
 
 // 保存最后播放的集数到本地存储（使用专用名称）
