@@ -330,7 +330,7 @@ function renderFavorites() {
 // 分享功能
 function shareDrama(dramaId, title) {
     // 这里可以实现分享逻辑
-    const shareText = `Ajeo推荐短剧：${title}`;
+    const shareText = `Ajeo分享短剧：${title},复制链接到浏览器观看!`;
     if (navigator.share) {
         navigator.share({
             title: '短剧分享',
@@ -449,7 +449,7 @@ function renderEpisodeList(list) {
     // 添加返回按钮和线路选择
     let html = `
         <div class="player-controls">
-            <button class="back-button" onclick="backToSearch()">返回目录</button>
+            <button class="back-button" onclick="backToSearch()">返回</button>
             <button class="control-btn" onclick="playPrevEpisode()">上一集</button>
             <button class="control-btn" onclick="playNextEpisode()">下一集</button>
             <button class="control-btn" onclick="togglePictureInPicture()">画中画</button>
