@@ -26,7 +26,7 @@ let currentDramaId = null;
 let dramaList = [];
 let episodeList = [];
 let hls = null; // HLS实例
-let currentQuality = 'hd'; // 当前线路质量，默认高清
+let currentQuality = 'hd'; // 当前线路质量，默认超清
 let lastPlayedEpisode = {}; // 记录最后播放的集数
 let favorites = []; // 收藏列表
 let autoPlay = true; // 自动播放开关
@@ -307,7 +307,7 @@ function renderFavorites() {
 // 分享功能
 function shareDrama(dramaId, title) {
     // 这里可以实现分享逻辑
-    const shareText = `推荐短剧：${title}，快来观看吧！`;
+    const shareText = `Ajeo分享短剧：${title},复制链接到浏览器观看!`;
     if (navigator.share) {
         navigator.share({
             title: '短剧分享',
@@ -427,8 +427,8 @@ function renderEpisodeList(list) {
         <div class="episode-header">
             <h3 class="episode-title">剧集列表</h3>
             <div class="quality-selector">
-                <button class="quality-btn hd-btn ${currentQuality === 'hd' ? 'active' : ''}" onclick="switchQuality('hd')">高清线路</button>
-                <button class="quality-btn sd-btn ${currentQuality === 'sd' ? 'active' : ''}" onclick="switchQuality('sd')">标清线路</button>
+                <button class="quality-btn hd-btn ${currentQuality === 'hd' ? 'active' : ''}" onclick="switchQuality('hd')">超清线路</button>
+                <button class="quality-btn sd-btn ${currentQuality === 'sd' ? 'active' : ''}" onclick="switchQuality('sd')">高清线路</button>
             </div>
         </div>
         <div class="episode-grid">
@@ -581,6 +581,9 @@ function playEpisode(playUrl, index, hdUrl = '', sdUrl = '', sort = '') {
         return;
     }
     
+    // 检查视频URL格式并尝试优化
+    const optimizedUrl = optimizeVideoUrl(playUrl);
+    
     // 显示正在播放的集数
     showEpisodeNumber(sort || (index + 1));
     
@@ -597,12 +600,21 @@ function playEpisode(playUrl, index, hdUrl = '', sdUrl = '', sort = '') {
     let playAttempted = false;
     let playStartTime = Date.now();
     
+    // 检查视频格式并选择最佳播放方式
+    const videoFormat = getVideoFormat(optimizedUrl);
+    
     // 检查是否支持原生HLS播放
-    if (videoPlayer.canPlayType('application/vnd.apple.mpegurl')) {
+    if (videoFormat === 'hls' && videoPlayer.canPlayType('application/vnd.apple.mpegurl')) {
         // Safari支持原生HLS
         console.log('使用原生HLS播放');
-        videoPlayer.src = playUrl;
+        videoPlayer.src = optimizedUrl;
         videoPlayer.load();
+        
+        // 添加更多错误处理
+        videoPlayer.addEventListener('error', function(e) {
+            console.error('视频播放错误:', e);
+            showPlaybackStatus('视频播放出错，请检查设备兼容性');
+        });
         
         // 添加播放状态监控
         const checkPlayStatus = () => {
@@ -645,11 +657,16 @@ function playEpisode(playUrl, index, hdUrl = '', sdUrl = '', sort = '') {
         setTimeout(() => {
             clearInterval(statusCheckInterval);
         }, 10000);
-    } else if (Hls.isSupported()) {
+    } else if (videoFormat === 'hls' && Hls.isSupported()) {
         // 其他浏览器使用hls.js
         console.log('使用hls.js播放');
-        hls = new Hls();
-        hls.loadSource(playUrl);
+        hls = new Hls({
+            // 添加更多配置选项以提高兼容性
+            enableWorker: true,
+            lowLatencyMode: true,
+            backBufferLength: 90
+        });
+        hls.loadSource(optimizedUrl);
         hls.attachMedia(videoPlayer);
         hls.on(Hls.Events.MANIFEST_PARSED, function() {
             videoPlayer.play().then(() => {
@@ -681,6 +698,10 @@ function playEpisode(playUrl, index, hdUrl = '', sdUrl = '', sort = '') {
                     case Hls.ErrorTypes.MEDIA_ERROR:
                         console.error('媒体错误:', data.details);
                         showPlaybackStatus('媒体错误，无法播放视频');
+                        // 尝试恢复
+                        if (data.details === Hls.ErrorDetails.BUFFER_STALLED_ERROR) {
+                            hls.recoverMediaError();
+                        }
                         break;
                     default:
                         console.error('播放错误:', data.details);
@@ -690,10 +711,16 @@ function playEpisode(playUrl, index, hdUrl = '', sdUrl = '', sort = '') {
             }
         });
     } else {
-        // 不支持HLS，尝试直接播放
+        // 不支持HLS或直接播放其他格式
         console.log('使用直接播放');
-        videoPlayer.src = playUrl;
+        videoPlayer.src = optimizedUrl;
         videoPlayer.load();
+        
+        // 添加更多错误处理
+        videoPlayer.addEventListener('error', function(e) {
+            console.error('视频播放错误:', e);
+            showPlaybackStatus('视频播放出错，请检查设备兼容性');
+        });
         
         // 添加播放状态监控
         const checkPlayStatus = () => {
@@ -764,6 +791,33 @@ function playEpisode(playUrl, index, hdUrl = '', sdUrl = '', sort = '') {
             });
         }
     }, 100);
+}
+
+// 优化视频URL以提高兼容性
+function optimizeVideoUrl(url) {
+    // 如果URL表现为下载状态，尝试添加参数或修改URL
+    if (url.includes('download') || url.includes('attachment')) {
+        // 尝试移除可能导致下载的参数
+        let optimizedUrl = url.replace(/[?&]download=true/g, '');
+        optimizedUrl = optimizedUrl.replace(/[?&]disposition=attachment/g, '');
+        return optimizedUrl;
+    }
+    return url;
+}
+
+// 获取视频格式
+function getVideoFormat(url) {
+    if (url.includes('.m3u8')) {
+        return 'hls';
+    } else if (url.includes('.mp4')) {
+        return 'mp4';
+    } else if (url.includes('.webm')) {
+        return 'webm';
+    } else if (url.includes('.ogg')) {
+        return 'ogg';
+    }
+    // 默认返回hls
+    return 'hls';
 }
 
 // 显示正在播放的集数
