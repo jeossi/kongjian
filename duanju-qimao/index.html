@@ -8,7 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>七猫短剧</title>
 	<link rel="icon" href="../Aje128.png" type="image/png" sizes="32x32">
-    <link rel="stylesheet" href="style.css?v=9.1.0858">
+    <link rel="stylesheet" href="style.css?v=9.1.1559">
 </head>
 <body>
     <div class="container">
@@ -24,8 +24,8 @@
                         <input type="text" id="searchInput" placeholder="请输入短剧名称，如：都市">
                         <button id="searchBtn">搜索</button>
                     </div>
-                    <button id="myFavoritesBtn" class="favorites-btn">我的收藏</button>
                 </div>
+                <button id="myFavoritesBtn" class="favorites-btn">我的收藏</button>
                 <!-- 热门搜索面板 -->
                 <div class="hot-search-panel" id="hotSearchPanel">
                     <div class="panel-header">
@@ -64,7 +64,6 @@
                         <p id="dramaDescription"></p>
                     </div>
                     <div class="video-player">
-                        <button class="video-back-button" id="videoBackButton" onclick="backToSearch()"><</button>
                         <video id="videoPlayer" controls>
                             您的浏览器不支持视频播放。
                         </video>
@@ -89,6 +88,6 @@
     
     <!-- 引入hls.js库以支持HLS流媒体播放 -->
     <script src="https://cdn.jsdelivr.net/npm/hls.js@1.1.5/dist/hls.min.js"></script>
-    <script src="script.js?v=9.1.0858"></script>
+    <script src="script.js?v=9.1.1559"></script>
 </body>
 </html>
