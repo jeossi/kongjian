@@ -778,6 +778,15 @@ function toggleExpand(e) {
 
 // ================= 事件绑定 =================
 function setupEventListeners() {
+    // 添加关闭按钮事件监听器
+    document.getElementById('close-favorite-panel').addEventListener('click', () => {
+        dom.favoritePanel.style.display = 'none';
+    });
+    
+    document.getElementById('close-hot-search-panel').addEventListener('click', () => {
+        dom.hotSearchPanel.style.display = 'none';
+    });
+    
     dom.searchInput.addEventListener('focus', () => dom.hotSearchPanel.style.display = 'block');
     dom.searchInput.addEventListener('blur', () => setTimeout(() => dom.hotSearchPanel.style.display = 'none', 200));
     document.querySelectorAll('.tag').forEach(tag => tag.addEventListener('click', () => {
@@ -854,17 +863,26 @@ function setupEventListeners() {
         console.log('音频成功开始播放');
     });
     dom.favoriteButton.addEventListener('click', toggleFavoritePanel);
-    document.addEventListener('click', e => {
-        if (!dom.favoriteButton.contains(e.target) && !dom.favoritePanel.contains(e.target)) {
-            dom.favoritePanel.style.display = 'none';
-        }
-    });
     dom.sleepTimerBtn.addEventListener('click', e => {
         e.stopPropagation();
         dom.timerMenu.classList.toggle('show');
     });
+    
     document.querySelectorAll('.timer-option').forEach(opt => opt.addEventListener('click', setSleepTimer));
+    
+    // 合并重复的document点击事件监听器
     document.addEventListener('click', e => {
+        // 处理速度菜单隐藏
+        if (!dom.speedBtn.contains(e.target) && !dom.speedMenu.contains(e.target)) {
+            dom.speedMenu.classList.remove('show');
+        }
+        
+        // 处理收藏面板隐藏
+        if (!dom.favoriteButton.contains(e.target) && !dom.favoritePanel.contains(e.target)) {
+            dom.favoritePanel.style.display = 'none';
+        }
+        
+        // 处理定时器菜单隐藏
         if (!dom.sleepTimerBtn.contains(e.target) && !dom.timerMenu.contains(e.target)) {
             dom.timerMenu.classList.remove('show');
         }
