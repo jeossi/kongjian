@@ -9,7 +9,7 @@
     <title>番茄听书</title>
     <link rel="icon" href="../Aje128.png" type="image/png" sizes="32x32">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css?v=9.1.1658">
+    <link rel="stylesheet" href="style.css?v=9.2.1039">
 </head>
 <body>
     <div class="container">
@@ -26,7 +26,12 @@
             </div>
 
             <div class="favorite-panel" id="favorite-panel">
-                <h3>我的收藏</h3>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h3>我的收藏</h3>
+                    <button class="close-favorite-panel" id="close-favorite-panel">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
                 <div class="favorite-list" id="favorite-list">
                     <!-- 收藏列表将在这里动态生成 -->
                 </div>
@@ -40,7 +45,12 @@
                     </button>
                 </div>
                 <div class="hot-search" id="hot-search-panel">
-                    <h3>热门搜索</h3>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h3>热门搜索</h3>
+                        <button class="close-hot-search" id="close-hot-search">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
                     <div class="hot-tags">
                         <div class="tag">都市</div>
                         <div class="tag">兵王</div>
@@ -70,6 +80,13 @@
                         <div class="tag">历史古代</div>
                         <div class="tag">历史脑洞</div>
                     </div>
+                </div>
+            </div>
+
+            <!-- 分页控件 -->
+            <div class="pagination-container" id="pagination-container">
+                <div class="pagination" id="pagination">
+                    <!-- 分页按钮将在这里动态生成 -->
                 </div>
             </div>
 
@@ -180,6 +197,6 @@
         </div>
     </div>
 
-    <script src="script.js?v=9.1.1658"></script>
+    <script src="script.js?v=9.2.1039"></script>
 </body>
 </html>
