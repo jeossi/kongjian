@@ -17,6 +17,10 @@ const state = {
     sleepTimerMinutes: 0,
     backgroundPlayback: false,
     isMediaSessionReady: false,
+    // 新增分页状态
+    currentSearchPage: 1,
+    totalSearchPages: 1,
+    currentSearchQuery: '',
     // 新增状态管理
     wakeLock: null,
     lastUpdateTime: 0,
@@ -59,7 +63,14 @@ const dom = {
     favoriteList: document.getElementById('favorite-list'),
     sleepTimerBtn: document.getElementById('sleep-timer-btn'),
     timerMenu: document.getElementById('timer-menu'),
-    chapterCount: document.getElementById('chapter-count')
+    chapterCount: document.getElementById('chapter-count'),
+    // 新增分页相关DOM元素
+    paginationContainer: document.getElementById('pagination-container'),
+    pagination: document.getElementById('pagination'),
+    // 新增热门搜索关闭按钮
+    closeHotSearch: document.getElementById('close-hot-search'),
+    // 新增收藏面板关闭按钮
+    closeFavoritePanel: document.getElementById('close-favorite-panel')
 };
 
 // ================= 页面导航 =================
@@ -135,16 +146,21 @@ function stopProgressSync() {
 }
 
 // ================= 搜索功能 =================
-async function performSearch() {
+async function performSearch(page = 1) {
     const query = dom.searchInput.value.trim() || '都市';
+    state.currentSearchQuery = query;
+    state.currentSearchPage = page;
     dom.searchLoader.style.display = 'block';
     dom.resultsGrid.innerHTML = '';
     try {
-        const res = await fetch(`https://api.cenguigui.cn/api/tingshu/?name=${encodeURIComponent(query)}&page=1`);
+        const res = await fetch(`https://api.cenguigui.cn/api/tingshu/?name=${encodeURIComponent(query)}&page=${page}`);
         const data = await res.json();
         if (data.code === 200 && data.data) {
             state.searchResults = data.data;
+            // 不再固定总页数为5，而是根据当前页动态调整
+            state.totalSearchPages = Math.max(state.totalSearchPages, page);
             renderSearchResults(data.data);
+            renderPagination();
         } else throw new Error('未找到搜索结果');
     } catch (err) {
         dom.resultsGrid.innerHTML = `
@@ -197,6 +213,84 @@ function renderSearchResults(books) {
         card.querySelector('.expand-btn').addEventListener('click', toggleExpand);
         dom.resultsGrid.appendChild(card);
     });
+}
+
+// 添加分页渲染功能
+function renderPagination() {
+    // 获取当前页和总页数
+    const currentPage = state.currentSearchPage || 1;
+    const totalPages = Math.max(state.totalSearchPages, currentPage);
+    
+    // 始终显示分页控件
+    dom.paginationContainer.style.display = 'block';
+    dom.pagination.innerHTML = '';
+    
+    // 创建按钮的通用函数
+    function createPageButton(className, content, clickHandler, isDisabled = false) {
+        const button = document.createElement('button');
+        button.className = className;
+        button.innerHTML = content;
+        button.disabled = isDisabled;
+        if (!isDisabled && clickHandler) {
+            button.addEventListener('click', clickHandler);
+        }
+        return button;
+    }
+    
+    // 上一页按钮
+    const prevButton = createPageButton(
+        `page-btn prev-btn ${currentPage === 1 ? 'disabled' : ''}`,
+        '<i class="fas fa-chevron-left"></i>',
+        () => {
+            if (currentPage > 1) {
+                performSearch(currentPage - 1);
+            }
+        },
+        currentPage === 1
+    );
+    dom.pagination.appendChild(prevButton);
+    
+    // 显示页码按钮（最多显示5个页码按钮）
+    let startPage, endPage;
+    if (totalPages <= 5) {
+        // 总页数小于等于5，显示所有页码
+        startPage = 1;
+        endPage = totalPages;
+    } else {
+        // 总页数大于5，显示当前页为中心的5个页码
+        if (currentPage <= 3) {
+            startPage = 1;
+            endPage = 5;
+        } else if (currentPage + 1 >= totalPages) {
+            startPage = totalPages - 4;
+            endPage = totalPages;
+        } else {
+            startPage = currentPage - 2;
+            endPage = currentPage + 2;
+        }
+    }
+    
+    // 添加页码按钮
+    for (let i = startPage; i <= endPage; i++) {
+        const pageButton = createPageButton(
+            `page-btn ${i === currentPage ? 'active' : ''}`,
+            i,
+            () => {
+                performSearch(i);
+            }
+        );
+        dom.pagination.appendChild(pageButton);
+    }
+    
+    // 下一页按钮（总是可以点击，实现无限分页）
+    const nextButton = createPageButton(
+        'page-btn next-btn',
+        '<i class="fas fa-chevron-right"></i>',
+        () => {
+            performSearch(currentPage + 1);
+        }
+    );
+    dom.pagination.appendChild(nextButton);
 }
 
 // ================= 书籍功能 =================
@@ -769,13 +863,41 @@ function toggleExpand(e) {
 
 // ================= 事件绑定 =================
 function setupEventListeners() {
-    dom.searchInput.addEventListener('focus', () => dom.hotSearchPanel.style.display = 'block');
-    dom.searchInput.addEventListener('blur', () => setTimeout(() => dom.hotSearchPanel.style.display = 'none', 200));
-    document.querySelectorAll('.tag').forEach(tag => tag.addEventListener('click', () => {
-        dom.searchInput.value = tag.textContent;
-        performSearch();
-        dom.hotSearchPanel.style.display = 'none';
-    }));
+    // 确保搜索框获得焦点时显示热门搜索面板
+    dom.searchInput.addEventListener('focus', () => {
+        dom.hotSearchPanel.style.display = 'block';
+    });
+    
+    // 搜索框失去焦点时隐藏热门搜索面板（添加延迟以确保点击标签时面板不会立即消失）
+    dom.searchInput.addEventListener('blur', () => {
+        setTimeout(() => {
+            dom.hotSearchPanel.style.display = 'none';
+        }, 200);
+    });
+    
+    // 为热门搜索标签添加点击事件
+    document.querySelectorAll('.tag').forEach(tag => {
+        tag.addEventListener('click', () => {
+            dom.searchInput.value = tag.textContent;
+            performSearch();
+            dom.hotSearchPanel.style.display = 'none';
+        });
+    });
+    
+    // 为热门搜索关闭按钮添加点击事件
+    if (dom.closeHotSearch) {
+        dom.closeHotSearch.addEventListener('click', () => {
+            dom.hotSearchPanel.style.display = 'none';
+        });
+    }
+    
+    // 为收藏面板关闭按钮添加点击事件
+    if (dom.closeFavoritePanel) {
+        dom.closeFavoritePanel.addEventListener('click', () => {
+            dom.favoritePanel.style.display = 'none';
+        });
+    }
+    
     dom.searchButton.addEventListener('click', performSearch);
     dom.searchInput.addEventListener('keypress', e => { if (e.key === 'Enter') performSearch(); });
     dom.backButton.addEventListener('click', () => { showPage('search'); cleanupAudio(); });
@@ -788,14 +910,34 @@ function setupEventListeners() {
     });
     dom.volumeButton.addEventListener('click', toggleMute);
     dom.speedBtn.addEventListener('click', e => { e.stopPropagation(); dom.speedMenu.classList.toggle('show'); });
-    document.querySelectorAll('.speed-option').forEach(opt => opt.addEventListener('click', () => {
-        const speed = parseFloat(opt.dataset.speed);
-        state.audio.playbackRate = speed; state.playbackRate = speed;
-        dom.speedBtn.innerHTML = `<span>${speed}x</span>`;
-        dom.speedMenu.classList.remove('show');
-    }));
+    
+    // 优化速度选项事件监听器
+    document.querySelectorAll('.speed-option').forEach(opt => {
+        opt.addEventListener('click', () => {
+            const speed = parseFloat(opt.dataset.speed);
+            state.audio.playbackRate = speed;
+            state.playbackRate = speed;
+            dom.speedBtn.innerHTML = `<span>${speed}x</span>`;
+            dom.speedMenu.classList.remove('show');
+        });
+    });
+    
+    // 优化文档点击事件监听器 - 合并重复的事件监听器
     document.addEventListener('click', e => {
-        if (!dom.speedBtn.contains(e.target) && !dom.speedMenu.contains(e.target)) dom.speedMenu.classList.remove('show');
+        // 处理速度菜单显示/隐藏
+        if (!dom.speedBtn.contains(e.target) && !dom.speedMenu.contains(e.target)) {
+            dom.speedMenu.classList.remove('show');
+        }
+        
+        // 处理收藏面板显示/隐藏
+        if (!dom.favoriteButton.contains(e.target) && !dom.favoritePanel.contains(e.target)) {
+            dom.favoritePanel.style.display = 'none';
+        }
+        
+        // 处理定时器菜单显示/隐藏
+        if (!dom.sleepTimerBtn.contains(e.target) && !dom.timerMenu.contains(e.target)) {
+            dom.timerMenu.classList.remove('show');
+        }
     });
     
     // 更新音频事件监听 - 使用增强的 timeupdate 处理
@@ -831,6 +973,7 @@ function setupEventListeners() {
         dom.totalTime.textContent = formatTime(state.audio.duration);
         updateBufferBar();
     });
+    
     state.audio.addEventListener('error', () => {
         if (state.isAudioLoaded || state.audio.currentTime > 0) {
             console.warn('播放中出错，停止重试');
@@ -839,26 +982,23 @@ function setupEventListeners() {
         }
         tryRetry();
     });
+    
     state.audio.addEventListener('playing', () => {
         state.isAudioLoaded = true;
         updateProxyIndicator('success');
         console.log('音频成功开始播放');
     });
+    
     dom.favoriteButton.addEventListener('click', toggleFavoritePanel);
-    document.addEventListener('click', e => {
-        if (!dom.favoriteButton.contains(e.target) && !dom.favoritePanel.contains(e.target)) {
-            dom.favoritePanel.style.display = 'none';
-        }
-    });
+    
     dom.sleepTimerBtn.addEventListener('click', e => {
         e.stopPropagation();
         dom.timerMenu.classList.toggle('show');
     });
-    document.querySelectorAll('.timer-option').forEach(opt => opt.addEventListener('click', setSleepTimer));
-    document.addEventListener('click', e => {
-        if (!dom.sleepTimerBtn.contains(e.target) && !dom.timerMenu.contains(e.target)) {
-            dom.timerMenu.classList.remove('show');
-        }
+    
+    // 优化定时器选项事件监听器
+    document.querySelectorAll('.timer-option').forEach(opt => {
+        opt.addEventListener('click', setSleepTimer);
     });
     
     // 增强的页面可见性变化处理
@@ -946,15 +1086,18 @@ function setVolumeFromEvent(e) {
     state.audio.volume = percent;
     updateVolumeUI();
 }
-dom.volumeBar.addEventListener('click', setVolumeFromEvent);
-dom.volumeBar.addEventListener('touchstart', e => {
-    e.preventDefault();
-    setVolumeFromEvent(e);
-});
-dom.volumeBar.addEventListener('touchmove', e => {
-    e.preventDefault();
-    setVolumeFromEvent(e);
-});
+
+// 创建一个通用的事件处理函数，用于音量控制
+function setupVolumeControl() {
+    function handleVolumeEvent(e) {
+        e.preventDefault();
+        setVolumeFromEvent(e);
+    }
+    
+    dom.volumeBar.addEventListener('click', setVolumeFromEvent);
+    dom.volumeBar.addEventListener('touchstart', handleVolumeEvent);
+    dom.volumeBar.addEventListener('touchmove', handleVolumeEvent);
+}
 
 // ================= 初始化 =================
 function initApp() {
@@ -974,6 +1117,15 @@ function initApp() {
     // 初始化时启用自动播放下一章
     state.autoPlayNextEnabled = true;
     
+    // 初始化时显示分页控件
+    state.currentSearchPage = 1;
+    state.totalSearchPages = 5;
+    renderPagination();
+    
+    // 设置音量控制
+    setupVolumeControl();
+    
     console.log('应用初始化完成');
 }
+
 window.addEventListener('DOMContentLoaded', initApp);
