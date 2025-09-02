@@ -77,6 +77,32 @@ body {
     gap: 15px;
 }
 
+/* 美化收藏按钮 */
+.favorite-btn {
+    background: linear-gradient(135deg, #ff6b6b, #ffa502);
+    color: white;
+    border: none;
+    border-radius: 30px;
+    padding: 5px 10px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.favorite-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+}
+
+.favorite-btn:active {
+    transform: translateY(-1px);
+}
+
 /* 收藏面板 */
 .favorite-panel {
     position: absolute;
@@ -105,6 +131,27 @@ body {
     color: var(--accent-color);
     border-bottom: 1px solid #333;
     padding-bottom: 10px;
+}
+
+/* 收藏面板关闭按钮样式 */
+.close-favorite-panel {
+    background: var(--bg-secondary);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    transition: all 0.3s ease;
+}
+
+.close-favorite-panel:hover {
+    background: var(--accent-color);
+    transform: scale(1.1);
 }
 
 .favorite-item {
@@ -231,6 +278,27 @@ body {
     margin-bottom: 15px;
     color: var(--text-secondary);
     font-weight: 500;
+}
+
+/* 热门搜索关闭按钮样式 */
+.close-hot-search {
+    background: var(--bg-secondary);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    transition: all 0.3s ease;
+}
+
+.close-hot-search:hover {
+    background: var(--accent-color);
+    transform: scale(1.1);
 }
 
 .hot-tags {
@@ -381,6 +449,68 @@ body {
 .book-btn.play-book-btn:hover {
     background: var(--accent-hover);
     transform: translateY(-2px);
+}
+
+/* 分页控件样式 */
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    /* 减少分页控件与上下元素的间距 */
+    margin-top: 10px;
+    margin-bottom: 10px;
+    padding: 5px 0;
+}
+
+.pagination {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.page-btn {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 30px;
+    text-align: center;
+}
+
+.page-btn:hover {
+    background: rgba(255, 107, 107, 0.2);
+    border-color: var(--accent-color);
+    transform: translateY(-2px);
+}
+
+.page-btn.active {
+    background: var(--accent-color);
+    color: white;
+    border-color: var(--accent-color);
+    font-weight: bold;
+}
+
+.page-btn.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.page-btn.disabled:hover {
+    background: var(--bg-tertiary);
+    transform: none;
+}
+
+.prev-btn, .next-btn {
+    background: var(--bg-secondary);
+}
+
+.prev-btn:hover, .next-btn:hover {
+    background: rgba(255, 107, 107, 0.2);
 }
 
 /* 播放页面样式 */
