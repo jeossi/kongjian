@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>网易音乐榜</title>
+	<link rel="icon" href="../Aje128.png" type="image/png" sizes="32x32">
+    <link rel="stylesheet" href="style.css?v=9.4.1923">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- 头部导航 -->
+        <header class="header">
+            <h1><i class="fas fa-music"></i> 网易音乐榜</h1>
+        </header>
+
+        <!-- 主要内容区域 -->
+        <main class="main-content">
+            <!-- 音乐播放器区域 -->
+            <section class="player-section">
+                <div class="player-container">
+                    <div class="player-top">
+                        <div class="album-art">
+                            <img id="album-pic" src="" alt="专辑封面">
+                            <div class="album-overlay">
+                                <i class="fas fa-music"></i>
+                            </div>
+                        </div>
+                        <!-- 将歌曲名、专辑、时长、大小、格式合为一块，放在图片右边 -->
+                        <div class="song-info-block">
+                            <h2 id="song-name">请选择歌曲</h2>
+                            <p id="artist">艺术家</p>
+                            <p id="album">专辑</p>
+                            <p id="duration">时长: --:--</p>
+                            <p id="size">大小: --MB</p>
+                            <p id="format">格式: --</p>
+                        </div>
+                    </div>
+                    <!-- 歌词显示区域 -->
+                    <div class="lyrics-wrapper">
+                        <div class="lyrics-header">
+                            <!-- 将按钮移到这里，替换原来的"歌词"文字和图标 -->
+                            <div class="lyrics-actions">
+                                <button id="favorite-btn" class="action-btn"><i class="fas fa-heart"></i> 收藏</button>
+                                <button id="share-btn" class="action-btn"><i class="fas fa-share-alt"></i> 分享</button>
+                                <button id="download-lyric-btn" class="action-btn"><i class="fas fa-download"></i> 歌词</button>
+                                <button id="download-song-btn" class="action-btn"><i class="fas fa-download"></i> 歌曲</button>
+                                <!-- 将展开和模式切换按钮移到这里 -->
+                                <button id="toggle-lyrics-btn" class="toggle-btn">展开 <i class="fas fa-chevron-down"></i></button>
+                                <button id="lyrics-mode-btn" class="mode-btn"><i class="fas fa-moon"></i></button>
+                            </div>
+                        </div>
+                        <div id="lyrics-container" class="lyrics-container collapsed">
+                            <div class="lyrics-content">
+                                <p class="lyric-placeholder">暂无歌词</p>
+                            </div>
+                        </div>
+                        <!-- 移除原来的歌词底部区域 -->
+                    </div>
+                    <div class="player-progress">
+                        <span id="current-time">00:00</span>
+                        <input type="range" id="progress-bar" class="progress-bar" value="0" min="0" max="100">
+                        <span id="total-time">00:00</span>
+                    </div>
+                    <!-- 将播放控制按钮和音质选项放在同一行 -->
+                    <div class="player-controls-wrapper">
+                        <div class="player-controls">
+                            <button id="prev-btn" class="control-btn"><i class="fas fa-step-backward"></i></button>
+                            <button id="play-btn" class="control-btn"><i class="fas fa-play"></i></button>
+                            <button id="next-btn" class="control-btn"><i class="fas fa-step-forward"></i></button>
+                            <!-- 新增单曲循环按钮和静音按钮 -->
+                            <button id="repeat-btn" class="control-btn"><i class="fas fa-repeat"></i></button>
+                            <button id="mute-btn" class="control-btn"><i class="fas fa-volume-up"></i></button>
+                        </div>
+                        <div class="player-options">
+                            <select id="quality-select">
+                                <option value="standard">标准音质</option>
+                                <option value="exhigh" selected>极高音质</option>
+                                <option value="lossless">无损音质</option>
+                                <option value="hires">Hi-Res音质</option>
+                                <option value="jyeffect">高清环绕声</option>
+                                <option value="sky">沉浸环绕声</option>
+                                <option value="jymaster">超清母带</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 播放列表区域 -->
+            <section class="playlist-section">
+                <!-- 榜单标签导航 -->
+                <nav class="chart-nav">
+                    <button class="chart-btn" data-list="我的收藏"><i class="fas fa-heart"></i> 我的收藏</button>
+                    <button class="chart-btn active" data-list="热歌榜"><i class="fas fa-fire"></i> 热歌榜</button>
+                    <button class="chart-btn" data-list="新歌榜"><i class="fas fa-star"></i> 新歌榜</button>
+                    <button class="chart-btn" data-list="飙升榜"><i class="fas fa-chart-line"></i> 飙升榜</button>
+                    <button class="chart-btn" data-list="原创榜"><i class="fas fa-guitar"></i> 原创榜</button>
+                </nav>
+                <div class="playlist-header">
+                    <h2 id="playlist-title">热歌榜列表 <span id="song-count">(0首)</span></h2>
+                    <!-- 添加榜单描述显示区域 -->
+                    <p id="list-description" class="list-description"></p>
+                </div>
+                <ul id="song-list" class="song-list">
+                    <li class="song-placeholder">
+                        <p>请选择榜单加载歌曲</p>
+                    </li>
+                </ul>
+            </section>
+        </main>
+    </div>
+
+    <audio id="audio-player" autoplay></audio>
+    <script src="script.js?v=9.4.1923"></script>
+</body>
+</html>
