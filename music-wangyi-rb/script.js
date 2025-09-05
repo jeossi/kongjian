@@ -15,6 +15,7 @@ let lastVolume = 1; // 上次音量
 let autoScrollTimeout = null; // 自动滚动定时器
 let isUserScrolling = false; // 用户是否正在滚动
 let favoriteSongs = []; // 收藏的歌曲列表
+let mediaSession = null; // 媒体会话对象
 
 // DOM元素
 const chartButtons = document.querySelectorAll('.chart-btn');
@@ -70,6 +71,12 @@ document.addEventListener('DOMContentLoaded', function() {
     if (savedFavorites) {
         favoriteSongs = JSON.parse(savedFavorites);
     }
+    
+    // 初始化MediaSession API
+    initMediaSession();
+    
+    // 监听页面可见性变化
+    handleVisibilityChange();
     
     // 默认加载热歌榜
     loadChartSongs('热歌榜');
@@ -314,43 +321,25 @@ function renderSongList() {
     });
 }
 
-// 播放歌曲
+// 播放指定索引的歌曲
 function playSong(index) {
-    currentSongIndex = index;
-    const songId = currentSongList[index].id;
+    if (currentSongList.length === 0) return;
     
-    // 高亮当前播放歌曲
-    document.querySelectorAll('.song-item').forEach((item, i) => {
-        if (i === index) {
-            item.classList.add('playing');
-            
-            // 设置用户正在滚动标志为false，允许自动滚动
-            isUserScrolling = false;
-            
-            // 滚动到可视区域（在列表内定位到前面的可视区域）
-            item.scrollIntoView({ behavior: 'smooth', block: 'start', inline: 'nearest' });
-            
-            // 设置6秒后将播放器定位到屏幕中心的定时器
-            if (autoScrollTimeout) {
-                clearTimeout(autoScrollTimeout);
-            }
-            autoScrollTimeout = setTimeout(() => {
-                // 只有在用户没有手动滚动时才将播放器定位到屏幕中心
-                if (!isUserScrolling) {
-                    // 将播放器定位到屏幕中心
-                    const playerSection = document.querySelector('.player-section');
-                    if (playerSection) {
-                        playerSection.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
-                    }
-                }
-            }, 6000); // 6秒后将播放器定位到屏幕中心
-        } else {
-            item.classList.remove('playing');
-        }
-    });
+    // 更新当前歌曲索引
+    currentSongIndex = index;
     
     // 加载歌曲详情
-    loadSongDetails(songId);
+    loadSongDetails(currentSongList[index].id);
+    
+    // 更新活动歌曲的样式
+    updateActiveSongStyle();
+    
+    // 滚动到播放器区域
+    const playerSection = document.querySelector('.player-section');
+    if (playerSection) {
+        // 使用平滑滚动
+        playerSection.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+    }
 }
 
 // 加载歌曲详情
@@ -388,14 +377,18 @@ function loadSongDetails(songId) {
                 if (songInfo.url) {
                     audioPlayer.src = songInfo.url;
                     audioPlayer.load();
+                    
+                    // 更新媒体会话元数据
+                    updateMediaSessionMetadata();
+                    
                     // 如果启用了自动播放，则播放音频
                     if (isAutoPlayEnabled) {
                         playAudio();
                     }
+                } else {
+                    console.error('无法获取歌曲播放链接');
+                    songName.textContent = '无法播放';
                 }
-                
-                // 处理歌词
-                parseLyrics(songInfo.lyric);
             } else {
                 console.error('加载歌曲详情失败:', data.msg);
                 songName.textContent = '加载失败';
@@ -543,7 +536,7 @@ function updateLyricsHighlight() {
 
 // 播放音频
 function playAudio() {
-    // 在播放前确保用户已与页面交互（处理浏览器自动播放策略）
+    // 恢复音频上下文（如果被暂停）
     if (audioContext && audioContext.state === 'suspended') {
         audioContext.resume();
     }
@@ -552,6 +545,12 @@ function playAudio() {
         .then(() => {
             isPlaying = true;
             updatePlayButton();
+            
+            // 更新媒体会话播放状态
+            if (mediaSession) {
+                mediaSession.playbackState = 'playing';
+                updateMediaSessionPositionState();
+            }
         })
         .catch(error => {
             console.error('播放出错:', error);
@@ -565,6 +564,11 @@ function pauseAudio() {
     audioPlayer.pause();
     isPlaying = false;
     updatePlayButton();
+    
+    // 更新媒体会话播放状态
+    if (mediaSession) {
+        mediaSession.playbackState = 'paused';
+    }
 }
 
 // 更新播放按钮图标
@@ -603,14 +607,26 @@ function playPrev() {
     
     currentSongIndex = (currentSongIndex - 1 + currentSongList.length) % currentSongList.length;
     playSong(currentSongIndex);
+    
+    // 更新媒体会话元数据
+    updateMediaSessionMetadata();
 }
 
 // 播放下一首
 function playNext() {
     if (!hasSongsToPlay()) return;
     
+    // 如果启用了单曲循环，重新播放当前歌曲
+    if (isRepeatMode) {
+        playSong(currentSongIndex);
+        return;
+    }
+    
     currentSongIndex = (currentSongIndex + 1) % currentSongList.length;
     playSong(currentSongIndex);
+    
+    // 更新媒体会话元数据
+    updateMediaSessionMetadata();
 }
 
 // 重置按钮样式
@@ -714,6 +730,11 @@ function handleSongEnd() {
     // 否则停止播放
     isPlaying = false;
     updatePlayButton();
+    
+    // 更新媒体会话播放状态
+    if (mediaSession) {
+        mediaSession.playbackState = 'none';
+    }
 }
 
 // 更新播放进度
@@ -729,6 +750,9 @@ function updateProgress() {
     
     // 更新歌词高亮
     updateLyricsHighlight();
+    
+    // 更新媒体会话位置状态
+    updateMediaSessionPositionState();
 }
 
 // 设置播放进度
@@ -743,6 +767,122 @@ function formatTime(seconds) {
     const min = Math.floor(seconds / 60);
     const sec = Math.floor(seconds % 60);
     return `${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
+}
+
+// 初始化MediaSession API
+function initMediaSession() {
+    if ('mediaSession' in navigator) {
+        mediaSession = navigator.mediaSession;
+        
+        // 设置媒体会话的默认元数据（空的）
+        mediaSession.metadata = new MediaMetadata({
+            title: '网易音乐榜',
+            artist: '请选择歌曲',
+            album: '网易音乐',
+            artwork: [
+                { src: 'https://placehold.co/96x96/1a1a2e/ffffff?text=网', sizes: '96x96', type: 'image/png' },
+                { src: 'https://placehold.co/128x128/1a1a2e/ffffff?text=网易', sizes: '128x128', type: 'image/png' },
+                { src: 'https://placehold.co/192x192/1a1a2e/ffffff?text=网易音乐', sizes: '192x192', type: 'image/png' },
+                { src: 'https://placehold.co/256x256/1a1a2e/ffffff?text=网易音乐榜', sizes: '256x256', type: 'image/png' }
+            ]
+        });
+        
+        // 设置媒体会话的动作处理程序
+        mediaSession.setActionHandler('play', () => {
+            if (!isPlaying) {
+                playAudio();
+            }
+        });
+        
+        mediaSession.setActionHandler('pause', () => {
+            if (isPlaying) {
+                pauseAudio();
+            }
+        });
+        
+        mediaSession.setActionHandler('previoustrack', () => {
+            playPrev();
+        });
+        
+        mediaSession.setActionHandler('nexttrack', () => {
+            playNext();
+        });
+        
+        mediaSession.setActionHandler('seekbackward', (details) => {
+            const seekOffset = details.seekOffset || 10;
+            audioPlayer.currentTime = Math.max(audioPlayer.currentTime - seekOffset, 0);
+        });
+        
+        mediaSession.setActionHandler('seekforward', (details) => {
+            const seekOffset = details.seekOffset || 10;
+            audioPlayer.currentTime = Math.min(audioPlayer.currentTime + seekOffset, audioPlayer.duration);
+        });
+        
+        mediaSession.setActionHandler('seekto', (details) => {
+            if (details.fastSeek && 'fastSeek' in audioPlayer) {
+                audioPlayer.fastSeek(details.seekTime);
+            } else {
+                audioPlayer.currentTime = details.seekTime;
+            }
+        });
+        
+        console.log('MediaSession API initialized');
+    } else {
+        console.log('MediaSession API not supported');
+    }
+}
+
+// 更新媒体会话元数据
+function updateMediaSessionMetadata() {
+    if (!mediaSession || currentSongList.length === 0) return;
+    
+    const currentSong = currentSongList[currentSongIndex];
+    
+    // 更新媒体会话元数据
+    mediaSession.metadata = new MediaMetadata({
+        title: currentSong.name || '未知歌曲',
+        artist: currentSong.artistsname || '未知艺术家',
+        album: currentSong.album || '未知专辑',
+        artwork: [
+            { src: currentSong.pic || 'https://placehold.co/96x96/1a1a2e/ffffff?text=网', sizes: '96x96', type: 'image/png' },
+            { src: currentSong.pic || 'https://placehold.co/128x128/1a1a2e/ffffff?text=网易', sizes: '128x128', type: 'image/png' },
+            { src: currentSong.pic || 'https://placehold.co/192x192/1a1a2e/ffffff?text=网易音乐', sizes: '192x192', type: 'image/png' },
+            { src: currentSong.pic || 'https://placehold.co/256x256/1a1a2e/ffffff?text=网易音乐榜', sizes: '256x256', type: 'image/png' },
+            { src: currentSong.pic || 'https://placehold.co/384x384/1a1a2e/ffffff?text=网易音乐榜', sizes: '384x384', type: 'image/png' },
+            { src: currentSong.pic || 'https://placehold.co/512x512/1a1a2e/ffffff?text=网易音乐榜', sizes: '512x512', type: 'image/png' }
+        ]
+    });
+}
+
+// 更新媒体会话播放状态
+function updateMediaSessionPositionState() {
+    if (!mediaSession || !audioPlayer.src) return;
+    
+    // 更新位置状态
+    if ('setPositionState' in mediaSession) {
+        mediaSession.setPositionState({
+            duration: audioPlayer.duration || 0,
+            playbackRate: audioPlayer.playbackRate,
+            position: audioPlayer.currentTime
+        });
+    }
+}
+
+// 处理页面可见性变化
+function handleVisibilityChange() {
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            // 页面隐藏时的操作
+            console.log('页面已隐藏');
+        } else {
+            // 页面显示时的操作
+            console.log('页面已显示');
+            // 如果之前正在播放，则继续播放
+            if (isPlaying && audioPlayer.src) {
+                playAudio();
+            }
+        }
+    });
 }
 
 // 渲染收藏歌曲列表
