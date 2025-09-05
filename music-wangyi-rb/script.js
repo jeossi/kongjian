@@ -16,6 +16,8 @@ let autoScrollTimeout = null; // 自动滚动定时器
 let isUserScrolling = false; // 用户是否正在滚动
 let favoriteSongs = []; // 收藏的歌曲列表
 let mediaSession = null; // 媒体会话对象
+let currentPlaylistInfo = null; // 当前歌单信息
+let currentSearchKeyword = ''; // 当前搜索关键字
 
 // DOM元素
 const chartButtons = document.querySelectorAll('.chart-btn');
@@ -53,6 +55,12 @@ const downloadSongBtn = document.getElementById('download-song-btn');
 // 新增按钮
 const repeatBtn = document.getElementById('repeat-btn');
 const muteBtn = document.getElementById('mute-btn');
+
+// 新增播放歌单和搜索元素
+const playlistInput = document.getElementById('playlist-input');
+const playPlaylistBtn = document.getElementById('play-playlist-btn');
+const searchInput = document.getElementById('search-input');
+const searchBtn = document.getElementById('search-btn');
 
 // 标题元素
 const playlistTitle = document.getElementById('playlist-title');
@@ -100,6 +108,32 @@ document.addEventListener('DOMContentLoaded', function() {
                 loadChartSongs(listName);
             }
         });
+    });
+    
+    // 绑定播放歌单事件
+    playPlaylistBtn.addEventListener('click', playCustomPlaylist);
+    
+    // 绑定搜索事件
+    searchBtn.addEventListener('click', searchSongs);
+    
+    // 绑定回车键搜索事件
+    searchInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            searchSongs();
+        }
+    });
+    
+    // 为输入框添加自动全选功能
+    playlistInput.addEventListener('focus', function() {
+        setTimeout(() => {
+            this.select();
+        }, 100);
+    });
+    
+    searchInput.addEventListener('focus', function() {
+        setTimeout(() => {
+            this.select();
+        }, 100);
     });
     
     // 绑定播放控制事件
@@ -295,13 +329,19 @@ function renderSongList() {
         li.className = 'song-item';
         li.dataset.index = index;
         
-        // 根据付费状态设置不同颜色
+        // 根据付费状态设置不同颜色（如果存在pay字段）
         let payClass = '';
+        let payText = '';
         if (song.pay === '付费音乐') {
             payClass = 'pay-song';
+            payText = '付费';
         } else if (song.pay === '免费音乐') {
             payClass = 'free-song';
+            payText = '免费';
         }
+        
+        // 如果没有pay字段，则不显示
+        const payElement = song.pay ? `<div class="song-pay ${payClass}">${payText}</div>` : '';
         
         li.innerHTML = `
             <div class="song-index">${index + 1}</div>
@@ -309,7 +349,7 @@ function renderSongList() {
                 <div class="song-title">${song.name}</div>
                 <div class="song-artist">${song.artistsname}</div>
             </div>
-            <div class="song-pay ${payClass}">${song.pay}</div>
+            ${payElement}
         `;
         
         li.addEventListener('click', function() {
@@ -661,6 +701,8 @@ function playNext() {
 function resetButtonStyle(button) {
     button.style.background = '';
     button.style.boxShadow = '';
+    // 确保过渡效果平滑
+    button.style.transition = 'all 0.3s ease';
 }
 
 // 重置分享按钮样式
@@ -668,6 +710,11 @@ function resetShareButton() {
     const icon = shareBtn.querySelector('i');
     icon.className = 'fas fa-share-alt';
     resetButtonStyle(shareBtn);
+    // 3秒后恢复默认状态
+    setTimeout(() => {
+        shareBtn.style.background = '';
+        shareBtn.style.boxShadow = '';
+    }, 3000);
 }
 
 // 重置下载歌词按钮样式
@@ -675,6 +722,11 @@ function resetDownloadLyricButton() {
     const icon = downloadLyricBtn.querySelector('i');
     icon.className = 'fas fa-download';
     resetButtonStyle(downloadLyricBtn);
+    // 3秒后恢复默认状态
+    setTimeout(() => {
+        downloadLyricBtn.style.background = '';
+        downloadLyricBtn.style.boxShadow = '';
+    }, 3000);
 }
 
 // 重置下载歌曲按钮样式
@@ -682,6 +734,11 @@ function resetDownloadSongButton() {
     const icon = downloadSongBtn.querySelector('i');
     icon.className = 'fas fa-music';
     resetButtonStyle(downloadSongBtn);
+    // 3秒后恢复默认状态
+    setTimeout(() => {
+        downloadSongBtn.style.background = '';
+        downloadSongBtn.style.boxShadow = '';
+    }, 3000);
 }
 
 // 通用重置按钮函数
@@ -691,6 +748,11 @@ function resetButton(btn, iconClass, iconElement) {
         icon.className = iconClass;
     }
     resetButtonStyle(btn);
+    // 3秒后恢复默认状态
+    setTimeout(() => {
+        btn.style.background = '';
+        btn.style.boxShadow = '';
+    }, 3000);
 }
 
 // 切换单曲循环模式
@@ -713,7 +775,7 @@ function toggleRepeat() {
         icon.style.color = '#ffffff';
     } else {
         icon.className = 'fas fa-repeat';
-        icon.style.color = '';
+        icon.style.color = '#a0a0c0'; // 非激活状态使用较暗的颜色
     }
 }
 
@@ -911,6 +973,32 @@ function handleVisibilityChange() {
             }
         }
     });
+}
+
+// 更新活动歌曲的样式
+function updateActiveSongStyle() {
+    // 移除所有歌曲项的播放样式
+    document.querySelectorAll('.song-item').forEach(item => {
+        item.classList.remove('playing');
+    });
+    
+    // 为当前播放的歌曲项添加播放样式
+    const currentSongItem = document.querySelector(`.song-item[data-index="${currentSongIndex}"]`);
+    if (currentSongItem) {
+        currentSongItem.classList.add('playing');
+        
+        // 自动滚动到列表前3位
+        const songList = document.getElementById('song-list');
+        if (songList) {
+            // 计算需要滚动的位置，确保当前歌曲在前3位显示
+            const itemHeight = currentSongItem.offsetHeight;
+            const scrollTop = Math.max(0, currentSongIndex * itemHeight - itemHeight * 2);
+            songList.scrollTo({
+                top: scrollTop,
+                behavior: 'smooth'
+            });
+        }
+    }
 }
 
 // 渲染收藏歌曲列表
@@ -1111,4 +1199,126 @@ function downloadSong() {
     } else {
         alert('暂无下载链接');
     }
+}
+
+// 搜索歌曲
+function searchSongs() {
+    const keyword = searchInput.value.trim();
+    
+    if (!keyword) {
+        alert('请输入搜索关键字');
+        return;
+    }
+    
+    // 保存当前搜索关键字
+    currentSearchKeyword = keyword;
+    
+    // 显示加载状态
+    if (songPlaceholder) {
+        songPlaceholder.innerHTML = '<p><i class="fas fa-spinner fa-spin"></i> 正在搜索...</p>';
+    }
+    
+    const apiUrl = `https://node.api.xfabe.com/api/wangyi/search?search=${encodeURIComponent(keyword)}&limit=100`;
+    
+    fetch(apiUrl)
+        .then(response => response.json())
+        .then(data => {
+            if (data.code === 200) {
+                // 更新歌曲列表标题和计数
+                playlistTitle.innerHTML = `搜索列表 <span id="song-count">(${data.data.songs.length}首)</span>`;
+                
+                // 显示搜索关键字信息
+                if (listDescriptionElement) {
+                    listDescriptionElement.textContent = `搜索关键字: ${keyword}`;
+                    listDescriptionElement.style.display = 'block';
+                }
+                
+                // 更新歌曲列表
+                currentSongList = data.data.songs;
+                renderSongList();
+                
+                // 如果启用了自动播放且列表不为空，自动播放第一首
+                if (isAutoPlayEnabled && currentSongList.length > 0) {
+                    playSong(0);
+                }
+            } else {
+                console.error('搜索失败:', data.msg);
+                if (songPlaceholder) {
+                    songPlaceholder.innerHTML = '<p><i class="fas fa-exclamation-circle"></i> 搜索失败</p>';
+                }
+            }
+        })
+        .catch(error => {
+            console.error('搜索出错:', error);
+            if (songPlaceholder) {
+                songPlaceholder.innerHTML = '<p><i class="fas fa-exclamation-circle"></i> 网络错误，请稍后重试</p>';
+            }
+        });
+}
+
+// 播放自定义歌单
+function playCustomPlaylist() {
+    const playlistId = playlistInput.value.trim();
+    
+    if (!playlistId) {
+        alert('请输入歌单ID');
+        return;
+    }
+    
+    // 显示加载状态
+    if (songPlaceholder) {
+        songPlaceholder.innerHTML = '<p><i class="fas fa-spinner fa-spin"></i> 正在加载歌单...</p>';
+    }
+    
+    const apiUrl = `https://node.api.xfabe.com/api/wangyi/userSongs?uid=${playlistId}&limit=100`;
+    
+    fetch(apiUrl)
+        .then(response => response.json())
+        .then(data => {
+            if (data.code === 200) {
+                // 保存歌单信息
+                currentPlaylistInfo = {
+                    songPic: data.data.songPic,
+                    songName: data.data.songName,
+                    userName: data.data.userName
+                };
+                
+                // 更新歌曲列表标题和计数
+                playlistTitle.innerHTML = `歌单列表 <span id="song-count">(${data.data.songs.length}首)</span>`;
+                
+                // 显示歌单信息
+                if (listDescriptionElement) {
+                    listDescriptionElement.innerHTML = `
+                        <div class="playlist-info">
+                            <img src="${data.data.songPic}" alt="歌单封面" class="playlist-pic">
+                            <div class="playlist-details">
+                                <strong>歌单名称:</strong> ${data.data.songName}<br>
+                                <strong>创建者:</strong> ${data.data.userName}
+                            </div>
+                        </div>
+                    `;
+                    listDescriptionElement.style.display = 'block';
+                }
+                
+                // 更新歌曲列表
+                currentSongList = data.data.songs;
+                renderSongList();
+                
+                // 如果启用了自动播放且列表不为空，自动播放第一首
+                if (isAutoPlayEnabled && currentSongList.length > 0) {
+                    playSong(0);
+                }
+            } else {
+                console.error('加载歌单失败:', data.msg);
+                if (songPlaceholder) {
+                    songPlaceholder.innerHTML = '<p><i class="fas fa-exclamation-circle"></i> 加载歌单失败</p>';
+                }
+            }
+        })
+        .catch(error => {
+            console.error('加载歌单出错:', error);
+            if (songPlaceholder) {
+                songPlaceholder.innerHTML = '<p><i class="fas fa-exclamation-circle"></i> 网络错误，请稍后重试</p>';
+            }
+        });
 }
