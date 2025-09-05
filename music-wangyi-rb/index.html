@@ -8,7 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>网易音乐榜</title>
     <link rel="icon" href="../Aje128.png" type="image/png" sizes="32x32">
-    <link rel="stylesheet" href="style.css?v=9.5.1034">
+    <link rel="stylesheet" href="style.css?v=9.5.1653">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
@@ -101,6 +101,60 @@
                     <button class="chart-btn" data-list="飙升榜"><i class="fas fa-chart-line"></i> 飙升榜</button>
                     <button class="chart-btn" data-list="原创榜"><i class="fas fa-guitar"></i> 原创榜</button>
                 </nav>
+                
+                <!-- 新增播放歌单和搜索区域 -->
+                <div class="playlist-input-section">
+                    <div class="input-group-container">
+                        <!-- 播放歌单输入组 -->
+                        <div class="input-group">
+                            <input type="text" id="playlist-input" class="input-with-button" placeholder="请输入歌单ID或选择预设歌单" list="preset-playlists">
+                            <datalist id="preset-playlists">
+                                <option value="12589832642">
+                                <option value="4897639127">
+                                <option value="8799505292">
+                                <option value="12639638645">
+                                <option value="12767620640">
+                                <option value="12528734640">
+                            </datalist>
+                            <button id="play-playlist-btn" class="input-button">
+                                <i class="fas fa-play-circle"></i>
+                            </button>
+                        </div>
+                        
+                        <!-- 搜索输入组 -->
+                        <div class="input-group">
+                            <input type="text" id="search-input" class="input-with-button" placeholder="搜索歌手或歌名" list="preset-searches">
+                            <datalist id="preset-searches">
+                                <option value="王佳音">
+                                <option value="鱼蛋">
+                                <option value="窝窝">
+                                <option value="艺凌">
+                                <option value="洋澜一">
+                                <option value="任夏">
+                                <option value="魏佳艺">
+                                <option value="韩小欠">
+                                <option value="单依纯">
+                                <option value="DJ">
+                                <option value="喝茶">
+                                <option value="古筝">
+                                <option value="助眠">
+                                <option value="治愈房车">
+                                <option value="经典老歌">
+                                <option value="70后">
+                                <option value="80后">
+                                <option value="热歌">
+                                <option value="热门">
+                                <option value="新歌">
+                                <option value="飙升">
+                                <option value="流行">
+                            </datalist>
+                            <button id="search-btn" class="input-button">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
                 <div class="playlist-header">
                     <h2 id="playlist-title">热歌榜列表 <span id="song-count">(0首)</span></h2>
                     <!-- 添加榜单描述显示区域 -->
@@ -116,6 +170,6 @@
     </div>
 
     <audio id="audio-player" autoplay playsinline webkit-playsinline></audio>
-    <script src="script.js?v=9.5.1034"></script>
+    <script src="script.js?v=9.5.1653"></script>
 </body>
 </html>
