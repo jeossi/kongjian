@@ -358,8 +358,14 @@ function loadSongDetails(songId) {
     fetch(apiUrl)
         .then(response => response.json())
         .then(data => {
+            // 添加调试信息
+            console.log('API返回的数据:', data);
+            
             if (data.code === 200) {
                 const songInfo = data.data;
+                
+                // 添加调试信息
+                console.log('歌曲信息:', songInfo);
                 
                 // 保存歌曲播放链接
                 currentSongUrl = songInfo.url;
@@ -372,6 +378,18 @@ function loadSongDetails(songId) {
                 duration.textContent = `时长: ${songInfo.duration}`;
                 size.textContent = `大小: ${songInfo.size}`;
                 format.textContent = `格式: ${songInfo.format}`;
+                
+                // 处理歌词
+                // 先尝试常见的歌词字段名
+                const lyricText = songInfo.lyric || songInfo.lyrics || songInfo.songLyric || '';
+                console.log('歌词文本:', lyricText);
+                
+                if (lyricText) {
+                    parseLyrics(lyricText);
+                } else {
+                    // 如果没有歌词，显示暂无歌词
+                    lyricsContent.innerHTML = '<p class="lyric-placeholder">暂无歌词</p>';
+                }
                 
                 // 设置音频源
                 if (songInfo.url) {
@@ -412,6 +430,9 @@ function parseLyrics(lyricText) {
     
     if (!lyricText) {
         lyricsContent.innerHTML = '<p class="lyric-placeholder">暂无歌词</p>';
+        // 禁用下载歌词按钮
+        downloadLyricBtn.disabled = true;
+        downloadLyricBtn.style.opacity = '0.5';
         return;
     }
     
@@ -442,6 +463,13 @@ function parseLyrics(lyricText) {
     // 如果没有解析到歌词
     if (lyricsArray.length === 0) {
         lyricsContent.innerHTML = '<p class="lyric-placeholder">暂无歌词</p>';
+        // 禁用下载歌词按钮
+        downloadLyricBtn.disabled = true;
+        downloadLyricBtn.style.opacity = '0.5';
+    } else {
+        // 启用下载歌词按钮
+        downloadLyricBtn.disabled = false;
+        downloadLyricBtn.style.opacity = '1';
     }
 }
 
@@ -1024,6 +1052,8 @@ function downloadLyrics() {
     const currentSong = currentSongList[currentSongIndex];
     const lyricsElements = document.querySelectorAll('.lyric-line');
     
+    console.log('歌词元素数量:', lyricsElements.length);
+    
     if (lyricsElements.length === 0) {
         alert('暂无歌词可下载');
         return;
@@ -1032,6 +1062,8 @@ function downloadLyrics() {
     const lyrics = Array.from(lyricsElements)
         .map(line => line.textContent)
         .join('\n');
+    
+    console.log('歌词内容:', lyrics);
     
     const blob = new Blob([lyrics], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
