@@ -53,7 +53,7 @@ body {
     background: transparent; /* 去除背景色 */
     border: none; /* 去除边框 */
     border-radius: 15px; /* 保持圆角 */
-    color: #f0f0f0;
+    color: #a0a0c0; /* 修改默认颜色为较暗的颜色 */
     font-size: 1.1rem; /* 增大字体 */
     font-weight: 500;
     cursor: pointer;
@@ -73,6 +73,7 @@ body {
 
 .chart-btn:hover {
     background: rgba(255, 255, 255, 0.1); /* 悬停时添加轻微背景 */
+    color: #f0f0f0; /* 悬停时改变文字颜色 */
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(79, 172, 254, 0.3);
 }
@@ -80,6 +81,7 @@ body {
 .chart-btn.active {
     background: linear-gradient(90deg, #ff7eee, #4facfe);
     border: none; /* 去除边框 */
+    color: #ffffff; /* 激活状态下使用白色文字 */
     font-weight: 600;
     box-shadow: 0 5px 15px rgba(79, 172, 254, 0.4);
 }
@@ -113,7 +115,7 @@ body {
 /* 大屏布局 - 歌曲信息在专辑封面右侧 */
 .player-top {
     position: relative;
-    min-height: 180px;
+    min-height: 220px;
     display: flex;
     align-items: center;
     gap: 20px;
@@ -121,8 +123,8 @@ body {
 
 .album-art {
     position: relative;
-    width: 180px;
-    height: 180px;
+    width: 220px;
+    height: 220px;
     border-radius: 15px;
     overflow: hidden;
     box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
@@ -483,6 +485,75 @@ body {
     gap: 25px;
 }
 
+/* 新增播放歌单和搜索区域样式 */
+.playlist-input-section {
+    margin-bottom: 15px;
+}
+
+.input-group-container {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.input-group {
+    position: relative;
+    flex: 1;
+    min-width: 200px;
+}
+
+.input-with-button {
+    width: 100%;
+    padding: 12px 50px 12px 15px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.1);
+    color: #f0f0f0;
+    font-size: 1rem;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+.input-with-button::placeholder {
+    color: #a0a0c0;
+}
+
+.input-with-button:focus {
+    outline: none;
+    border-color: #4facfe;
+    box-shadow: 0 0 15px rgba(79, 172, 254, 0.4);
+}
+
+.input-button {
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 40px;
+    height: 40px;
+    border-radius: 15px;
+    border: none;
+    background: linear-gradient(90deg, #ff7eee, #4facfe);
+    color: white;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 10px rgba(79, 172, 254, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.input-button:hover {
+    transform: translateY(-50%) scale(1.05);
+    box-shadow: 0 5px 15px rgba(79, 172, 254, 0.4);
+}
+
+.input-button:active {
+    transform: translateY(-50%) scale(0.95);
+}
+
 .playlist-header h2 {
     margin-bottom: 20px;
     color: #ffffff;
@@ -503,6 +574,32 @@ body {
     margin-top: 5px;
     margin-bottom: 15px;
     line-height: 1.4;
+}
+
+/* 歌单信息样式 */
+.playlist-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 15px;
+    border-radius: 10px;
+    margin-top: 10px;
+}
+
+.playlist-pic {
+    width: 80px;
+    height: 80px;
+    border-radius: 8px;
+    object-fit: cover;
+}
+
+.playlist-details {
+    flex: 1;
+}
+
+.playlist-details strong {
+    color: #ffffff;
 }
 
 .song-list {
@@ -602,335 +699,381 @@ body {
     box-shadow: none; /* 去除阴影 */
 }
 
-/* 响应式设计 */
-@media (max-width: 1200px) {
-    .main-content {
-        grid-template-columns: 1fr;
-    }
-    
+/* 响应式设计 - 平板和手机 */
+@media (max-width: 768px) {
     .container {
         padding: 15px;
     }
     
-    /* 在移动端调整布局 */
-    .player-top {
-        position: relative;
-        min-height: 180px;
-        display: flex;
-        align-items: center;
+    .main-content {
+        grid-template-columns: 1fr;
         gap: 20px;
     }
     
-    .album-art {
-        position: relative;
-        width: 180px;
-        height: 180px;
-        flex-shrink: 0;
-    }
-    
-    /* 歌曲信息块显示在图片右侧 */
-    .song-info-block {
-        position: static;
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        gap: 0; /* 最小行间距 */
-        justify-content: center;
-        margin: 0;
-        width: auto;
-        height: 180px; /* 与专辑封面同高 */
-    }
-    
-    .song-info-block h2 {
-        font-size: 1.6rem;
-        margin: 0;
-        margin-bottom: 2px;
-        text-align: left;
-    }
-    
-    .song-info-block p {
-        margin: 0;
-        margin-bottom: 2px;
-        font-size: 1rem;
-        text-align: left;
-    }
-}
-
-@media (max-width: 768px) {
     .header h1 {
         font-size: 2.2rem;
     }
     
-    .chart-nav {
-        gap: 10px;
-        flex-wrap: nowrap;
-    }
-    
-    .chart-btn {
-        padding: 6px 12px;
-        font-size: 1rem;
-        flex: 1;
-        min-width: 0;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 5px;
-    }
-    
-    .player-section, .playlist-section {
+    .player-section {
         padding: 20px;
     }
     
-    .album-art {
-        width: 180px; /* 增大专辑封面大小 */
-        height: 180px;
-    }
-    
-    /* 在更小的移动端调整布局 */
+    /* 修复专辑封面和歌曲信息保持在一行 */
     .player-top {
-        min-height: 180px; /* 调整最小高度 */
-        gap: 20px; /* 增大间距 */
-    }
-    
-    /* 在更小的移动端调整布局 */
-    .song-info-block {
-        height: 180px; /* 与专辑封面同高 */
-    }
-    
-    .song-info-block h2 {
-        font-size: 1.8rem; /* 增大歌曲名字体大小 */
-        margin-bottom: 2px;
-    }
-    
-    .song-info-block p {
-        margin-bottom: 2px;
-        font-size: 1.1rem; /* 增大歌曲信息字体大小 */
-    }
-    
-    .player-options {
-        width: auto;
-        min-width: 120px; /* 增大音质选择器最小宽度 */
-        flex: 0;
-        margin-left: 10px;
-    }
-    
-    .control-btn {
-        width: 50px; /* 增大按钮宽度 */
-        height: 50px; /* 增大按钮高度 */
-        font-size: 1.5rem; /* 增大按钮图标大小 */
-        padding: 0;
-        min-width: 50px;
-    }
-    
-    #play-btn {
-        width: 55px; /* 增大播放按钮宽度 */
-        height: 55px; /* 增大播放按钮高度 */
-        font-size: 1.7rem; /* 增大播放按钮图标大小 */
-        min-width: 55px;
-    }
-    
-    #quality-select {
-        width: 100%;
-        min-width: 120px; /* 增大音质选择器最小宽度 */
-        padding: 6px 12px; /* 增大内边距 */
-        font-size: 1.1rem; /* 增大字体大小 */
-        white-space: nowrap;
-        overflow: visible;
-        text-overflow: clip;
-    }
-    
-    .song-list {
-        max-height: 400px; /* 调整播放列表最大高度以适应小屏幕 */
-    }
-    
-    .song-item {
-        padding: 3px 12px; /* 增大内边距 */
-        min-height: 25px; /* 增大最小高度 */
-        margin-bottom: 3px; /* 增大行间距 */
-    }
-    
-    .song-index {
-        width: 30px; /* 增大序号宽度 */
-        font-size: 1rem; /* 增大序号字体大小 */
-        font-weight: 600;
-    }
-    
-    .song-info .song-title {
-        font-size: 1.2rem; /* 增大歌曲名字体大小 */
-        margin-bottom: 3px; /* 增大下边距 */
-    }
-    
-    .song-info .song-artist {
-        font-size: 1rem; /* 增大歌手名字体大小 */
-    }
-    
-    .song-pay {
-        font-size: 1rem; /* 增大付费标识字体大小 */
-        padding: 2px 6px; /* 增大内边距 */
-    }
-    
-    .lyrics-header {
-        flex-direction: column;
-        gap: 10px;
-        align-items: flex-start;
-    }
-    
-    .lyrics-actions {
         flex-direction: row;
-        flex-wrap: nowrap;
-        gap: 5px;
-        width: 100%;
-    }
-    
-    .action-btn, .toggle-btn, .mode-btn {
-        padding: 6px 10px;
-        font-size: 0.8rem;
-        flex: 1;
-        min-width: 0;
-    }
-    
-    /* 小屏幕上的歌词底部按钮 */
-    .lyrics-footer {
-        padding: 8px 15px;
-    }
-    
-    .lyrics-controls {
-        width: 100%;
-        justify-content: center;
-    }
-    
-    /* 小屏幕上的播放控制和音质选项 - 保持所有按钮在一行 */
-    .player-controls-wrapper {
-        flex-direction: row; /* 改为行布局而不是列布局 */
-        gap: 10px;
-        align-items: center;
-        flex-wrap: nowrap !important; /* 强制不换行 */
-    }
-    
-    .player-controls {
-        justify-content: flex-start; /* 左对齐 */
-        gap: 6px; /* 减小按钮间距 */
-        flex-wrap: nowrap !important; /* 强制不换行 */
-        width: auto; /* 不再占满整个宽度 */
-        flex: 0 0 auto; /* 不伸缩 */
-    }
-}
-
-@media (max-width: 480px) {
-    .header h1 {
-        font-size: 1.8rem;
-    }
-    
-    .chart-btn {
-        padding: 5px 10px;
-        font-size: 0.9rem;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 5px;
-    }
-    
-    .album-art {
-        width: 150px; /* 在超小屏幕上适当减小 */
-        height: 150px;
-    }
-    
-    /* 在超小移动端调整布局 */
-    .player-top {
-        min-height: 150px;
+        text-align: left;
         gap: 15px;
+        align-items: center;
     }
     
-    /* 在超小移动端调整布局 */
+    .album-art {
+        width: 150px;
+        height: 150px;
+        flex-shrink: 0;
+    }
+    
     .song-info-block {
-        height: 150px; /* 与专辑封面同高 */
+        align-items: flex-start;
+        flex: 1;
     }
     
     .song-info-block h2 {
-        font-size: 1.6rem; /* 增大歌曲名字体大小 */
-        margin-bottom: 2px;
+        font-size: 1.4rem;
+        text-align: left;
     }
     
     .song-info-block p {
-        margin-bottom: 2px;
-        font-size: 1rem; /* 增大歌曲信息字体大小 */
+        text-align: left;
     }
     
-    .song-list {
-        max-height: 300px; /* 进一步调整播放列表最大高度以适应超小屏幕 */
-    }
-    
-    .song-item {
-        padding: 2px 8px; /* 在超小屏幕上适当减小 */
-        min-height: 22px; /* 在超小屏幕上适当减小 */
-        margin-bottom: 2px;
-    }
-    
-    .song-index {
-        width: 25px; /* 在超小屏幕上适当减小 */
-        font-size: 0.9rem; /* 在超小屏幕上适当减小 */
-    }
-    
-    .song-info .song-title {
-        font-size: 1.1rem; /* 增大歌曲名字体大小 */
-        margin-bottom: 2px;
-    }
-    
-    .song-info .song-artist {
-        font-size: 0.9rem; /* 增大歌手名字体大小 */
-    }
-    
-    .song-pay {
-        font-size: 0.9rem; /* 增大付费标识字体大小 */
-        padding: 1px 4px; /* 在超小屏幕上适当减小 */
-    }
-    
-    /* 超小屏幕上的播放控制 - 保持所有按钮在一行 */
+    /* 修复播放控件和音质选项保持在一行 */
     .player-controls-wrapper {
         flex-direction: row;
-        gap: 5px;
-        align-items: center;
-        flex-wrap: nowrap !important;
+        gap: 10px;
+        flex-wrap: nowrap;
     }
     
     .player-controls {
-        gap: 4px;
-        flex-wrap: nowrap !important;
+        justify-content: flex-start;
+        flex-wrap: nowrap;
         width: auto;
         flex: 0 0 auto;
     }
     
-    .control-btn {
-        width: 45px; /* 在超小屏幕上适当减小 */
-        height: 45px;
-        font-size: 1.4rem;
-        padding: 0;
-        min-width: 45px;
-    }
-    
-    #play-btn {
-        width: 50px; /* 在超小屏幕上适当减小 */
-        height: 50px;
-        font-size: 1.6rem;
-        min-width: 50px;
-    }
-    
-    #quality-select {
-        padding: 5px 10px; /* 增大内边距 */
-        font-size: 1rem; /* 增大字体大小 */
-        min-width: 110px; /* 增大音质选择器最小宽度 */
-        width: 100%;
-        white-space: nowrap;
-        overflow: visible;
-        text-overflow: clip;
-    }
-    
     .player-options {
-        width: auto;
-        min-width: 100px; /* 恢复原来的最小宽度 */
-        margin-left: 5px;
+        flex: 0 0 auto;
+        min-width: 100px;
+        margin-left: 10px;
+    }
+    
+    .playlist-section {
+        padding: 12px;
+    }
+    
+    .chart-nav {
+        flex-wrap: wrap;
+    }
+    
+    .chart-btn {
+        font-size: 0.9rem;
+        padding: 6px 10px;
+    }
+    
+    /* 修复移动端输入框调整 - 保持两个输入组在一行 */
+    .input-group-container {
+        flex-direction: row;
+        gap: 10px;
+        flex-wrap: nowrap;
+    }
+    
+    .input-group {
+        min-width: 0; /* 允许输入组收缩以适应容器 */
+        flex: 1;
+    }
+    
+    /* 减小输入框的内边距以适应小屏幕 */
+    .input-with-button {
+        padding: 8px 40px 8px 10px;
+        font-size: 0.85rem;
+        min-width: 120px; /* 设置最小宽度 */
+    }
+    
+    .input-button {
+        width: 32px;
+        height: 32px;
+        font-size: 0.85rem;
+    }
+    
+    .playlist-header h2 {
+        font-size: 1.2rem;
+    }
+    
+    .song-item {
+        padding: 2px 8px;
+    }
+    
+    .song-info .song-title {
+        font-size: 0.9rem;
+    }
+    
+    .song-info .song-artist {
+        font-size: 0.8rem;
+    }
+    
+    .song-index {
+        font-size: 0.7rem;
+        width: 22px;
     }
 }
 
+@media (max-width: 480px) {
+    .container {
+        padding: 10px;
+    }
+    
+    .header h1 {
+        font-size: 1.8rem;
+    }
+    
+    .player-section {
+        padding: 15px;
+    }
+    
+    /* 保持专辑封面和歌曲信息在一行 */
+    .player-top {
+        flex-direction: row;
+        text-align: left;
+        gap: 12px;
+        align-items: center;
+    }
+    
+    .album-art {
+        width: 130px;
+        height: 130px;
+    }
+    
+    .song-info-block {
+        align-items: flex-start;
+    }
+    
+    .song-info-block h2 {
+        font-size: 1.2rem;
+        text-align: left;
+    }
+    
+    .song-info-block p {
+        font-size: 0.9rem;
+        text-align: left;
+    }
+    
+    .chart-btn {
+        font-size: 0.8rem;
+        padding: 5px 8px;
+    }
+    
+    /* 保持播放控件和音质选项在一行 */
+    .player-controls-wrapper {
+        flex-direction: row;
+        gap: 8px;
+    }
+    
+    .player-controls {
+        flex-wrap: nowrap;
+    }
+    
+    .control-btn {
+        width: 40px;
+        height: 40px;
+        font-size: 1.2rem;
+        min-width: 40px;
+        padding: 0;
+    }
+    
+    #play-btn {
+        width: 45px;
+        height: 45px;
+        font-size: 1.3rem;
+        min-width: 45px;
+    }
+    
+    /* 调整音质选择器以适应小屏幕 */
+    .player-options {
+        min-width: 80px;
+        margin-left: 5px;
+    }
+    
+    #quality-select {
+        padding: 6px 10px;
+        font-size: 0.8rem;
+        min-width: 80px;
+    }
+    
+    /* 超小屏输入框调整 - 保持两个输入组在一行 */
+    .input-group-container {
+        flex-direction: row;
+        gap: 6px;
+        flex-wrap: nowrap;
+    }
+    
+    .input-with-button {
+        padding: 6px 35px 6px 8px;
+        font-size: 0.8rem;
+        min-width: 100px;
+    }
+    
+    .input-button {
+        width: 28px;
+        height: 28px;
+        font-size: 0.8rem;
+    }
+    
+    .playlist-header h2 {
+        font-size: 1.1rem;
+    }
+    
+    .song-item {
+        padding: 1px 5px;
+    }
+    
+    .song-info .song-title {
+        font-size: 0.8rem;
+    }
+    
+    .song-info .song-artist {
+        font-size: 0.7rem;
+    }
+    
+    .song-index {
+        font-size: 0.6rem;
+        width: 20px;
+    }
+}
+
+/* 为极小屏幕添加媒体查询 */
+@media (max-width: 400px) {
+    .container {
+        padding: 8px;
+    }
+    
+    .header h1 {
+        font-size: 1.6rem;
+    }
+    
+    .player-section {
+        padding: 12px;
+    }
+    
+    /* 保持专辑封面和歌曲信息在一行 */
+    .player-top {
+        flex-direction: row;
+        text-align: left;
+        gap: 10px;
+        align-items: center;
+    }
+    
+    .album-art {
+        width: 110px;
+        height: 110px;
+    }
+    
+    .song-info-block {
+        align-items: flex-start;
+    }
+    
+    .song-info-block h2 {
+        font-size: 1.1rem;
+        text-align: left;
+    }
+    
+    .song-info-block p {
+        font-size: 0.8rem;
+        text-align: left;
+    }
+    
+    .chart-btn {
+        font-size: 0.75rem;
+        padding: 4px 6px;
+    }
+    
+    /* 保持播放控件和音质选项在一行 */
+    .player-controls-wrapper {
+        flex-direction: row;
+        gap: 6px;
+    }
+    
+    .player-controls {
+        flex-wrap: nowrap;
+    }
+    
+    .control-btn {
+        width: 35px;
+        height: 35px;
+        font-size: 1.1rem;
+        min-width: 35px;
+    }
+    
+    #play-btn {
+        width: 40px;
+        height: 40px;
+        font-size: 1.2rem;
+        min-width: 40px;
+    }
+    
+    /* 调整音质选择器以适应极小屏幕 */
+    .player-options {
+        min-width: 70px;
+        margin-left: 5px;
+    }
+    
+    #quality-select {
+        padding: 5px 8px;
+        font-size: 0.75rem;
+        min-width: 70px;
+    }
+    
+    /* 极小屏输入框调整 - 保持两个输入组在一行 */
+    .input-group-container {
+        flex-direction: row;
+        gap: 5px;
+        flex-wrap: nowrap;
+    }
+    
+    .input-with-button {
+        padding: 5px 30px 5px 6px;
+        font-size: 0.75rem;
+        min-width: 80px;
+    }
+    
+    .input-button {
+        width: 25px;
+        height: 25px;
+        font-size: 0.75rem;
+    }
+    
+    .playlist-header h2 {
+        font-size: 1rem;
+    }
+    
+    .song-item {
+        padding: 1px 4px;
+    }
+    
+    .song-info .song-title {
+        font-size: 0.75rem;
+    }
+    
+    .song-info .song-artist {
+        font-size: 0.65rem;
+    }
+    
+    .song-index {
+        font-size: 0.55rem;
+        width: 18px;
+    }
+    
+    /* 确保输入框在极小屏幕上也能正常显示 */
+    .input-group {
+        min-width: 0;
+        flex: 1;
+    }
+}
