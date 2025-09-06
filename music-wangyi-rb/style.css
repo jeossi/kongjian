@@ -5,6 +5,12 @@
     box-sizing: border-box;
 }
 
+/* 添加旋转动画定义 */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
 body {
     font-family: 'Segoe UI', 'Microsoft YaHei', Arial, sans-serif;
     background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
@@ -36,7 +42,7 @@ body {
 /* 头部样式 */
 .header {
     text-align: center;
-    margin-bottom: 10px; /* 从25px减小到10px */
+    margin-bottom: 30px; /* 从25px减小到20px */
     position: relative;
 }
 
@@ -50,6 +56,11 @@ body {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    /* 添加轻微的立体效果，但不过分夸张 */
+    text-shadow: 
+        0 1px 0 rgba(255, 255, 255, 0.1),
+        0 2px 4px rgba(0, 0, 0, 0.2),
+        0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 /* 榜单导航样式 */
@@ -57,7 +68,7 @@ body {
     display: flex;
     justify-content: center;
     gap: 5px;
-    margin-bottom: 15px;
+    margin-bottom: 30px;
     flex-wrap: nowrap;
     overflow-x: auto; /* 允许水平滚动以防内容过多 */
     -webkit-overflow-scrolling: touch; /* 平滑滚动 */
@@ -107,36 +118,158 @@ body {
 .main-content {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 20px; /* 从25px减小到10px */
+    gap: 10px; /* 从25px减小到10px */
     width: 100%;
     max-width: 100%;
     overflow-x: hidden;
+    /* 添加调试信息 */
+    /* background-color: yellow; */
 }
 
 /* 音乐播放器区域 */
 .player-section {
     background: rgba(30, 30, 46, 0.8);
     border-radius: 20px;
-    padding: 30px;
+    padding: 20px; /* 从30px减小到20px */
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
     backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.1);
     display: flex;
     flex-direction: column;
-    gap: 25px;
+    gap: 15px; /* 从25px减小到15px */
     overflow-x: hidden; /* 防止水平滚动 */
 }
 
 .player-container {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 15px; /* 从20px减小到15px */
+}
+
+/* 为极小屏幕添加媒体查询 */
+@media screen and (max-width: 400px) {
+    .main-content {
+        grid-template-columns: 1fr !important;
+        gap: 10px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        overflow-x: hidden !important;
+        /* 添加调试信息 */
+        /* background-color: green !important; */
+    }
+
+    .player-section {
+        padding: 10px !important;
+        gap: 8px !important;
+    }
+
+    .player-container {
+        gap: 8px !important;
+    }
+
+    .album-art {
+        width: 140px;
+        height: 140px;
+        min-width: 80px;
+    }
+    
+    .player-controls {
+        gap: 4px; /* 极小屏幕上进一步减小间距 */
+    }
+    
+    .control-btn {
+        width: 40px;
+        height: 40px;
+        min-width: 40px;
+        font-size: 1.2rem;
+    }
+    
+    #play-btn {
+        width: 40px;
+        height: 40px;
+        min-width: 40px;
+        font-size: 1.2rem;
+    }
+}
+
+/* 为超小屏幕添加媒体查询 */
+@media screen and (max-width: 320px) {
+    .main-content {
+        grid-template-columns: 1fr !important;
+        gap: 2px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        overflow-x: hidden !important;
+        /* 添加调试信息 */
+        /* background-color: orange !important; */
+    }
+
+    .player-section {
+        padding: 8px !important;
+        gap: 6px !important;
+    }
+
+    .player-container {
+        gap: 6px !important;
+    }
+
+    .album-art {
+        width: 120px;
+        height: 120px;
+        min-width: 70px;
+    }
+    
+    .player-controls {
+        gap: 3px; /* 超小屏幕上最小间距 */
+    }
+    
+    .control-btn {
+        width: 35px;
+        height: 35px;
+        min-width: 35px;
+        font-size: 1.1rem;
+    }
+    
+    #play-btn {
+        width: 35px;
+        height: 35px;
+        min-width: 35px;
+        font-size: 1.1rem;
+    }
+}
+
+/* 添加一个通用的媒体查询，确保在所有小屏幕设备上都应用单列布局 */
+@media screen and (max-device-width: 768px) and (orientation: portrait), 
+       screen and (max-width: 768px) {
+    .main-content {
+        grid-template-columns: 1fr !important;
+        gap: 8px !important;
+    }
+    
+    .player-section {
+        padding: 15px !important;
+        gap: 12px !important;
+    }
+    
+    .player-container {
+        gap: 12px !important;
+    }
+    
+    .album-art {
+        width: 180px;
+        height: 180px;
+        min-width: 100px;
+    }
+    
+    .player-controls {
+        gap: 6px; /* 小屏幕设备上保持原有间距 */
+    }
 }
 
 /* 大屏布局 - 歌曲信息在专辑封面右侧 */
 .player-top {
     position: relative;
-    min-height: 220px;
+    min-height: 200px;
     display: flex;
     align-items: center;
     gap: 10px; /* 从20px减小到10px */
@@ -144,8 +277,8 @@ body {
 
 .album-art {
     position: relative;
-    width: 220px;
-    height: 220px;
+    width: 200px;
+    height: 200px;
     border-radius: 15px;
     overflow: hidden;
     box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
@@ -153,7 +286,7 @@ body {
     transition: transform 0.3s ease;
     flex-shrink: 0;
     max-width: 30vw;
-    min-width: 120px; /* 确保在极小屏幕上也有最小宽度 */
+    min-width: 100px; /* 确保在极小屏幕上也有最小宽度 */
 }
 
 .album-art:hover {
@@ -395,7 +528,7 @@ body {
 
 .player-controls {
     display: flex;
-    gap: 6px; /* 减小按钮之间的间距，使音质切换按钮与静音按钮更靠近 */
+    gap: 6px; /* 默认间距 */
     align-items: center;
     flex-wrap: nowrap;
     width: auto;
@@ -435,6 +568,535 @@ body {
     background: transparent;
     box-shadow: none;
     min-width: 50px;
+}
+
+/* 在双列布局下减小播放控件按钮间距 */
+@media screen and (min-width: 769px) {
+    .player-controls {
+        gap: 2px !important; /* 在大屏幕上进一步减小间距，但保持按钮大小不变 */
+    }
+    
+    .control-btn {
+        width: 50px !important;
+        height: 50px !important;
+        min-width: 50px !important;
+        font-size: 1.5rem !important;
+    }
+    
+    #play-btn {
+        width: 50px !important;
+        height: 50px !important;
+        min-width: 50px !important;
+        font-size: 1.5rem !important;
+    }
+}
+
+/* 响应式设计 - 平板和手机 */
+@media screen and (max-width: 768px) {
+    .main-content {
+        grid-template-columns: 1fr !important;
+        gap: 10px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        overflow-x: hidden !important;
+        /* 添加调试信息 */
+        /* background-color: blue !important; */
+    }
+
+    .player-section {
+        padding: 15px !important;
+        gap: 10px !important;
+    }
+
+    .player-container {
+        gap: 10px !important;
+    }
+
+    .album-art {
+        width: 180px;
+        height: 180px;
+        min-width: 100px;
+    }
+    
+    .player-controls {
+        gap: 6px; /* 小屏幕设备上保持原有间距 */
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .main-content {
+        grid-template-columns: 1fr !important;
+        gap: 8px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        overflow-x: hidden !important;
+        /* 添加调试信息 */
+        /* background-color: red !important; */
+    }
+
+    .player-section {
+        padding: 10px !important;
+        gap: 8px !important;
+    }
+
+    .player-container {
+        gap: 8px !important;
+    }
+
+    .album-art {
+        width: 160px;
+        height: 160px;
+        min-width: 80px;
+    }
+    
+    .player-controls {
+        gap: 4px; /* 极小屏幕上进一步减小间距 */
+    }
+}
+
+/* 为极小屏幕添加媒体查询 */
+@media screen and (max-width: 400px) {
+    .main-content {
+        grid-template-columns: 1fr !important;
+        gap: 10px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        overflow-x: hidden !important;
+        /* 添加调试信息 */
+        /* background-color: green !important; */
+    }
+
+    .player-section {
+        padding: 10px !important;
+        gap: 8px !important;
+    }
+
+    .player-container {
+        gap: 8px !important;
+    }
+
+    .album-art {
+        width: 140px;
+        height: 140px;
+        min-width: 80px;
+    }
+    
+    .player-controls {
+        gap: 4px; /* 极小屏幕上进一步减小间距 */
+    }
+    
+    .control-btn {
+        width: 40px;
+        height: 40px;
+        min-width: 40px;
+        font-size: 1.2rem;
+    }
+    
+    #play-btn {
+        width: 40px;
+        height: 40px;
+        min-width: 40px;
+        font-size: 1.2rem;
+    }
+}
+
+/* 为超小屏幕添加媒体查询 */
+@media screen and (max-width: 320px) {
+    .main-content {
+        grid-template-columns: 1fr !important;
+        gap: 2px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        overflow-x: hidden !important;
+        /* 添加调试信息 */
+        /* background-color: orange !important; */
+    }
+
+    .player-section {
+        padding: 8px !important;
+        gap: 6px !important;
+    }
+
+    .player-container {
+        gap: 6px !important;
+    }
+
+    .album-art {
+        width: 120px;
+        height: 120px;
+        min-width: 70px;
+    }
+    
+    .player-controls {
+        gap: 3px; /* 超小屏幕上最小间距 */
+    }
+    
+    .control-btn {
+        width: 35px;
+        height: 35px;
+        min-width: 35px;
+        font-size: 1.1rem;
+    }
+    
+    #play-btn {
+        width: 35px;
+        height: 35px;
+        min-width: 35px;
+        font-size: 1.1rem;
+    }
+}
+
+/* 添加一个通用的媒体查询，确保在所有小屏幕设备上都应用单列布局 */
+@media screen and (max-device-width: 768px) and (orientation: portrait), 
+       screen and (max-width: 768px) {
+    .main-content {
+        grid-template-columns: 1fr !important;
+        gap: 8px !important;
+    }
+    
+    .player-section {
+        padding: 15px !important;
+        gap: 12px !important;
+    }
+    
+    .player-container {
+        gap: 12px !important;
+    }
+    
+    .album-art {
+        width: 180px;
+        height: 180px;
+        min-width: 100px;
+    }
+    
+    .player-controls {
+        gap: 6px; /* 小屏幕设备上保持原有间距 */
+    }
+}
+
+/* 大屏布局 - 歌曲信息在专辑封面右侧 */
+.player-top {
+    position: relative;
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    gap: 10px; /* 从20px减小到10px */
+}
+
+.album-art {
+    position: relative;
+    width: 200px;
+    height: 200px;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    transition: transform 0.3s ease;
+    flex-shrink: 0;
+    max-width: 30vw;
+    min-width: 100px; /* 确保在极小屏幕上也有最小宽度 */
+}
+
+.album-art:hover {
+    transform: scale(1.03);
+}
+
+.album-art img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.album-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.album-art:hover .album-overlay {
+    opacity: 1;
+}
+
+.album-overlay i {
+    font-size: 2rem;
+    color: white;
+}
+
+/* 歌曲信息块 - 包含歌曲名、专辑、时长、大小、格式 */
+.song-info-block {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0; /* 最小行间距 */
+    justify-content: center;
+    margin: 0; /* 移除默认边距 */
+    padding-top: 0; /* 确保顶部内边距为0 */
+}
+
+.song-info-block h2 {
+    font-size: 1.8rem;
+    margin: 0; /* 最小间距 */
+    margin-bottom: 2px; /* 最小间距 */
+    color: #ffffff;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-align: left;
+}
+
+.song-info-block p {
+    margin: 0; /* 最小间距 */
+    margin-bottom: 1px; /* 进一步减小间距 */
+    color: #a0a0c0;
+    font-size: 1rem;
+    text-align: left;
+}
+
+/* 移除原来的.song-info和.song-details样式 */
+
+/* 歌词区域 */
+.lyrics-wrapper {
+    width: 100%;
+    background: rgba(20, 20, 35, 0.7);
+    border-radius: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.lyrics-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background: rgba(15, 15, 25, 0.8);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* 歌词操作按钮区域 - 现在放在原来"歌词"文字的位置 */
+.lyrics-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: nowrap; /* 确保始终显示在一行 */
+    align-items: center;
+    width: 100%;
+}
+
+/* 歌词区域按钮通用样式 */
+.action-btn, .toggle-btn {
+    padding: 8px 15px;
+    background: transparent; /* 去除背景色 */
+    border: none; /* 去除边框 */
+    border-radius: 20px;
+    color: #f0f0f0;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
+    flex: 1;
+    min-width: 0;
+    justify-content: center;
+}
+
+/* 移除原来的歌词底部区域样式 */
+.lyrics-container {
+    max-height: 250px;
+    overflow-y: auto;
+    text-align: center;
+    scroll-behavior: smooth;
+    position: relative;
+    background: rgba(10, 10, 20, 0.5);
+}
+
+.lyrics-container.collapsed {
+    max-height: 100px;
+    overflow-y: auto; /* 允许滚动以显示高亮歌词 */
+    overflow-x: hidden;
+}
+
+.lyrics-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.lyrics-container::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 3px;
+}
+
+.lyrics-container::-webkit-scrollbar-thumb {
+    background: linear-gradient(90deg, #ff7eee, #4facfe);
+    border-radius: 3px;
+}
+
+.lyrics-content {
+    padding: 20px;
+    min-height: 80px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.lyric-line {
+    margin: 5px 0; /* 减小行距 */
+    padding: 4px 8px; /* 减小内边距 */
+    transition: all 0.3s ease;
+    font-size: 1.1rem;
+    line-height: 1.4; /* 减小行高 */
+    border-radius: 8px;
+    opacity: 0.6;
+    transform: scale(0.95);
+}
+
+.lyric-line.active {
+    color: #4facfe;
+    font-weight: 700;
+    font-size: 1.2rem; /* 稍微减小活动行字体大小 */
+    opacity: 1;
+    transform: scale(1);
+    text-shadow: 0 0 10px rgba(79, 172, 254, 0.5);
+    background: rgba(79, 172, 254, 0.1);
+    margin: 5px 0; /* 保持一致的间距 */
+    padding: 4px 8px;
+}
+
+.lyric-line.prev {
+    opacity: 0.8;
+    transform: scale(0.98);
+}
+
+.lyric-line.next {
+    opacity: 0.4;
+    transform: scale(0.92);
+}
+
+.lyric-placeholder {
+    color: #a0a0c0;
+    font-style: italic;
+}
+
+/* 进度条 */
+.player-progress {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin: 5px 0; /* 减小上下间距到最小 */
+}
+
+.progress-bar {
+    flex: 1;
+    height: 6px;
+    -webkit-appearance: none;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    outline: none;
+}
+
+.progress-bar::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: linear-gradient(90deg, #ff7eee, #4facfe);
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(79, 172, 254, 0.8);
+}
+
+#current-time, #total-time {
+    font-size: 1rem;
+    color: #a0a0c0;
+    min-width: 50px;
+    text-align: center;
+    font-weight: 500;
+}
+
+/* 播放控制和音质选项容器 */
+.player-controls-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    width: 100%;
+    margin: 5px 0;
+    overflow-x: hidden; /* 防止水平滚动 */
+}
+
+.player-controls {
+    display: flex;
+    gap: 6px; /* 默认间距 */
+    align-items: center;
+    flex-wrap: nowrap;
+    width: auto;
+    flex: 0 0 auto;
+}
+
+.control-btn {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    color: #f0f0f0;
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: none;
+    border: none;
+    flex-shrink: 0; /* 防止按钮缩小 */
+    padding: 0; /* 移除内边距以适应小屏幕 */
+    min-width: 50px; /* 设置最小宽度 */
+}
+
+.control-btn:hover {
+    transform: scale(1.1);
+    background: transparent;
+    box-shadow: none;
+}
+
+#play-btn {
+    width: 50px;
+    height: 50px;
+    font-size: 1.5rem;
+    background: transparent;
+    box-shadow: none;
+    min-width: 50px;
+}
+
+/* 在双列布局下减小播放控件按钮间距 */
+@media screen and (min-width: 769px) {
+    .player-controls {
+        gap: 2px !important; /* 在大屏幕上进一步减小间距，但保持按钮大小不变 */
+    }
+    
+    .control-btn {
+        width: 50px !important;
+        height: 50px !important;
+        min-width: 50px !important;
+        font-size: 1.5rem !important;
+    }
+    
+    #play-btn {
+        width: 50px !important;
+        height: 50px !important;
+        min-width: 50px !important;
+        font-size: 1.5rem !important;
+    }
 }
 
 /* 播放器选项 */
@@ -539,31 +1201,32 @@ body {
 
 .input-button {
     position: absolute;
-    right: 5px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 40px;
-    height: 40px;
-    border-radius: 15px;
+    right: 0;
+    top: 0;
+    width: 50px;
+    height: 100%;
+    border-radius: 0 20px 20px 0;
     border: none;
-    background: linear-gradient(90deg, #ff7eee, #4facfe);
-    color: white;
-    font-size: 1rem;
+    background: transparent;
+    color: #f0f0f0;
+    font-size: 1.5rem; /* 从1.2rem增大到1.5rem */
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 3px 10px rgba(79, 172, 254, 0.3);
+    box-shadow: none;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
 .input-button:hover {
-    transform: translateY(-50%) scale(1.05);
-    box-shadow: 0 5px 15px rgba(79, 172, 254, 0.4);
+    background: rgba(255, 255, 255, 0.1);
+    transform: none;
+    box-shadow: none;
 }
 
 .input-button:active {
-    transform: translateY(-50%) scale(0.95);
+    background: rgba(255, 255, 255, 0.2);
+    transform: none;
 }
 
 .playlist-header h2 {
@@ -722,608 +1385,4 @@ body {
     color: #2e7d32; /* 免费音乐使用深绿色文字 */
     background: transparent; /* 去除背景色 */
     box-shadow: none; /* 去除阴影 */
-}
-
-/* 响应式设计 - 平板和手机 */
-@media (max-width: 768px) {
-    .container {
-        padding: 15px;
-        width: 100vw;
-        max-width: 100vw;
-        overflow-x: hidden;
-    }
-    
-    .main-content {
-        grid-template-columns: 1fr;
-        gap: 15px; /* 从20px减小到8px */
-        width: 100%;
-        max-width: 100%;
-        overflow-x: hidden;
-    }
-    
-    .header h1 {
-        font-size: 2.5rem;
-    }
-    
-    .player-section {
-        padding: 25px;
-        overflow-x: hidden; /* 防止水平滚动 */
-    }
-    
-    /* 修复专辑封面和歌曲信息保持在一行 */
-    .player-top {
-        flex-direction: row;
-        text-align: left;
-        gap: 8px;
-        align-items: center;
-    }
-    
-    .album-art {
-        width: 150px;
-        height: 150px;
-        flex-shrink: 0;
-        max-width: 40vw; /* 在平板屏幕上适当调整最大宽度 */
-    }
-    
-    .song-info-block {
-        align-items: flex-start;
-        flex: 1;
-        padding-top: 0; /* 确保顶部内边距为0 */
-    }
-    
-    .song-info-block h2 {
-        font-size: 1.4rem;
-        text-align: left;
-        margin-bottom: 1px; /* 进一步减小间距 */
-    }
-    
-    .song-info-block p {
-        text-align: left;
-        margin-bottom: 1px; /* 进一步减小间距 */
-    }
-    
-    /* 修复播放控件和音质选项保持在一行 */
-    .player-controls-wrapper {
-        flex-direction: row;
-        gap: 10px;
-        flex-wrap: nowrap;
-        overflow-x: hidden; /* 防止水平滚动 */
-    }
-    
-    .player-controls {
-        justify-content: flex-start;
-        flex-wrap: nowrap;
-        width: auto;
-        flex: 0 0 auto;
-        gap: 6px; /* 减小按钮之间的间距，使音质切换按钮与静音按钮更靠近 */
-    }
-    
-    .player-options {
-        flex: 0 0 auto;
-        min-width: 100px;
-        margin-left: 5px; /* 减小与按钮的间距 */
-    }
-    
-    .playlist-section {
-        padding: 12px;
-        overflow-x: hidden; /* 防止水平滚动 */
-    }
-    
-    .chart-nav {
-        flex-wrap: wrap;
-        overflow-x: hidden; /* 在平板上隐藏水平滚动 */
-    }
-    
-    .chart-btn {
-        font-size: 1.2rem; /* 从0.9rem增大到1.2rem */
-        padding: 8px 12px; /* 增大内边距以适应更大的字体 */
-        flex: 1 1 auto; /* 允许按钮根据内容调整 */
-    }
-    
-    /* 修复移动端输入框调整 - 保持两个输入组在一行 */
-    .input-group-container {
-        flex-direction: row;
-        gap: 10px;
-        flex-wrap: nowrap;
-        overflow-x: hidden; /* 防止水平滚动 */
-    }
-    
-    .input-group {
-        min-width: 0;
-        flex: 1;
-    }
-    
-    /* 减小输入框的内边距以适应小屏幕 */
-    .input-with-button {
-        padding: 10px 45px 10px 12px;
-        font-size: 1rem;
-        width: 100%;
-        min-width: 0;
-    }
-    
-    .input-button {
-        width: 36px;
-        height: 36px;
-        font-size: 1rem;
-    }
-    
-    .playlist-header h2 {
-        font-size: 1.2rem;
-    }
-    
-    .song-item {
-        padding: 6px 12px; /* 从4px 10px增大到6px 12px */
-    }
-    
-    .song-info .song-title {
-        font-size: 1.3rem; /* 从1.1rem增大到1.3rem */
-    }
-    
-    .song-info .song-artist {
-        font-size: 1.1rem; /* 从0.9rem增大到1.1rem */
-    }
-    
-    .song-index {
-        font-size: 1.4rem; /* 从1.2rem增大到1.4rem */
-        width: 30px; /* 从25px增大到30px */
-    }
-    
-    .song-pay {
-        font-size: 1.3rem; /* 从1.2rem增大到1.3rem */
-    }
-}
-
-@media (max-width: 480px) {
-    .container {
-        padding: 10px;
-        width: 100vw;
-        max-width: 100vw;
-        overflow-x: hidden;
-    }
-    
-    .main-content {
-        grid-template-columns: 1fr;
-        gap: 15px; /* 从15px减小到5px */
-        width: 100%;
-        max-width: 100%;
-        overflow-x: hidden;
-    }
-    
-    .header h1 {
-        font-size: 2.2rem;
-    }
-    
-    .player-section {
-        padding: 20px;
-        overflow-x: hidden; /* 防止水平滚动 */
-    }
-    
-    /* 保持专辑封面和歌曲信息在一行 */
-    .player-top {
-        flex-direction: row;
-        text-align: left;
-        gap: 6px; /* 从12px减小到6px */
-        align-items: center;
-    }
-    
-    .album-art {
-        width: 130px;
-        height: 130px;
-        max-width: 45vw; /* 在手机屏幕上适当调整最大宽度 */
-    }
-    
-    .song-info-block {
-        align-items: flex-start;
-        padding-top: 0; /* 确保顶部内边距为0 */
-    }
-
-    .song-info-block h2 {
-        font-size: 1.2rem;
-        text-align: left;
-        margin-bottom: 1px; /* 进一步减小间距 */
-    }
-
-    .song-info-block p {
-        font-size: 0.9rem;
-        text-align: left;
-        margin-bottom: 1px; /* 进一步减小间距 */
-    }
-    
-    .chart-nav {
-        flex-wrap: wrap;
-        gap: 3px;
-        overflow-x: hidden; /* 在手机上隐藏水平滚动 */
-    }
-    
-    .chart-btn {
-        font-size: 1.1rem; /* 从0.8rem增大到1.1rem */
-        padding: 6px 10px; /* 增大内边距以适应更大的字体 */
-        flex: 1 1 auto; /* 允许按钮根据内容调整 */
-    }
-    
-    /* 保持播放控件和音质选项在一行 */
-    .player-controls-wrapper {
-        flex-direction: row;
-        gap: 10px;
-        overflow-x: hidden; /* 防止水平滚动 */
-    }
-    
-    .player-controls {
-        flex-wrap: nowrap;
-        gap: 6px; /* 减小按钮之间的间距，使音质切换按钮与静音按钮更靠近 */
-    }
-    
-    .control-btn {
-        width: 50px;
-        height: 50px;
-        font-size: 1.4rem;
-        min-width: 50px;
-        padding: 0;
-        background: transparent;
-        border: none;
-        box-shadow: none;
-    }
-    
-    #play-btn {
-        width: 55px;
-        height: 55px;
-        font-size: 1.5rem;
-        min-width: 55px;
-        background: transparent;
-        border: none;
-        box-shadow: none;
-    }
-    
-    /* 调整音质选择器以适应小屏幕 */
-    .player-options {
-        min-width: 80px;
-        margin-left: 3px; /* 减小与按钮的间距 */
-    }
-    
-    #quality-select {
-        padding: 6px 10px;
-        font-size: 0.9rem;
-        min-width: 70px; /* 减小最小宽度以适应更小的空间 */
-    }
-    
-    /* 超小屏输入框调整 - 保持两个输入组在一行 */
-    .input-group-container {
-        flex-direction: row;
-        gap: 6px;
-        flex-wrap: nowrap;
-        overflow-x: hidden; /* 防止水平滚动 */
-    }
-    
-    .input-with-button {
-        padding: 8px 40px 8px 10px;
-        font-size: 0.9rem;
-        width: 100%;
-        min-width: 0;
-        max-width: none; /* 移除最大宽度限制 */
-    }
-    
-    .input-button {
-        width: 32px;
-        height: 32px;
-        font-size: 0.9rem;
-    }
-    
-    .playlist-header h2 {
-        font-size: 1.1rem;
-    }
-    
-    .song-item {
-        padding: 4px 10px; /* 从3px 7px增大到4px 10px */
-    }
-    
-    .song-info .song-title {
-        font-size: 1.2rem; /* 从1rem增大到1.2rem */
-    }
-    
-    .song-info .song-artist {
-        font-size: 1.0rem; /* 从0.8rem增大到1.0rem */
-    }
-    
-    .song-index {
-        font-size: 1.3rem; /* 从1.1rem增大到1.3rem */
-        width: 28px; /* 从25px增大到28px */
-    }
-    
-    .song-pay {
-        font-size: 1.2rem; /* 从1.1rem增大到1.2rem */
-    }
-}
-
-/* 为极小屏幕添加媒体查询 */
-@media (max-width: 400px) {
-    .container {
-        padding: 8px;
-        width: 100vw;
-        max-width: 100vw;
-        overflow-x: hidden;
-    }
-
-    .main-content {
-        grid-template-columns: 1fr;
-        gap: 10px; /* 从10px减小到3px */
-        width: 100%;
-        max-width: 100%;
-        overflow-x: hidden;
-    }
-
-    .header h1 {
-        font-size: 2rem;
-    }
-
-    .player-section {
-        padding: 15px;
-        overflow-x: hidden; /* 防止水平滚动 */
-    }
-
-    /* 保持专辑封面和歌曲信息在一行 */
-    .player-top {
-        flex-direction: row;
-        text-align: left;
-        gap: 5px; /* 从10px减小到5px */
-        align-items: center;
-    }
-
-    .album-art {
-        width: 110px;
-        height: 110px;
-        max-width: 50vw; /* 在极小屏幕上适当调整最大宽度 */
-    }
-
-    .song-info-block {
-        align-items: flex-start;
-        padding-top: 0; /* 确保顶部内边距为0 */
-    }
-
-    .song-info-block h2 {
-        font-size: 1.1rem;
-        text-align: left;
-        margin-bottom: 1px; /* 进一步减小间距 */
-    }
-
-    .song-info-block p {
-        font-size: 0.8rem;
-        text-align: left;
-        margin-bottom: 1px; /* 进一步减小间距 */
-    }
-
-    .chart-nav {
-        flex-wrap: wrap;
-        gap: 2px;
-        overflow-x: hidden; /* 在极小屏幕上隐藏水平滚动 */
-    }
-
-    .chart-btn {
-        font-size: 1.0rem; /* 从0.75rem增大到1.0rem */
-        padding: 5px 8px; /* 增大内边距以适应更大的字体 */
-        flex: 1 1 auto; /* 允许按钮根据内容调整 */
-    }
-
-    /* 保持播放控件和音质选项在一行 */
-    .player-controls-wrapper {
-        flex-direction: row;
-        gap: 8px;
-        overflow-x: hidden; /* 防止水平滚动 */
-    }
-
-    .player-controls {
-        flex-wrap: nowrap;
-        gap: 6px; /* 减小按钮之间的间距，使音质切换按钮与静音按钮更靠近 */
-    }
-
-    /* 调整音质选择器以适应极小屏幕 */
-    .player-options {
-        min-width: 70px;
-        margin-left: 3px; /* 减小与按钮的间距 */
-    }
-
-    #quality-select {
-        padding: 4px 6px; /* 在极小屏幕上进一步减小内边距 */
-        font-size: 0.75rem;
-        min-width: 50px; /* 在极小屏幕上进一步减小最小宽度 */
-    }
-
-    /* 极小屏输入框调整 - 保持两个输入组在一行 */
-    .input-group-container {
-        flex-direction: row;
-        gap: 5px;
-        flex-wrap: nowrap;
-        overflow-x: hidden; /* 防止水平滚动 */
-    }
-
-    .input-with-button {
-        padding: 7px 35px 7px 8px;
-        font-size: 0.85rem;
-        width: 100%;
-        min-width: 0;
-        max-width: none; /* 移除最大宽度限制 */
-    }
-
-    .input-button {
-        width: 28px;
-        height: 28px;
-        font-size: 0.85rem;
-    }
-
-    .playlist-header h2 {
-        font-size: 1rem;
-    }
-
-    .song-item {
-        padding: 3px 8px; /* 从2px 6px增大到3px 8px */
-    }
-
-    .song-info .song-title {
-        font-size: 1.1rem; /* 从0.9rem增大到1.1rem */
-    }
-
-    .song-info .song-artist {
-        font-size: 0.9rem; /* 从0.75rem增大到0.9rem */
-    }
-
-    .song-index {
-        font-size: 1.2rem; /* 从1.0rem增大到1.2rem */
-        width: 25px; /* 从20px增大到25px */
-    }
-
-    .song-pay {
-        font-size: 1.1rem; /* 从1.0rem增大到1.1rem */
-    }
-
-    /* 确保输入框在极小屏幕上也能正常显示 */
-    .input-group {
-        min-width: 0;
-        flex: 1;
-    }
-}
-
-/* 为超小屏幕添加媒体查询 */
-@media (max-width: 320px) {
-    .container {
-        padding: 5px;
-        width: 100vw;
-        max-width: 100vw;
-        overflow-x: hidden;
-    }
-
-    .main-content {
-        grid-template-columns: 1fr;
-        gap: 8px; /* 从8px减小到2px */
-        width: 100%;
-        max-width: 100%;
-        overflow-x: hidden;
-    }
-
-    .header h1 {
-        font-size: 1.8rem;
-    }
-
-    .player-section {
-        padding: 12px;
-        overflow-x: hidden; /* 防止水平滚动 */
-    }
-
-    /* 保持专辑封面和歌曲信息在一行 */
-    .player-top {
-        flex-direction: column;
-        text-align: center;
-        gap: 4px; /* 从8px减小到4px */
-        align-items: center;
-    }
-
-    .album-art {
-        width: 90px;
-        height: 90px;
-        max-width: 60vw; /* 在超小屏幕上适当调整最大宽度 */
-    }
-
-    .song-info-block {
-        align-items: center;
-        padding-top: 0; /* 确保顶部内边距为0 */
-    }
-
-    .song-info-block h2 {
-        font-size: 1rem;
-        text-align: center;
-        margin-bottom: 1px; /* 进一步减小间距 */
-    }
-
-    .song-info-block p {
-        font-size: 0.75rem;
-        text-align: center;
-        margin-bottom: 1px; /* 进一步减小间距 */
-    }
-
-    .chart-nav {
-        flex-wrap: wrap;
-        gap: 2px;
-        overflow-x: hidden; /* 在超小屏幕上隐藏水平滚动 */
-    }
-
-    .chart-btn {
-        font-size: 0.9rem; /* 从0.7rem增大到0.9rem */
-        padding: 4px 6px; /* 增大内边距以适应更大的字体 */
-        flex: 1 1 auto; /* 允许按钮根据内容调整 */
-    }
-
-    /* 保持播放控件和音质选项在一行 */
-    .player-controls-wrapper {
-        flex-direction: row;
-        gap: 6px;
-        overflow-x: hidden; /* 防止水平滚动 */
-    }
-
-    .player-controls {
-        flex-wrap: nowrap;
-        gap: 5px; /* 在超小屏幕上进一步减小按钮之间的间距 */
-    }
-
-    /* 调整音质选择器以适应超小屏幕 */
-    .player-options {
-        min-width: 60px;
-        margin-left: 2px; /* 在超小屏幕上进一步减小与按钮的间距 */
-    }
-
-    #quality-select {
-        padding: 3px 5px; /* 在超小屏幕上进一步减小内边距 */
-        font-size: 0.7rem;
-        min-width: 45px; /* 在超小屏幕上进一步减小最小宽度 */
-    }
-
-    /* 超小屏输入框调整 - 保持两个输入组在一行 */
-    .input-group-container {
-        flex-direction: row;
-        gap: 4px;
-        flex-wrap: nowrap;
-        overflow-x: hidden; /* 防止水平滚动 */
-    }
-
-    .input-with-button {
-        padding: 6px 30px 6px 7px;
-        font-size: 0.8rem;
-        width: 100%;
-        min-width: 0;
-        max-width: none; /* 移除最大宽度限制 */
-    }
-
-    .input-button {
-        width: 25px;
-        height: 25px;
-        font-size: 0.8rem;
-    }
-
-    .playlist-header h2 {
-        font-size: 0.9rem;
-    }
-
-    .song-item {
-        padding: 2px 6px; /* 从1px 5px增大到2px 6px */
-    }
-
-    .song-info .song-title {
-        font-size: 1.0rem; /* 从0.85rem增大到1.0rem */
-    }
-
-    .song-info .song-artist {
-        font-size: 0.8rem; /* 从0.7rem增大到0.8rem */
-    }
-
-    .song-index {
-        font-size: 1.1rem; /* 从0.9rem增大到1.1rem */
-        width: 22px; /* 从18px增大到22px */
-    }
-
-    .song-pay {
-        font-size: 1.0rem; /* 从0.9rem增大到1.0rem */
-    }
-
-    /* 确保输入框在超小屏幕上也能正常显示 */
-    .input-group {
-        min-width: 0;
-        flex: 1;
-    }
 }
