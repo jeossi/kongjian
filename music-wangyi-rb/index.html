@@ -1,21 +1,23 @@
 <!DOCTYPE html>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-    <title>网易音乐</title>
-    <link rel="icon" href="../Aje128.png" type="image/png" sizes="32x32">
-    <link rel="stylesheet" href="style.css?v=9.6.1855">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>网易音乐榜</title>
+    <link rel="stylesheet" href="style.css?v=9.6.2157">
+    <!-- Font Awesome图标库 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- 添加网站图标 -->
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
 </head>
 <body>
     <div class="container">
-        <!-- 头部导航 -->
+        <!-- 头部区域 -->
         <header class="header">
-            <h1><i class="fas fa-music"></i> 网易音乐</h1>
+            <h1><i class="fas fa-music"></i> 网易音乐榜</h1>
         </header>
 
         <!-- 主要内容区域 -->
@@ -30,14 +32,17 @@
                                 <i class="fas fa-music"></i>
                             </div>
                         </div>
-                        <!-- 将歌曲名、专辑、时长、大小、格式合为一块，放在图片右边 -->
+                        <!-- 专辑、时长、大小、格式显示在封面右边 -->
                         <div class="song-info-block">
-                            <h2 id="song-name">请选择歌曲</h2>
-                            <p id="artist">艺术家</p>
                             <p id="album">专辑</p>
                             <p id="duration">时长: --:--</p>
                             <p id="size">大小: --MB</p>
                             <p id="format">格式: --</p>
+                        </div>
+                        <!-- 歌名和艺术家显示在封面下方 -->
+                        <div class="song-title-artist">
+                            <h2 id="song-name">请选择歌曲</h2>
+                            <p id="artist">艺术家</p>
                         </div>
                     </div>
                     <!-- 歌词显示区域 -->
@@ -71,9 +76,8 @@
                             <button id="prev-btn" class="control-btn"><i class="fas fa-step-backward"></i></button>
                             <button id="play-btn" class="control-btn"><i class="fas fa-play"></i></button>
                             <button id="next-btn" class="control-btn"><i class="fas fa-step-forward"></i></button>
-                            <!-- 新增单曲循环按钮和静音按钮 -->
+                            <!-- 新增单曲循环按钮 -->
                             <button id="repeat-btn" class="control-btn"><i class="fas fa-repeat"></i></button>
-                            <button id="mute-btn" class="control-btn"><i class="fas fa-volume-up"></i></button>
                         </div>
                         <div class="player-options">
                             <select id="quality-select">
@@ -106,15 +110,7 @@
                     <div class="input-group-container">
                         <!-- 播放歌单输入组 -->
                         <div class="input-group">
-                            <input type="text" id="playlist-input" class="input-with-button" placeholder="请输入歌单ID或选择预设歌单" list="preset-playlists">
-                            <datalist id="preset-playlists">
-                                <option value="12589832642">
-                                <option value="4897639127">
-                                <option value="8799505292">
-                                <option value="12639638645">
-                                <option value="12767620640">
-                                <option value="12528734640">
-                            </datalist>
+                            <input type="text" id="playlist-input" class="input-with-button" placeholder="请输入歌单ID或选择预设歌单" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
                             <button id="play-playlist-btn" class="input-button">
                                 <i class="fas fa-play-circle"></i>
                             </button>
@@ -122,27 +118,7 @@
                         
                         <!-- 搜索输入组 -->
                         <div class="input-group">
-                            <input type="text" id="search-input" class="input-with-button" placeholder="搜索歌手或歌名" list="preset-searches">
-                            <datalist id="preset-searches">
-                                <option value="王佳音">
-                                <option value="鱼蛋">
-                                <option value="窝窝">
-                                <option value="艺凌">
-                                <option value="洋澜一">
-                                <option value="任夏">
-                                <option value="魏佳艺">
-                                <option value="韩小欠">
-                                <option value="单依纯">
-                                <option value="DJ">
-                                <option value="喝茶">
-                                <option value="古筝">
-                                <option value="助眠">
-                                <option value="治愈房车">
-                                <option value="经典老歌">
-                                <option value="70后">
-                                <option value="80后">
-								<option value="90后">
-                            </datalist>
+                            <input type="text" id="search-input" class="input-with-button" placeholder="搜索歌手或歌名" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
                             <button id="search-btn" class="input-button">
                                 <i class="fas fa-search"></i>
                             </button>
@@ -163,8 +139,34 @@
             </section>
         </main>
     </div>
+    
+    <!-- 热门歌单ID面板 -->
+    <div id="playlist-panel" class="popup-panel">
+        <div class="panel-header">
+            <h3>热门歌单ID</h3>
+            <button class="close-btn">&times;</button>
+        </div>
+        <div class="panel-content">
+            <ul id="popular-playlists" class="panel-list">
+                <!-- 歌单ID将通过JavaScript动态生成，避免数据重复 -->
+            </ul>
+        </div>
+    </div>
+    
+    <!-- 热门搜索面板 -->
+    <div id="search-panel" class="popup-panel">
+        <div class="panel-header">
+            <h3>热门搜索</h3>
+            <button class="close-btn">&times;</button>
+        </div>
+        <div class="panel-content">
+            <ul id="popular-searches" class="panel-list">
+                <!-- 搜索关键词将通过JavaScript动态生成，避免数据重复 -->
+            </ul>
+        </div>
+    </div>
 
     <audio id="audio-player" autoplay playsinline webkit-playsinline></audio>
-    <script src="script.js?v=9.6.1855"></script>
+    <script src="script.js?v=9.6.2157"></script>
 </body>
 </html>
