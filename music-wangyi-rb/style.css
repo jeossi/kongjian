@@ -170,7 +170,33 @@ body {
     .album-art {
         width: 140px;
         height: 140px;
-        min-width: 80px;
+        min-width: 140px;
+        min-height: 140px;
+        margin: 0 auto; /* 居中显示 */
+        aspect-ratio: 1 / 1; /* 确保始终是1:1比例 */
+    }
+    
+    .album-art img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain !important;
+        min-width: inherit;
+        min-height: inherit;
+    }
+    
+    .song-title-artist {
+        width: 100%;
+        text-align: center;
+        margin: 10px 0;
+        order: 3; /* 确保在最后显示 */
+    }
+    
+    .song-info-block {
+        text-align: center;
+        flex: 1;
+        margin: 10px 0;
+        order: 2; /* 确保在中间显示 */
+        min-width: 100%; /* 在小屏幕上占满宽度 */
     }
     
     .player-controls {
@@ -201,40 +227,66 @@ body {
         max-width: 100% !important;
         overflow-x: hidden !important;
         /* 添加调试信息 */
-        /* background-color: orange !important; */
+        /* background-color: purple !important; */
     }
 
     .player-section {
-        padding: 8px !important;
-        gap: 6px !important;
+        padding: 5px !important;
+        gap: 5px !important;
     }
 
     .player-container {
-        gap: 6px !important;
+        gap: 5px !important;
     }
 
     .album-art {
         width: 120px;
         height: 120px;
-        min-width: 70px;
+        min-width: 120px;
+        min-height: 120px;
+        margin: 0 auto; /* 居中显示 */
+        aspect-ratio: 1 / 1; /* 确保始终是1:1比例 */
+    }
+    
+    .album-art img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain !important;
+        min-width: inherit;
+        min-height: inherit;
+    }
+    
+    .song-title-artist {
+        width: 100%;
+        text-align: center;
+        margin: 10px 0;
+        order: 3; /* 确保在最后显示 */
+    }
+    
+    .song-info-block {
+        text-align: center;
+        flex: 1;
+        margin: 10px 0;
+        order: 2; /* 确保在中间显示 */
+        min-width: 100%; /* 在小屏幕上占满宽度 */
     }
     
     .player-controls {
-        gap: 3px; /* 超小屏幕上最小间距 */
+        gap: 2px; /* 超小屏幕上进一步减小间距 */
     }
     
     .control-btn {
         width: 35px;
         height: 35px;
         min-width: 35px;
-        font-size: 1.1rem;
+        font-size: 1rem;
     }
     
     #play-btn {
         width: 35px;
         height: 35px;
         min-width: 35px;
-        font-size: 1.1rem;
+        font-size: 1rem;
     }
 }
 
@@ -258,336 +310,21 @@ body {
     .album-art {
         width: 180px;
         height: 180px;
-        min-width: 100px;
+        min-width: 180px;
+        min-height: 180px;
+        aspect-ratio: 1 / 1; /* 确保始终是1:1比例 */
+    }
+    
+    .album-art img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain !important;
+        min-width: inherit;
+        min-height: inherit;
     }
     
     .player-controls {
         gap: 6px; /* 小屏幕设备上保持原有间距 */
-    }
-}
-
-/* 大屏布局 - 歌曲信息在专辑封面右侧 */
-.player-top {
-    position: relative;
-    min-height: 200px;
-    display: flex;
-    align-items: center;
-    gap: 10px; /* 从20px减小到10px */
-}
-
-.album-art {
-    position: relative;
-    width: 200px;
-    height: 200px;
-    border-radius: 15px;
-    overflow: hidden;
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
-    border: 2px solid rgba(255, 255, 255, 0.1);
-    transition: transform 0.3s ease;
-    flex-shrink: 0;
-    max-width: 30vw;
-    min-width: 100px; /* 确保在极小屏幕上也有最小宽度 */
-}
-
-.album-art:hover {
-    transform: scale(1.03);
-}
-
-.album-art img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.album-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.3);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.album-art:hover .album-overlay {
-    opacity: 1;
-}
-
-.album-overlay i {
-    font-size: 2rem;
-    color: white;
-}
-
-/* 歌曲信息块 - 包含歌曲名、专辑、时长、大小、格式 */
-.song-info-block {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 0; /* 最小行间距 */
-    justify-content: center;
-    margin: 0; /* 移除默认边距 */
-    padding-top: 0; /* 确保顶部内边距为0 */
-}
-
-.song-info-block h2 {
-    font-size: 1.8rem;
-    margin: 0; /* 最小间距 */
-    margin-bottom: 2px; /* 最小间距 */
-    color: #ffffff;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    text-align: left;
-}
-
-.song-info-block p {
-    margin: 0; /* 最小间距 */
-    margin-bottom: 1px; /* 进一步减小间距 */
-    color: #a0a0c0;
-    font-size: 1rem;
-    text-align: left;
-}
-
-/* 移除原来的.song-info和.song-details样式 */
-
-/* 歌词区域 */
-.lyrics-wrapper {
-    width: 100%;
-    background: rgba(20, 20, 35, 0.7);
-    border-radius: 15px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-}
-
-.lyrics-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px 20px;
-    background: rgba(15, 15, 25, 0.8);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-/* 歌词操作按钮区域 - 现在放在原来"歌词"文字的位置 */
-.lyrics-actions {
-    display: flex;
-    gap: 10px;
-    flex-wrap: nowrap; /* 确保始终显示在一行 */
-    align-items: center;
-    width: 100%;
-}
-
-/* 歌词区域按钮通用样式 */
-.action-btn, .toggle-btn {
-    padding: 8px 15px;
-    background: transparent; /* 去除背景色 */
-    border: none; /* 去除边框 */
-    border-radius: 20px;
-    color: #f0f0f0;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-size: 0.9rem;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    white-space: nowrap;
-    flex: 1;
-    min-width: 0;
-    justify-content: center;
-}
-
-/* 移除原来的歌词底部区域样式 */
-.lyrics-container {
-    max-height: 250px;
-    overflow-y: auto;
-    text-align: center;
-    scroll-behavior: smooth;
-    position: relative;
-    background: rgba(10, 10, 20, 0.5);
-}
-
-.lyrics-container.collapsed {
-    max-height: 100px;
-    overflow-y: auto; /* 允许滚动以显示高亮歌词 */
-    overflow-x: hidden;
-}
-
-.lyrics-container::-webkit-scrollbar {
-    width: 6px;
-}
-
-.lyrics-container::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 3px;
-}
-
-.lyrics-container::-webkit-scrollbar-thumb {
-    background: linear-gradient(90deg, #ff7eee, #4facfe);
-    border-radius: 3px;
-}
-
-.lyrics-content {
-    padding: 20px;
-    min-height: 80px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-}
-
-.lyric-line {
-    margin: 5px 0; /* 减小行距 */
-    padding: 4px 8px; /* 减小内边距 */
-    transition: all 0.3s ease;
-    font-size: 1.1rem;
-    line-height: 1.4; /* 减小行高 */
-    border-radius: 8px;
-    opacity: 0.6;
-    transform: scale(0.95);
-}
-
-.lyric-line.active {
-    color: #4facfe;
-    font-weight: 700;
-    font-size: 1.2rem; /* 稍微减小活动行字体大小 */
-    opacity: 1;
-    transform: scale(1);
-    text-shadow: 0 0 10px rgba(79, 172, 254, 0.5);
-    background: rgba(79, 172, 254, 0.1);
-    margin: 5px 0; /* 保持一致的间距 */
-    padding: 4px 8px;
-}
-
-.lyric-line.prev {
-    opacity: 0.8;
-    transform: scale(0.98);
-}
-
-.lyric-line.next {
-    opacity: 0.4;
-    transform: scale(0.92);
-}
-
-.lyric-placeholder {
-    color: #a0a0c0;
-    font-style: italic;
-}
-
-/* 进度条 */
-.player-progress {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    margin: 5px 0; /* 减小上下间距到最小 */
-}
-
-.progress-bar {
-    flex: 1;
-    height: 6px;
-    -webkit-appearance: none;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 3px;
-    outline: none;
-}
-
-.progress-bar::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    background: linear-gradient(90deg, #ff7eee, #4facfe);
-    cursor: pointer;
-    box-shadow: 0 0 10px rgba(79, 172, 254, 0.8);
-}
-
-#current-time, #total-time {
-    font-size: 1rem;
-    color: #a0a0c0;
-    min-width: 50px;
-    text-align: center;
-    font-weight: 500;
-}
-
-/* 播放控制和音质选项容器 */
-.player-controls-wrapper {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    width: 100%;
-    margin: 5px 0;
-    overflow-x: hidden; /* 防止水平滚动 */
-}
-
-.player-controls {
-    display: flex;
-    gap: 6px; /* 默认间距 */
-    align-items: center;
-    flex-wrap: nowrap;
-    width: auto;
-    flex: 0 0 auto;
-}
-
-.control-btn {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    border: none;
-    background: transparent;
-    color: #f0f0f0;
-    font-size: 1.5rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: none;
-    border: none;
-    flex-shrink: 0; /* 防止按钮缩小 */
-    padding: 0; /* 移除内边距以适应小屏幕 */
-    min-width: 50px; /* 设置最小宽度 */
-}
-
-.control-btn:hover {
-    transform: scale(1.1);
-    background: transparent;
-    box-shadow: none;
-}
-
-#play-btn {
-    width: 50px;
-    height: 50px;
-    font-size: 1.5rem;
-    background: transparent;
-    box-shadow: none;
-    min-width: 50px;
-}
-
-/* 在双列布局下减小播放控件按钮间距 */
-@media screen and (min-width: 769px) {
-    .player-controls {
-        gap: 2px !important; /* 在大屏幕上进一步减小间距，但保持按钮大小不变 */
-    }
-    
-    .control-btn {
-        width: 50px !important;
-        height: 50px !important;
-        min-width: 50px !important;
-        font-size: 1.5rem !important;
-    }
-    
-    #play-btn {
-        width: 50px !important;
-        height: 50px !important;
-        min-width: 50px !important;
-        font-size: 1.5rem !important;
     }
 }
 
@@ -615,7 +352,33 @@ body {
     .album-art {
         width: 180px;
         height: 180px;
-        min-width: 100px;
+        min-width: 180px;
+        min-height: 180px;
+        margin: 0 auto; /* 居中显示 */
+        aspect-ratio: 1 / 1; /* 确保始终是1:1比例 */
+    }
+    
+    .album-art img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain !important;
+        min-width: inherit;
+        min-height: inherit;
+    }
+    
+    .song-title-artist {
+        width: 100%;
+        text-align: center;
+        margin: 10px 0;
+        order: 3; /* 确保在最后显示 */
+    }
+    
+    .song-info-block {
+        text-align: center;
+        flex: 1;
+        margin: 10px 0;
+        order: 2; /* 确保在中间显示 */
+        min-width: 100%; /* 在小屏幕上占满宽度 */
     }
     
     .player-controls {
@@ -646,7 +409,33 @@ body {
     .album-art {
         width: 160px;
         height: 160px;
-        min-width: 80px;
+        min-width: 160px;
+        min-height: 160px;
+        margin: 0 auto; /* 居中显示 */
+        aspect-ratio: 1 / 1; /* 确保始终是1:1比例 */
+    }
+    
+    .album-art img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain !important;
+        min-width: 160px;
+        min-height: 160px;
+    }
+    
+    .song-title-artist {
+        width: 100%;
+        text-align: center;
+        margin: 10px 0;
+        order: 3; /* 确保在最后显示 */
+    }
+    
+    .song-info-block {
+        text-align: center;
+        flex: 1;
+        margin-left: 10px;
+        order: 2; /* 确保在中间显示 */
+        min-width: 100%; /* 在小屏幕上占满宽度 */
     }
     
     .player-controls {
@@ -654,123 +443,62 @@ body {
     }
 }
 
-/* 为极小屏幕添加媒体查询 */
-@media screen and (max-width: 400px) {
-    .main-content {
-        grid-template-columns: 1fr !important;
-        gap: 10px !important;
-        width: 100% !important;
-        max-width: 100% !important;
-        overflow-x: hidden !important;
-        /* 添加调试信息 */
-        /* background-color: green !important; */
+/* 在双列布局下减小播放控件按钮间距 */
+@media screen and (min-width: 769px) {
+    .player-top {
+        flex-wrap: nowrap; /* 大屏幕上不换行 */
+        align-items: flex-start; /* 顶部对齐 */
     }
-
-    .player-section {
-        padding: 10px !important;
-        gap: 8px !important;
-    }
-
-    .player-container {
-        gap: 8px !important;
-    }
-
+    
     .album-art {
-        width: 140px;
-        height: 140px;
-        min-width: 80px;
+        margin: 0; /* 大屏幕上不居中 */
+        width: 200px;
+        height: 200px;
+        min-width: 200px;
+        min-height: 200px;
+        aspect-ratio: 1 / 1; /* 确保始终是1:1比例 */
+    }
+    
+    .album-art img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain !important;
+        min-width: inherit;
+        min-height: inherit;
+    }
+    
+    /* 确保在大屏幕上也保持统一样式 */
+    .song-title-artist {
+        width: 100%;
+        text-align: center;
+        margin: 10px 0;
+        order: 3; /* 确保在最后显示 */
+    }
+    
+    .song-info-block {
+        text-align: left;
+        flex: 1;
+        margin-left: 10px;
+        align-self: center; /* 垂直居中对齐 */
+        order: 2; /* 确保在中间显示 */
     }
     
     .player-controls {
-        gap: 4px; /* 极小屏幕上进一步减小间距 */
+        gap: 2px !important; /* 在大屏幕上进一步减小间距，但保持按钮大小不变 */
     }
     
     .control-btn {
-        width: 40px;
-        height: 40px;
-        min-width: 40px;
-        font-size: 1.2rem;
+        width: 50px !important;
+        height: 50px !important;
+        min-width: 50px !important;
+        font-size: 1.5rem !important;
     }
     
     #play-btn {
-        width: 40px;
-        height: 40px;
-        min-width: 40px;
-        font-size: 1.2rem;
-    }
-}
-
-/* 为超小屏幕添加媒体查询 */
-@media screen and (max-width: 320px) {
-    .main-content {
-        grid-template-columns: 1fr !important;
-        gap: 2px !important;
-        width: 100% !important;
-        max-width: 100% !important;
-        overflow-x: hidden !important;
-        /* 添加调试信息 */
-        /* background-color: orange !important; */
-    }
-
-    .player-section {
-        padding: 8px !important;
-        gap: 6px !important;
-    }
-
-    .player-container {
-        gap: 6px !important;
-    }
-
-    .album-art {
-        width: 120px;
-        height: 120px;
-        min-width: 70px;
-    }
-    
-    .player-controls {
-        gap: 3px; /* 超小屏幕上最小间距 */
-    }
-    
-    .control-btn {
-        width: 35px;
-        height: 35px;
-        min-width: 35px;
-        font-size: 1.1rem;
-    }
-    
-    #play-btn {
-        width: 35px;
-        height: 35px;
-        min-width: 35px;
-        font-size: 1.1rem;
-    }
-}
-
-/* 添加一个通用的媒体查询，确保在所有小屏幕设备上都应用单列布局 */
-@media screen and (max-device-width: 768px) and (orientation: portrait), 
-       screen and (max-width: 768px) {
-    .main-content {
-        grid-template-columns: 1fr !important;
-        gap: 8px !important;
-    }
-    
-    .player-section {
-        padding: 15px !important;
-        gap: 12px !important;
-    }
-    
-    .player-container {
-        gap: 12px !important;
-    }
-    
-    .album-art {
-        width: 180px;
-        height: 180px;
-        min-width: 100px;
-    }
-    
-    .player-controls {
-        gap: 6px; /* 小屏幕设备上保持原有间距 */
+        width: 50px !important;
+        height: 50px !important;
+        min-width: 50px !important;
+        font-size: 1.5rem !important;
     }
 }
 
@@ -779,8 +507,9 @@ body {
     position: relative;
     min-height: 200px;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 10px; /* 从20px减小到10px */
+    flex-wrap: wrap; /* 允许换行 */
 }
 
 .album-art {
@@ -793,8 +522,10 @@ body {
     border: 2px solid rgba(255, 255, 255, 0.1);
     transition: transform 0.3s ease;
     flex-shrink: 0;
-    max-width: 30vw;
-    min-width: 100px; /* 确保在极小屏幕上也有最小宽度 */
+    min-width: 200px;
+    min-height: 200px;
+    order: 1;
+    aspect-ratio: 1 / 1; /* 确保始终是1:1比例 */
 }
 
 .album-art:hover {
@@ -804,7 +535,9 @@ body {
 .album-art img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain !important;
+    min-width: inherit; /* 继承父元素的最小宽度 */
+    min-height: inherit; /* 继承父元素的最小高度 */
 }
 
 .album-overlay {
@@ -830,7 +563,6 @@ body {
     color: white;
 }
 
-/* 歌曲信息块 - 包含歌曲名、专辑、时长、大小、格式 */
 .song-info-block {
     flex: 1;
     display: flex;
@@ -839,16 +571,8 @@ body {
     justify-content: center;
     margin: 0; /* 移除默认边距 */
     padding-top: 0; /* 确保顶部内边距为0 */
-}
-
-.song-info-block h2 {
-    font-size: 1.8rem;
-    margin: 0; /* 最小间距 */
-    margin-bottom: 2px; /* 最小间距 */
-    color: #ffffff;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    text-align: left;
+    min-width: 200px; /* 确保有足够的显示空间 */
+    order: 2; /* 确保专辑信息在第二位 */
 }
 
 .song-info-block p {
@@ -859,14 +583,34 @@ body {
     text-align: left;
 }
 
-/* 移除原来的.song-info和.song-details样式 */
+.song-title-artist {
+    width: 100%;
+    text-align: center;
+    margin: 10px 0;
+    order: 3; /* 确保歌名和艺术家在最后显示 */
+}
+
+.song-title-artist h2 {
+    font-size: 1.8rem;
+    margin: 0;
+    margin-bottom: 5px;
+    color: #ffffff;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.song-title-artist p {
+    margin: 0;
+    color: #a0a0c0;
+    font-size: 1.2rem;
+}
 
 /* 歌词区域 */
 .lyrics-wrapper {
     width: 100%;
-    background: rgba(20, 20, 35, 0.7);
+    background: rgba(30, 30, 46, 0.8);
     border-radius: 15px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(30, 30, 46, 0.8);
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -877,8 +621,9 @@ body {
     justify-content: space-between;
     align-items: center;
     padding: 15px 20px;
-    background: rgba(15, 15, 25, 0.8);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    background: rgba(30, 30, 46, 0.8);
+    border-bottom: 1px solid rgba(30, 30, 46, 0.8);
+    margin-top: -10px;
 }
 
 /* 歌词操作按钮区域 - 现在放在原来"歌词"文字的位置 */
@@ -888,6 +633,7 @@ body {
     flex-wrap: nowrap; /* 确保始终显示在一行 */
     align-items: center;
     width: 100%;
+    background: rgba(30, 30, 46, 0.8);
 }
 
 /* 歌词区域按钮通用样式 */
@@ -917,7 +663,7 @@ body {
     text-align: center;
     scroll-behavior: smooth;
     position: relative;
-    background: rgba(10, 10, 20, 0.5);
+    background: rgba(30, 30, 46, 0.8);
 }
 
 .lyrics-container.collapsed {
@@ -1064,7 +810,6 @@ body {
 }
 
 .control-btn:hover {
-    transform: scale(1.1);
     background: transparent;
     box-shadow: none;
 }
@@ -1076,27 +821,6 @@ body {
     background: transparent;
     box-shadow: none;
     min-width: 50px;
-}
-
-/* 在双列布局下减小播放控件按钮间距 */
-@media screen and (min-width: 769px) {
-    .player-controls {
-        gap: 2px !important; /* 在大屏幕上进一步减小间距，但保持按钮大小不变 */
-    }
-    
-    .control-btn {
-        width: 50px !important;
-        height: 50px !important;
-        min-width: 50px !important;
-        font-size: 1.5rem !important;
-    }
-    
-    #play-btn {
-        width: 50px !important;
-        height: 50px !important;
-        min-width: 50px !important;
-        font-size: 1.5rem !important;
-    }
 }
 
 /* 播放器选项 */
@@ -1203,13 +927,13 @@ body {
     position: absolute;
     right: 0;
     top: 0;
-    width: 50px;
+    width: 60px; /* 从50px增大到60px */
     height: 100%;
     border-radius: 0 20px 20px 0;
     border: none;
     background: transparent;
     color: #f0f0f0;
-    font-size: 1.5rem; /* 从1.2rem增大到1.5rem */
+    font-size: 2rem; /* 从1.5rem增大到2rem */
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow: none;
@@ -1385,4 +1109,152 @@ body {
     color: #2e7d32; /* 免费音乐使用深绿色文字 */
     background: transparent; /* 去除背景色 */
     box-shadow: none; /* 去除阴影 */
+}
+
+/* 弹出面板样式 */
+.popup-panel {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    max-width: 500px;
+    max-height: 80vh;
+    background: rgba(30, 30, 46, 0.8);
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(30, 30, 46, 0.8);
+    z-index: 1000;
+    overflow: hidden;
+}
+
+.popup-panel.active {
+    display: block;
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background: rgba(15, 15, 25, 0.8);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.panel-header h3 {
+    margin: 0;
+    color: #ffffff;
+    font-size: 1.4rem;
+    font-weight: 700;
+}
+
+.close-btn {
+    background: transparent;
+    border: none;
+    color: #a0a0c0;
+    font-size: 2rem;
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.close-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #f0f0f0;
+}
+
+.panel-content {
+    padding: 20px;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.panel-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+}
+
+.panel-list li {
+    padding: 15px 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: #f0f0f0;
+    font-size: 0.9rem;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 60px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.panel-list li:hover {
+    background: linear-gradient(135deg, #4facfe 0%, #6a82fb 100%);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* 面板背景遮罩 */
+.panel-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 999;
+}
+
+.panel-overlay.active {
+    display: block;
+}
+
+/* 响应式设计 - 小屏幕 */
+@media screen and (max-width: 768px) {
+    .panel-list {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+    
+    .panel-list li {
+        padding: 12px 8px;
+        font-size: 0.8rem;
+        min-height: 50px;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .popup-panel {
+        width: 95%;
+        max-width: 95%;
+    }
+    
+    .panel-list {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+    
+    .panel-list li {
+        padding: 10px 5px;
+        font-size: 0.85rem;
+        min-height: 45px;
+    }
+    
+    .panel-header h3 {
+        font-size: 1.2rem;
+    }
 }
