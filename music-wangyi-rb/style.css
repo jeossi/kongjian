@@ -36,7 +36,7 @@ body {
 /* 头部样式 */
 .header {
     text-align: center;
-    margin-bottom: 25px;
+    margin-bottom: 10px; /* 从25px减小到10px */
     position: relative;
 }
 
@@ -107,7 +107,7 @@ body {
 .main-content {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 25px;
+    gap: 20px; /* 从25px减小到10px */
     width: 100%;
     max-width: 100%;
     overflow-x: hidden;
@@ -139,7 +139,7 @@ body {
     min-height: 220px;
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: 10px; /* 从20px减小到10px */
 }
 
 .album-art {
@@ -197,6 +197,7 @@ body {
     gap: 0; /* 最小行间距 */
     justify-content: center;
     margin: 0; /* 移除默认边距 */
+    padding-top: 0; /* 确保顶部内边距为0 */
 }
 
 .song-info-block h2 {
@@ -211,7 +212,7 @@ body {
 
 .song-info-block p {
     margin: 0; /* 最小间距 */
-    margin-bottom: 2px; /* 最小间距 */
+    margin-bottom: 1px; /* 进一步减小间距 */
     color: #a0a0c0;
     font-size: 1rem;
     text-align: left;
@@ -249,7 +250,7 @@ body {
 }
 
 /* 歌词区域按钮通用样式 */
-.action-btn, .toggle-btn, .mode-btn {
+.action-btn, .toggle-btn {
     padding: 8px 15px;
     background: transparent; /* 去除背景色 */
     border: none; /* 去除边框 */
@@ -266,12 +267,6 @@ body {
     flex: 1;
     min-width: 0;
     justify-content: center;
-}
-
-.action-btn:hover, .toggle-btn:hover, .mode-btn:hover {
-    background: rgba(255, 255, 255, 0.1); /* 悬停时添加轻微背景 */
-    box-shadow: 0 5px 15px rgba(79, 172, 254, 0.3);
-    transform: translateY(-2px);
 }
 
 /* 移除原来的歌词底部区域样式 */
@@ -346,17 +341,6 @@ body {
     transform: scale(0.92);
 }
 
-/* 深色模式歌词 */
-.lyrics-container.dark-mode .lyric-line {
-    color: #a0a0c0;
-}
-
-.lyrics-container.dark-mode .lyric-line.active {
-    color: #ffffff;
-    background: rgba(255, 255, 255, 0.1);
-    text-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
-}
-
 .lyric-placeholder {
     color: #a0a0c0;
     font-style: italic;
@@ -423,7 +407,7 @@ body {
     height: 50px;
     border-radius: 50%;
     border: none;
-    background: rgba(255, 255, 255, 0.1);
+    background: transparent;
     color: #f0f0f0;
     font-size: 1.5rem;
     cursor: pointer;
@@ -431,8 +415,8 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: none;
+    border: none;
     flex-shrink: 0; /* 防止按钮缩小 */
     padding: 0; /* 移除内边距以适应小屏幕 */
     min-width: 50px; /* 设置最小宽度 */
@@ -440,16 +424,16 @@ body {
 
 .control-btn:hover {
     transform: scale(1.1);
-    background: linear-gradient(90deg, #ff7eee, #4facfe);
-    box-shadow: 0 8px 25px rgba(79, 172, 254, 0.4);
+    background: transparent;
+    box-shadow: none;
 }
 
 #play-btn {
     width: 50px;
     height: 50px;
     font-size: 1.5rem;
-    background: linear-gradient(90deg, #ff7eee, #4facfe);
-    box-shadow: 0 8px 25px rgba(79, 172, 254, 0.4);
+    background: transparent;
+    box-shadow: none;
     min-width: 50px;
 }
 
@@ -751,7 +735,7 @@ body {
     
     .main-content {
         grid-template-columns: 1fr;
-        gap: 20px;
+        gap: 15px; /* 从20px减小到8px */
         width: 100%;
         max-width: 100%;
         overflow-x: hidden;
@@ -770,7 +754,7 @@ body {
     .player-top {
         flex-direction: row;
         text-align: left;
-        gap: 15px;
+        gap: 8px;
         align-items: center;
     }
     
@@ -784,15 +768,18 @@ body {
     .song-info-block {
         align-items: flex-start;
         flex: 1;
+        padding-top: 0; /* 确保顶部内边距为0 */
     }
     
     .song-info-block h2 {
         font-size: 1.4rem;
         text-align: left;
+        margin-bottom: 1px; /* 进一步减小间距 */
     }
     
     .song-info-block p {
         text-align: left;
+        margin-bottom: 1px; /* 进一步减小间距 */
     }
     
     /* 修复播放控件和音质选项保持在一行 */
@@ -828,8 +815,8 @@ body {
     }
     
     .chart-btn {
-        font-size: 0.9rem;
-        padding: 6px 10px;
+        font-size: 1.2rem; /* 从0.9rem增大到1.2rem */
+        padding: 8px 12px; /* 增大内边距以适应更大的字体 */
         flex: 1 1 auto; /* 允许按钮根据内容调整 */
     }
     
@@ -865,20 +852,24 @@ body {
     }
     
     .song-item {
-        padding: 4px 10px;
+        padding: 6px 12px; /* 从4px 10px增大到6px 12px */
     }
     
     .song-info .song-title {
-        font-size: 1.1rem;
+        font-size: 1.3rem; /* 从1.1rem增大到1.3rem */
     }
     
     .song-info .song-artist {
-        font-size: 0.9rem;
+        font-size: 1.1rem; /* 从0.9rem增大到1.1rem */
     }
     
     .song-index {
-        font-size: 1.2rem; /* 增大字体大小 从0.8rem改为1.2rem */
-        width: 25px;
+        font-size: 1.4rem; /* 从1.2rem增大到1.4rem */
+        width: 30px; /* 从25px增大到30px */
+    }
+    
+    .song-pay {
+        font-size: 1.3rem; /* 从1.2rem增大到1.3rem */
     }
 }
 
@@ -892,7 +883,7 @@ body {
     
     .main-content {
         grid-template-columns: 1fr;
-        gap: 15px;
+        gap: 15px; /* 从15px减小到5px */
         width: 100%;
         max-width: 100%;
         overflow-x: hidden;
@@ -911,7 +902,7 @@ body {
     .player-top {
         flex-direction: row;
         text-align: left;
-        gap: 12px;
+        gap: 6px; /* 从12px减小到6px */
         align-items: center;
     }
     
@@ -923,16 +914,19 @@ body {
     
     .song-info-block {
         align-items: flex-start;
+        padding-top: 0; /* 确保顶部内边距为0 */
     }
-    
+
     .song-info-block h2 {
         font-size: 1.2rem;
         text-align: left;
+        margin-bottom: 1px; /* 进一步减小间距 */
     }
-    
+
     .song-info-block p {
         font-size: 0.9rem;
         text-align: left;
+        margin-bottom: 1px; /* 进一步减小间距 */
     }
     
     .chart-nav {
@@ -942,8 +936,8 @@ body {
     }
     
     .chart-btn {
-        font-size: 0.8rem;
-        padding: 5px 8px;
+        font-size: 1.1rem; /* 从0.8rem增大到1.1rem */
+        padding: 6px 10px; /* 增大内边距以适应更大的字体 */
         flex: 1 1 auto; /* 允许按钮根据内容调整 */
     }
     
@@ -965,6 +959,9 @@ body {
         font-size: 1.4rem;
         min-width: 50px;
         padding: 0;
+        background: transparent;
+        border: none;
+        box-shadow: none;
     }
     
     #play-btn {
@@ -972,6 +969,9 @@ body {
         height: 55px;
         font-size: 1.5rem;
         min-width: 55px;
+        background: transparent;
+        border: none;
+        box-shadow: none;
     }
     
     /* 调整音质选择器以适应小屏幕 */
@@ -1013,20 +1013,24 @@ body {
     }
     
     .song-item {
-        padding: 3px 7px;
+        padding: 4px 10px; /* 从3px 7px增大到4px 10px */
     }
     
     .song-info .song-title {
-        font-size: 1rem;
+        font-size: 1.2rem; /* 从1rem增大到1.2rem */
     }
     
     .song-info .song-artist {
-        font-size: 0.8rem;
+        font-size: 1.0rem; /* 从0.8rem增大到1.0rem */
     }
     
     .song-index {
-        font-size: 1.1rem; /* 增大字体大小 从0.7rem改为1.1rem */
-        width: 25px;
+        font-size: 1.3rem; /* 从1.1rem增大到1.3rem */
+        width: 28px; /* 从25px增大到28px */
+    }
+    
+    .song-pay {
+        font-size: 1.2rem; /* 从1.1rem增大到1.2rem */
     }
 }
 
@@ -1041,7 +1045,7 @@ body {
 
     .main-content {
         grid-template-columns: 1fr;
-        gap: 10px;
+        gap: 10px; /* 从10px减小到3px */
         width: 100%;
         max-width: 100%;
         overflow-x: hidden;
@@ -1060,7 +1064,7 @@ body {
     .player-top {
         flex-direction: row;
         text-align: left;
-        gap: 10px;
+        gap: 5px; /* 从10px减小到5px */
         align-items: center;
     }
 
@@ -1072,16 +1076,19 @@ body {
 
     .song-info-block {
         align-items: flex-start;
+        padding-top: 0; /* 确保顶部内边距为0 */
     }
 
     .song-info-block h2 {
         font-size: 1.1rem;
         text-align: left;
+        margin-bottom: 1px; /* 进一步减小间距 */
     }
 
     .song-info-block p {
         font-size: 0.8rem;
         text-align: left;
+        margin-bottom: 1px; /* 进一步减小间距 */
     }
 
     .chart-nav {
@@ -1091,8 +1098,8 @@ body {
     }
 
     .chart-btn {
-        font-size: 0.75rem;
-        padding: 4px 6px;
+        font-size: 1.0rem; /* 从0.75rem增大到1.0rem */
+        padding: 5px 8px; /* 增大内边距以适应更大的字体 */
         flex: 1 1 auto; /* 允许按钮根据内容调整 */
     }
 
@@ -1147,20 +1154,24 @@ body {
     }
 
     .song-item {
-        padding: 2px 6px;
+        padding: 3px 8px; /* 从2px 6px增大到3px 8px */
     }
 
     .song-info .song-title {
-        font-size: 0.9rem;
+        font-size: 1.1rem; /* 从0.9rem增大到1.1rem */
     }
 
     .song-info .song-artist {
-        font-size: 0.75rem;
+        font-size: 0.9rem; /* 从0.75rem增大到0.9rem */
     }
 
     .song-index {
-        font-size: 1.0rem; /* 增大字体大小 从0.65rem改为1.0rem */
-        width: 20px;
+        font-size: 1.2rem; /* 从1.0rem增大到1.2rem */
+        width: 25px; /* 从20px增大到25px */
+    }
+
+    .song-pay {
+        font-size: 1.1rem; /* 从1.0rem增大到1.1rem */
     }
 
     /* 确保输入框在极小屏幕上也能正常显示 */
@@ -1181,7 +1192,7 @@ body {
 
     .main-content {
         grid-template-columns: 1fr;
-        gap: 8px;
+        gap: 8px; /* 从8px减小到2px */
         width: 100%;
         max-width: 100%;
         overflow-x: hidden;
@@ -1200,7 +1211,7 @@ body {
     .player-top {
         flex-direction: column;
         text-align: center;
-        gap: 8px;
+        gap: 4px; /* 从8px减小到4px */
         align-items: center;
     }
 
@@ -1212,16 +1223,19 @@ body {
 
     .song-info-block {
         align-items: center;
+        padding-top: 0; /* 确保顶部内边距为0 */
     }
 
     .song-info-block h2 {
         font-size: 1rem;
         text-align: center;
+        margin-bottom: 1px; /* 进一步减小间距 */
     }
 
     .song-info-block p {
         font-size: 0.75rem;
         text-align: center;
+        margin-bottom: 1px; /* 进一步减小间距 */
     }
 
     .chart-nav {
@@ -1231,8 +1245,8 @@ body {
     }
 
     .chart-btn {
-        font-size: 0.7rem;
-        padding: 3px 5px;
+        font-size: 0.9rem; /* 从0.7rem增大到0.9rem */
+        padding: 4px 6px; /* 增大内边距以适应更大的字体 */
         flex: 1 1 auto; /* 允许按钮根据内容调整 */
     }
 
@@ -1287,20 +1301,24 @@ body {
     }
 
     .song-item {
-        padding: 1px 5px;
+        padding: 2px 6px; /* 从1px 5px增大到2px 6px */
     }
 
     .song-info .song-title {
-        font-size: 0.85rem;
+        font-size: 1.0rem; /* 从0.85rem增大到1.0rem */
     }
 
     .song-info .song-artist {
-        font-size: 0.7rem;
+        font-size: 0.8rem; /* 从0.7rem增大到0.8rem */
     }
 
     .song-index {
-        font-size: 0.9rem; /* 增大字体大小 从0.6rem改为0.9rem */
-        width: 18px;
+        font-size: 1.1rem; /* 从0.9rem增大到1.1rem */
+        width: 22px; /* 从18px增大到22px */
+    }
+
+    .song-pay {
+        font-size: 1.0rem; /* 从0.9rem增大到1.0rem */
     }
 
     /* 确保输入框在超小屏幕上也能正常显示 */
