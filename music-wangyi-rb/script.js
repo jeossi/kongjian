@@ -7,7 +7,6 @@ let currentSongUrl = ''; // 当前歌曲播放链接
 let audioContext = null; // 音频上下文
 let currentChartName = '热歌榜'; // 当前榜单名称
 let isAutoPlayEnabled = true; // 自动播放开关
-let isLyricsDarkMode = false; // 歌词深色模式
 let lyricsScrollMode = 'smooth'; // 歌词滚动模式
 let isRepeatMode = false; // 单曲循环模式
 let isMuted = false; // 静音状态
@@ -44,7 +43,6 @@ const format = document.getElementById('format');
 const lyricsContainer = document.getElementById('lyrics-container');
 const lyricsContent = document.querySelector('.lyrics-content');
 const toggleLyricsBtn = document.getElementById('toggle-lyrics-btn');
-const lyricsModeBtn = document.getElementById('lyrics-mode-btn');
 
 // 选项按钮（移动到歌词区域的按钮）
 const favoriteBtn = document.getElementById('favorite-btn');
@@ -175,9 +173,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // 绑定歌词展开/收起事件
     toggleLyricsBtn.addEventListener('click', toggleLyrics);
     
-    // 绑定歌词模式切换事件
-    lyricsModeBtn.addEventListener('click', toggleLyricsMode);
-    
     // 初始化音频上下文
     try {
         audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -244,11 +239,6 @@ function handleKeyboardShortcuts(e) {
         return;
     }
     
-    if (e.code === 'ArrowDown') {
-        toggleLyricsMode();
-        return;
-    }
-    
     // R键切换单曲循环，M键切换静音
     if (e.code === 'KeyR') {
         toggleRepeat();
@@ -271,12 +261,18 @@ function updatePlaylistTitle(chartName) {
 // 加载榜单歌曲
 function loadChartSongs(listName) {
     // 显示加载状态
-    if (songPlaceholder) {
-        songPlaceholder.innerHTML = '<p><i class="fas fa-spinner fa-spin"></i> 正在加载榜单...</p>';
-    }
+    showLoadingState('正在加载榜单...');
     
     // 清除歌单信息（如果不是歌单模式）
     currentPlaylistInfo = null;
+    
+    // 设置对应榜单按钮为激活状态
+    document.querySelectorAll('.chart-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.getAttribute('data-list') === listName) {
+            btn.classList.add('active');
+        }
+    });
     
     const apiUrl = `https://node.api.xfabe.com/api/wangyi/musicChart?list=${encodeURIComponent(listName)}`;
     
@@ -287,9 +283,16 @@ function loadChartSongs(listName) {
                 // 更新歌曲列表标题和计数
                 playlistTitle.innerHTML = `${listName}列表 <span id="song-count">(${data.data.songs.length}首)</span>`;
                 
-                // 显示榜单描述信息
-                if (data.data.listDesc && listDescriptionElement) {
-                    listDescriptionElement.innerHTML = `<div class='chart-description'>${data.data.listDesc}</div>`;
+                // 显示榜单描述信息 - 增强处理不同数据格式
+                let listDesc = '';
+                if (data.data && data.data.listDesc) {
+                    listDesc = data.data.listDesc;
+                } else if (data.listDesc) {
+                    listDesc = data.listDesc;
+                }
+                
+                if (listDesc && listDescriptionElement) {
+                    listDescriptionElement.innerHTML = `<div class='chart-description'>${listDesc}</div>`;
                     listDescriptionElement.style.display = 'block';
                 } else if (listDescriptionElement) {
                     listDescriptionElement.style.display = 'none';
@@ -305,16 +308,12 @@ function loadChartSongs(listName) {
                 }
             } else {
                 console.error('加载榜单失败:', data.msg);
-                if (songPlaceholder) {
-                    songPlaceholder.innerHTML = '<p><i class="fas fa-exclamation-circle"></i> 加载榜单失败</p>';
-                }
+                showErrorState('加载榜单失败');
             }
         })
         .catch(error => {
             console.error('加载榜单出错:', error);
-            if (songPlaceholder) {
-                songPlaceholder.innerHTML = '<p><i class="fas fa-exclamation-circle"></i> 网络错误，请稍后重试</p>';
-            }
+            showErrorState('网络错误，请稍后重试');
         });
 }
 
@@ -346,6 +345,104 @@ function formatDuration(seconds) {
     
     // 格式化为mm:ss格式
     return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
+}
+
+// 格式化歌曲时长显示
+function formatSongDuration(song) {
+    let durationText = '';
+    if (song.duration) {
+        // 检查duration是否为数字类型，如果是则转换为秒数再格式化
+        if (typeof song.duration === 'number') {
+            // 如果是毫秒单位，转换为秒
+            if (song.duration > 10000) {
+                durationText = formatDuration(song.duration / 1000);
+            } else {
+                durationText = formatDuration(song.duration);
+            }
+        } else if (typeof song.duration === 'string') {
+            // 如果是字符串，先尝试转换为数字
+            const durationNum = parseFloat(song.duration);
+            if (!isNaN(durationNum)) {
+                // 如果是毫秒单位，转换为秒
+                if (durationNum > 10000) {
+                    durationText = formatDuration(durationNum / 1000);
+                } else {
+                    durationText = formatDuration(durationNum);
+                }
+            } else {
+                // 如果不能转换为数字，直接使用
+                durationText = formatDuration(song.duration);
+            }
+        }
+    }
+    
+    // 如果没有duration字段但有time字段，使用time字段
+    if (!durationText && song.time) {
+        durationText = formatDuration(song.time);
+    }
+    
+    return durationText;
+}
+
+// 创建歌曲列表项
+function createSongListItem(song, index, isFavoriteMode = false) {
+    const li = document.createElement('li');
+    li.className = 'song-item';
+    li.dataset.index = index;
+    
+    let payElement = '';
+    
+    if (isFavoriteMode) {
+        // 收藏模式显示付费信息
+        let payClass = '';
+        let payText = '';
+        if (song.pay === '付费音乐') {
+            payClass = 'pay-song';
+            payText = '付费';
+        } else if (song.pay === '免费音乐') {
+            payClass = 'free-song';
+            payText = '免费';
+        }
+        payElement = song.pay ? `<div class="song-pay ${payClass}">${payText}</div>` : '';
+    } else {
+        // 其他模式根据当前显示模式决定显示内容
+        const isPlaylistMode = currentPlaylistInfo && currentPlaylistInfo.songName;
+        const isSearchMode = currentSearchKeyword && currentSearchKeyword.length > 0;
+        
+        // 获取歌曲时长信息
+        const durationText = formatSongDuration(song);
+        
+        if (isPlaylistMode) {
+            // 歌单模式显示时长
+            payElement = durationText ? `<div class="song-pay free-song">${durationText}</div>` : '';
+        } else if (isSearchMode) {
+            // 搜索模式显示时长
+            payElement = durationText ? `<div class="song-pay free-song">${durationText}</div>` : '';
+        } else {
+            // 榜单模式显示付费信息
+            let payClass = '';
+            let payText = '';
+            if (song.pay === '付费音乐') {
+                payClass = 'pay-song';
+                payText = '付费';
+            } else if (song.pay === '免费音乐') {
+                payClass = 'free-song';
+                payText = '免费';
+            }
+            payElement = song.pay ? `<div class="song-pay ${payClass}">${payText}</div>` : '';
+        }
+    }
+    
+    li.innerHTML = `
+        <div class="song-index">${index + 1}</div>
+        <div class="song-info">
+            <div class="song-title">${song.name}</div>
+            <div class="song-artist">${song.artistsname}</div>
+        </div>
+        ${payElement}
+    `;
+    
+    return li;
 }
 
 // 渲染歌曲列表
@@ -381,79 +478,16 @@ function renderSongList() {
         
         listDescriptionElement.innerHTML = playlistInfoHTML;
         listDescriptionElement.style.display = 'block';
-    } else if (!isPlaylistMode && listDescriptionElement) {
-        // 如果不是歌单模式，隐藏歌单信息
+    }
+    // 对于搜索模式和榜单模式，不需要在这里做任何操作，因为它们的内容已经在searchSongs和loadChartSongs函数中设置了
+    // 只有在"我的收藏"模式下才需要隐藏描述信息
+    else if (!isPlaylistMode && !isSearchMode && currentChartName === '我的收藏' && listDescriptionElement) {
+        // 如果是"我的收藏"模式，隐藏描述信息
         listDescriptionElement.style.display = 'none';
     }
     
     currentSongList.forEach((song, index) => {
-        const li = document.createElement('li');
-        li.className = 'song-item';
-        li.dataset.index = index;
-        
-        // 获取歌曲时长信息（如果存在duration字段）
-        let durationText = '';
-        if (song.duration) {
-            // 检查duration是否为数字类型，如果是则转换为秒数再格式化
-            if (typeof song.duration === 'number') {
-                // 如果是毫秒单位，转换为秒
-                if (song.duration > 10000) {
-                    durationText = formatDuration(song.duration / 1000);
-                } else {
-                    durationText = formatDuration(song.duration);
-                }
-            } else if (typeof song.duration === 'string') {
-                // 如果是字符串，先尝试转换为数字
-                const durationNum = parseFloat(song.duration);
-                if (!isNaN(durationNum)) {
-                    // 如果是毫秒单位，转换为秒
-                    if (durationNum > 10000) {
-                        durationText = formatDuration(durationNum / 1000);
-                    } else {
-                        durationText = formatDuration(durationNum);
-                    }
-                } else {
-                    // 如果不能转换为数字，直接使用
-                    durationText = formatDuration(song.duration);
-                }
-            }
-        }
-        
-        // 如果没有duration字段但有time字段，使用time字段
-        if (!durationText && song.time) {
-            durationText = formatDuration(song.time);
-        }
-        
-        // 根据不同的模式决定显示什么内容
-        let payElement = '';
-        if (isPlaylistMode) {
-            // 歌单模式显示时长
-            payElement = durationText ? `<div class="song-pay free-song">${durationText}</div>` : '';
-        } else if (isSearchMode) {
-            // 搜索模式显示时长
-            payElement = durationText ? `<div class="song-pay free-song">${durationText}</div>` : '';
-        } else {
-            // 榜单模式显示付费信息
-            let payClass = '';
-            let payText = '';
-            if (song.pay === '付费音乐') {
-                payClass = 'pay-song';
-                payText = '付费';
-            } else if (song.pay === '免费音乐') {
-                payClass = 'free-song';
-                payText = '免费';
-            }
-            payElement = song.pay ? `<div class="song-pay ${payClass}">${payText}</div>` : '';
-        }
-        
-        li.innerHTML = `
-            <div class="song-index">${index + 1}</div>
-            <div class="song-info">
-                <div class="song-title">${song.name}</div>
-                <div class="song-artist">${song.artistsname}</div>
-            </div>
-            ${payElement}
-        `;
+        const li = createSongListItem(song, index);
         
         li.addEventListener('click', function() {
             const index = parseInt(this.dataset.index);
@@ -628,21 +662,6 @@ function toggleLyrics() {
         toggleLyricsBtn.innerHTML = '展开 <i class="fas fa-chevron-down"></i>';
     } else {
         toggleLyricsBtn.innerHTML = '收起 <i class="fas fa-chevron-up"></i>';
-    }
-}
-
-// 切换歌词显示模式（深色/浅色）
-function toggleLyricsMode() {
-    isLyricsDarkMode = !isLyricsDarkMode;
-    lyricsContainer.classList.toggle('dark-mode', isLyricsDarkMode);
-    
-    const icon = lyricsModeBtn.querySelector('i');
-    if (isLyricsDarkMode) {
-        icon.className = 'fas fa-sun';
-        lyricsModeBtn.title = '切换到浅色模式';
-    } else {
-        icon.className = 'fas fa-moon';
-        lyricsModeBtn.title = '切换到深色模式';
     }
 }
 
@@ -1123,6 +1142,11 @@ function renderFavoriteSongs() {
         listDescriptionElement.style.display = 'none';
     }
     
+    // 取消榜单按钮的激活状态
+    document.querySelectorAll('.chart-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
     songListElement.innerHTML = '';
     
     if (favoriteSongs.length === 0) {
@@ -1140,29 +1164,7 @@ function renderFavoriteSongs() {
     }
     
     favoriteSongs.forEach((song, index) => {
-        const li = document.createElement('li');
-        li.className = 'song-item';
-        li.dataset.index = index;
-        
-        // 根据付费状态设置不同颜色
-        let payClass = '';
-        let payText = '';
-        if (song.pay === '付费音乐') {
-            payClass = 'pay-song';
-            payText = '付费';
-        } else if (song.pay === '免费音乐') {
-            payClass = 'free-song';
-            payText = '免费';
-        }
-        
-        li.innerHTML = `
-            <div class="song-index">${index + 1}</div>
-            <div class="song-info">
-                <div class="song-title">${song.name}</div>
-                <div class="song-artist">${song.artistsname}</div>
-            </div>
-            <div class="song-pay ${payClass}">${payText}</div>
-        `;
+        const li = createSongListItem(song, index, true);
         
         li.addEventListener('click', function() {
             // 创建一个临时的歌曲列表用于播放
@@ -1311,6 +1313,20 @@ function downloadSong() {
     }
 }
 
+// 显示加载状态
+function showLoadingState(message) {
+    if (songPlaceholder) {
+        songPlaceholder.innerHTML = `<p><i class="fas fa-spinner fa-spin"></i> ${message}</p>`;
+    }
+}
+
+// 显示错误状态
+function showErrorState(message) {
+    if (songPlaceholder) {
+        songPlaceholder.innerHTML = `<p><i class="fas fa-exclamation-circle"></i> ${message}</p>`;
+    }
+}
+
 // 搜索歌曲
 function searchSongs() {
     const keyword = searchInput.value.trim();
@@ -1324,12 +1340,15 @@ function searchSongs() {
     currentSearchKeyword = keyword;
     
     // 显示加载状态
-    if (songPlaceholder) {
-        songPlaceholder.innerHTML = '<p><i class="fas fa-spinner fa-spin"></i> 正在搜索...</p>';
-    }
+    showLoadingState('正在搜索...');
     
     // 清除歌单信息（如果不是歌单模式）
     currentPlaylistInfo = null;
+    
+    // 取消榜单按钮的激活状态
+    document.querySelectorAll('.chart-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
     
     const apiUrl = `https://node.api.xfabe.com/api/wangyi/search?search=${encodeURIComponent(keyword)}&limit=100`;
     
@@ -1356,16 +1375,12 @@ function searchSongs() {
                 }
             } else {
                 console.error('搜索失败:', data.msg);
-                if (songPlaceholder) {
-                    songPlaceholder.innerHTML = '<p><i class="fas fa-exclamation-circle"></i> 搜索失败</p>';
-                }
+                showErrorState('搜索失败');
             }
         })
         .catch(error => {
             console.error('搜索出错:', error);
-            if (songPlaceholder) {
-                songPlaceholder.innerHTML = '<p><i class="fas fa-exclamation-circle"></i> 网络错误，请稍后重试</p>';
-            }
+            showErrorState('网络错误，请稍后重试');
         });
 }
 
@@ -1379,9 +1394,12 @@ function playCustomPlaylist() {
     }
     
     // 显示加载状态
-    if (songPlaceholder) {
-        songPlaceholder.innerHTML = '<p><i class="fas fa-spinner fa-spin"></i> 正在加载歌单...</p>';
-    }
+    showLoadingState('正在加载歌单...');
+    
+    // 取消榜单按钮的激活状态
+    document.querySelectorAll('.chart-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
     
     const apiUrl = `https://node.api.xfabe.com/api/wangyi/userSongs?uid=${playlistId}&limit=100`;
     
@@ -1389,14 +1407,6 @@ function playCustomPlaylist() {
         .then(response => response.json())
         .then(data => {
             if (data.code === 200) {
-                // 保存歌单信息
-                currentPlaylistInfo = {
-                    songPic: data.data.songPic,
-                    songName: data.data.songName,
-                    userName: data.data.userName,
-                    userSignature: data.data.userSignature  // 添加用户签名信息
-                };
-                
                 // 保存歌单信息
                 currentPlaylistInfo = {
                     songPic: data.data.songPic,
@@ -1438,15 +1448,11 @@ function playCustomPlaylist() {
                 }
             } else {
                 console.error('加载歌单失败:', data.msg);
-                if (songPlaceholder) {
-                    songPlaceholder.innerHTML = '<p><i class="fas fa-exclamation-circle"></i> 加载歌单失败</p>';
-                }
+                showErrorState('加载歌单失败');
             }
         })
         .catch(error => {
             console.error('加载歌单出错:', error);
-            if (songPlaceholder) {
-                songPlaceholder.innerHTML = '<p><i class="fas fa-exclamation-circle"></i> 网络错误，请稍后重试</p>';
-            }
+            showErrorState('网络错误，请稍后重试');
         });
 }
