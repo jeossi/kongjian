@@ -275,6 +275,9 @@ function loadChartSongs(listName) {
         songPlaceholder.innerHTML = '<p><i class="fas fa-spinner fa-spin"></i> 正在加载榜单...</p>';
     }
     
+    // 清除歌单信息（如果不是歌单模式）
+    currentPlaylistInfo = null;
+    
     const apiUrl = `https://node.api.xfabe.com/api/wangyi/musicChart?list=${encodeURIComponent(listName)}`;
     
     fetch(apiUrl)
@@ -286,7 +289,7 @@ function loadChartSongs(listName) {
                 
                 // 显示榜单描述信息
                 if (data.data.listDesc && listDescriptionElement) {
-                    listDescriptionElement.textContent = data.data.listDesc;
+                    listDescriptionElement.innerHTML = `<div class='chart-description'>${data.data.listDesc}</div>`;
                     listDescriptionElement.style.display = 'block';
                 } else if (listDescriptionElement) {
                     listDescriptionElement.style.display = 'none';
@@ -315,6 +318,36 @@ function loadChartSongs(listName) {
         });
 }
 
+// 格式化时间显示（将秒数转换为mm:ss格式）
+function formatDuration(seconds) {
+    // 如果输入是字符串，尝试转换为数字
+    if (typeof seconds === 'string') {
+        // 检查是否已经是时间格式（包含冒号）
+        if (seconds.includes(':')) {
+            return seconds; // 已经是格式化的时间，直接返回
+        }
+        // 尝试转换为数字
+        seconds = parseFloat(seconds);
+    }
+    
+    // 如果不是有效数字，返回默认值
+    if (isNaN(seconds) || seconds < 0) {
+        return '0:00';
+    }
+    
+    // 如果数值很大，可能是毫秒单位，转换为秒
+    if (seconds > 10000) {
+        seconds = seconds / 1000;
+    }
+    
+    // 将秒数转换为分钟和秒数
+    const minutes = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    
+    // 格式化为mm:ss格式
+    return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
+}
+
 // 渲染歌曲列表
 function renderSongList() {
     // 移除占位符
@@ -324,24 +357,94 @@ function renderSongList() {
     
     songListElement.innerHTML = '';
     
+    // 检查是否是歌单列表状态（通过currentPlaylistInfo是否存在来判断）
+    const isPlaylistMode = currentPlaylistInfo && currentPlaylistInfo.songName;
+    
+    // 检查是否是搜索模式
+    const isSearchMode = currentSearchKeyword && currentSearchKeyword.length > 0;
+    
+    // 如果是歌单模式，确保歌单信息显示正确
+    if (isPlaylistMode && listDescriptionElement) {
+        let playlistInfoHTML = `
+            <div class="playlist-info">
+                <img src="${currentPlaylistInfo.songPic}" alt="歌单封面" class="playlist-pic">
+                <div class="playlist-details">
+                    <strong>歌单名称:</strong> ${currentPlaylistInfo.songName}<br>
+                    <strong>创建者:</strong> ${currentPlaylistInfo.userName}
+                    <br><strong>个性签名:</strong> <span class="song-artist signature">${currentPlaylistInfo.userSignature || ''}</span>
+        `;
+        
+        playlistInfoHTML += `
+                </div>
+            </div>
+        `;
+        
+        listDescriptionElement.innerHTML = playlistInfoHTML;
+        listDescriptionElement.style.display = 'block';
+    } else if (!isPlaylistMode && listDescriptionElement) {
+        // 如果不是歌单模式，隐藏歌单信息
+        listDescriptionElement.style.display = 'none';
+    }
+    
     currentSongList.forEach((song, index) => {
         const li = document.createElement('li');
         li.className = 'song-item';
         li.dataset.index = index;
         
-        // 根据付费状态设置不同颜色（如果存在pay字段）
-        let payClass = '';
-        let payText = '';
-        if (song.pay === '付费音乐') {
-            payClass = 'pay-song';
-            payText = '付费';
-        } else if (song.pay === '免费音乐') {
-            payClass = 'free-song';
-            payText = '免费';
+        // 获取歌曲时长信息（如果存在duration字段）
+        let durationText = '';
+        if (song.duration) {
+            // 检查duration是否为数字类型，如果是则转换为秒数再格式化
+            if (typeof song.duration === 'number') {
+                // 如果是毫秒单位，转换为秒
+                if (song.duration > 10000) {
+                    durationText = formatDuration(song.duration / 1000);
+                } else {
+                    durationText = formatDuration(song.duration);
+                }
+            } else if (typeof song.duration === 'string') {
+                // 如果是字符串，先尝试转换为数字
+                const durationNum = parseFloat(song.duration);
+                if (!isNaN(durationNum)) {
+                    // 如果是毫秒单位，转换为秒
+                    if (durationNum > 10000) {
+                        durationText = formatDuration(durationNum / 1000);
+                    } else {
+                        durationText = formatDuration(durationNum);
+                    }
+                } else {
+                    // 如果不能转换为数字，直接使用
+                    durationText = formatDuration(song.duration);
+                }
+            }
         }
         
-        // 如果没有pay字段，则不显示
-        const payElement = song.pay ? `<div class="song-pay ${payClass}">${payText}</div>` : '';
+        // 如果没有duration字段但有time字段，使用time字段
+        if (!durationText && song.time) {
+            durationText = formatDuration(song.time);
+        }
+        
+        // 根据不同的模式决定显示什么内容
+        let payElement = '';
+        if (isPlaylistMode) {
+            // 歌单模式显示时长
+            payElement = durationText ? `<div class="song-pay free-song">${durationText}</div>` : '';
+        } else if (isSearchMode) {
+            // 搜索模式显示时长
+            payElement = durationText ? `<div class="song-pay free-song">${durationText}</div>` : '';
+        } else {
+            // 榜单模式显示付费信息
+            let payClass = '';
+            let payText = '';
+            if (song.pay === '付费音乐') {
+                payClass = 'pay-song';
+                payText = '付费';
+            } else if (song.pay === '免费音乐') {
+                payClass = 'free-song';
+                payText = '免费';
+            }
+            payElement = song.pay ? `<div class="song-pay ${payClass}">${payText}</div>` : '';
+        }
         
         li.innerHTML = `
             <div class="song-index">${index + 1}</div>
@@ -415,7 +518,11 @@ function loadSongDetails(songId) {
                 songName.textContent = songInfo.name;
                 artist.textContent = `艺术家: ${songInfo.artist}`;
                 album.textContent = `专辑: ${songInfo.album}`;
-                duration.textContent = `时长: ${songInfo.duration}`;
+                
+                // 格式化时长显示
+                const formattedDuration = songInfo.duration ? formatDuration(songInfo.duration) : '--:--';
+                duration.textContent = `时长: ${formattedDuration}`;
+                
                 size.textContent = `大小: ${songInfo.size}`;
                 format.textContent = `格式: ${songInfo.format}`;
                 
@@ -1008,6 +1115,9 @@ function renderFavoriteSongs() {
         songPlaceholder.remove();
     }
     
+    // 清除歌单信息（如果不是歌单模式）
+    currentPlaylistInfo = null;
+    
     // 隐藏榜单描述
     if (listDescriptionElement) {
         listDescriptionElement.style.display = 'none';
@@ -1218,6 +1328,9 @@ function searchSongs() {
         songPlaceholder.innerHTML = '<p><i class="fas fa-spinner fa-spin"></i> 正在搜索...</p>';
     }
     
+    // 清除歌单信息（如果不是歌单模式）
+    currentPlaylistInfo = null;
+    
     const apiUrl = `https://node.api.xfabe.com/api/wangyi/search?search=${encodeURIComponent(keyword)}&limit=100`;
     
     fetch(apiUrl)
@@ -1229,7 +1342,7 @@ function searchSongs() {
                 
                 // 显示搜索关键字信息
                 if (listDescriptionElement) {
-                    listDescriptionElement.textContent = `搜索关键字: ${keyword}`;
+                    listDescriptionElement.innerHTML = `<div class='search-description'>搜索关键字: ${keyword}</div>`;
                     listDescriptionElement.style.display = 'block';
                 }
                 
@@ -1280,7 +1393,16 @@ function playCustomPlaylist() {
                 currentPlaylistInfo = {
                     songPic: data.data.songPic,
                     songName: data.data.songName,
-                    userName: data.data.userName
+                    userName: data.data.userName,
+                    userSignature: data.data.userSignature  // 添加用户签名信息
+                };
+                
+                // 保存歌单信息
+                currentPlaylistInfo = {
+                    songPic: data.data.songPic,
+                    songName: data.data.songName,
+                    userName: data.data.userName,
+                    userSignature: data.data.userSignature  // 添加用户签名信息
                 };
                 
                 // 更新歌曲列表标题和计数
@@ -1288,15 +1410,21 @@ function playCustomPlaylist() {
                 
                 // 显示歌单信息
                 if (listDescriptionElement) {
-                    listDescriptionElement.innerHTML = `
+                    let playlistInfoHTML = `
                         <div class="playlist-info">
                             <img src="${data.data.songPic}" alt="歌单封面" class="playlist-pic">
                             <div class="playlist-details">
                                 <strong>歌单名称:</strong> ${data.data.songName}<br>
                                 <strong>创建者:</strong> ${data.data.userName}
+                                <br><strong>个性签名:</strong> <span class="song-artist signature">${data.data.userSignature || ''}</span>
+                    `;
+                    
+                    playlistInfoHTML += `
                             </div>
                         </div>
                     `;
+                    
+                    listDescriptionElement.innerHTML = playlistInfoHTML;
                     listDescriptionElement.style.display = 'block';
                 }
                 
