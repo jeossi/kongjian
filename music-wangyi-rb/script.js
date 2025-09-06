@@ -885,24 +885,24 @@ function resetButton(btn, iconClass, iconElement) {
 function toggleRepeat() {
     isRepeatMode = !isRepeatMode;
     
-    if (isRepeatMode) {
-        repeatBtn.style.background = 'linear-gradient(90deg, #ff7eee, #4facfe)';
-        repeatBtn.style.boxShadow = '0 8px 25px rgba(79, 172, 254, 0.4)';
-        repeatBtn.title = '关闭单曲循环';
-    } else {
-        resetButtonStyle(repeatBtn);
-        repeatBtn.title = '开启单曲循环';
-    }
-    
     // 更新按钮图标
     const icon = repeatBtn.querySelector('i');
     if (isRepeatMode) {
-        icon.className = 'fas fa-repeat';
-        icon.style.color = '#ffffff';
+        // 单曲循环时显示旋转图标，但不添加旋转动画
+        icon.className = 'fas fa-redo';
+        icon.style.color = '#ffffff'; // 使用白色高亮
+        icon.style.animation = 'none'; // 确保没有旋转动画
+        repeatBtn.title = '关闭单曲循环';
     } else {
+        // 关闭单曲循环时显示普通重复图标，使用默认颜色
         icon.className = 'fas fa-repeat';
         icon.style.color = '#a0a0c0'; // 非激活状态使用较暗的颜色
+        icon.style.animation = 'none'; // 确保没有旋转动画
+        repeatBtn.title = '开启单曲循环';
     }
+    
+    // 重置按钮样式，使其与播放/暂停按钮保持一致
+    resetButtonStyle(repeatBtn);
 }
 
 // 切换静音状态
