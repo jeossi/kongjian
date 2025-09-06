@@ -168,10 +168,10 @@ body {
     }
 
     .album-art {
-        width: 140px;
-        height: 140px;
-        min-width: 140px;
-        min-height: 140px;
+        width: 120px;
+        height: 120px;
+        min-width: 120px;
+        min-height: 120px;
         margin: 0 auto; /* 居中显示 */
         aspect-ratio: 1 / 1; /* 确保始终是1:1比例 */
     }
@@ -240,10 +240,10 @@ body {
     }
 
     .album-art {
-        width: 120px;
-        height: 120px;
-        min-width: 120px;
-        min-height: 120px;
+        width: 100px;
+        height: 100px;
+        min-width: 100px;
+        min-height: 100px;
         margin: 0 auto; /* 居中显示 */
         aspect-ratio: 1 / 1; /* 确保始终是1:1比例 */
     }
@@ -308,10 +308,10 @@ body {
     }
     
     .album-art {
-        width: 180px;
-        height: 180px;
-        min-width: 180px;
-        min-height: 180px;
+        width: 160px;
+        height: 160px;
+        min-width: 160px;
+        min-height: 160px;
         aspect-ratio: 1 / 1; /* 确保始终是1:1比例 */
     }
     
@@ -350,10 +350,10 @@ body {
     }
 
     .album-art {
-        width: 180px;
-        height: 180px;
-        min-width: 180px;
-        min-height: 180px;
+        width: 160px;
+        height: 160px;
+        min-width: 160px;
+        min-height: 160px;
         margin: 0 auto; /* 居中显示 */
         aspect-ratio: 1 / 1; /* 确保始终是1:1比例 */
     }
@@ -407,10 +407,10 @@ body {
     }
 
     .album-art {
-        width: 160px;
-        height: 160px;
-        min-width: 160px;
-        min-height: 160px;
+        width: 140px;
+        height: 140px;
+        min-width: 140px;
+        min-height: 140px;
         margin: 0 auto; /* 居中显示 */
         aspect-ratio: 1 / 1; /* 确保始终是1:1比例 */
     }
@@ -514,16 +514,16 @@ body {
 
 .album-art {
     position: relative;
-    width: 200px;
-    height: 200px;
+    width: 180px;
+    height: 180px;
     border-radius: 15px;
     overflow: hidden;
     box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
     border: 2px solid rgba(255, 255, 255, 0.1);
     transition: transform 0.3s ease;
     flex-shrink: 0;
-    min-width: 200px;
-    min-height: 200px;
+    min-width: 180px;
+    min-height: 180px;
     order: 1;
     aspect-ratio: 1 / 1; /* 确保始终是1:1比例 */
 }
