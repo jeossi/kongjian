@@ -9,8 +9,6 @@ let currentChartName = '热歌榜'; // 当前榜单名称
 let isAutoPlayEnabled = true; // 自动播放开关
 let lyricsScrollMode = 'smooth'; // 歌词滚动模式
 let isRepeatMode = false; // 单曲循环模式
-let isMuted = false; // 静音状态
-let lastVolume = 1; // 上次音量
 let autoScrollTimeout = null; // 自动滚动定时器
 let isUserScrolling = false; // 用户是否正在滚动
 let favoriteSongs = []; // 收藏的歌曲列表
@@ -52,13 +50,22 @@ const downloadSongBtn = document.getElementById('download-song-btn');
 
 // 新增按钮
 const repeatBtn = document.getElementById('repeat-btn');
-const muteBtn = document.getElementById('mute-btn');
 
 // 新增播放歌单和搜索元素
 const playlistInput = document.getElementById('playlist-input');
 const playPlaylistBtn = document.getElementById('play-playlist-btn');
 const searchInput = document.getElementById('search-input');
 const searchBtn = document.getElementById('search-btn');
+
+// 弹出面板元素
+const playlistPanel = document.getElementById('playlist-panel');
+const searchPanel = document.getElementById('search-panel');
+const popularPlaylists = document.getElementById('popular-playlists');
+const popularSearches = document.getElementById('popular-searches');
+const closeButtons = document.querySelectorAll('.close-btn');
+const panelOverlay = document.createElement('div');
+panelOverlay.className = 'panel-overlay';
+document.body.appendChild(panelOverlay);
 
 // 标题元素
 const playlistTitle = document.getElementById('playlist-title');
@@ -83,6 +90,54 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 监听页面可见性变化
     handleVisibilityChange();
+    
+    // 定义热门歌单ID数据（统一管理，避免数据重复）
+    const popularPlaylistIds = [
+        "12589832642",
+        "4897639127",
+        "8799505292",
+        "12639638645",
+        "12767620640",
+        "12528734640"
+    ];
+    
+    // 动态生成热门歌单面板中的列表项
+    popularPlaylistIds.forEach(id => {
+        const li = document.createElement('li');
+        li.textContent = id;
+        li.setAttribute('data-id', id);
+        popularPlaylists.appendChild(li);
+    });
+    
+    // 定义热门搜索关键词数据（统一管理，避免数据重复）
+    const popularSearchKeywords = [
+        "王佳音",
+        "鱼蛋",
+        "窝窝",
+        "艺凌",
+        "洋澜一",
+        "任夏",
+        "魏佳艺",
+        "韩小欠",
+        "单依纯",
+        "DJ",
+        "喝茶",
+        "古筝",
+        "助眠",
+        "治愈房车",
+        "经典老歌",
+        "70后",
+        "80后",
+        "90后"
+    ];
+    
+    // 动态生成热门搜索面板中的列表项
+    popularSearchKeywords.forEach(keyword => {
+        const li = document.createElement('li');
+        li.textContent = keyword;
+        li.setAttribute('data-keyword', keyword);
+        popularSearches.appendChild(li);
+    });
     
     // 默认加载热歌榜
     loadChartSongs('热歌榜');
@@ -121,18 +176,62 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // 为输入框添加自动全选功能
-    playlistInput.addEventListener('focus', function() {
-        setTimeout(() => {
-            this.select();
-        }, 100);
+    // 为输入框添加通用事件处理
+    function setupInputHandlers(inputElement, showPanelFunction) {
+        // 焦点事件
+        inputElement.addEventListener('focus', function(e) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            showPanelFunction();
+            setTimeout(() => {
+                this.select();
+            }, 100);
+        });
+        
+        // 输入事件
+        inputElement.addEventListener('input', function(e) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+        });
+        
+        // 点击事件
+        inputElement.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            showPanelFunction();
+        });
+    }
+    
+    // 为歌单和搜索输入框设置事件处理
+    setupInputHandlers(playlistInput, showPlaylistPanel);
+    setupInputHandlers(searchInput, showSearchPanel);
+    
+    // 绑定弹出面板关闭按钮事件
+    closeButtons.forEach(button => {
+        button.addEventListener('click', closePanels);
     });
     
-    searchInput.addEventListener('focus', function() {
-        setTimeout(() => {
-            this.select();
-        }, 100);
+    // 绑定面板列表项点击事件
+    popularPlaylists.addEventListener('click', function(e) {
+        if (e.target.tagName === 'LI') {
+            const playlistId = e.target.getAttribute('data-id');
+            playlistInput.value = playlistId;
+            closePanels();
+            playCustomPlaylist();
+        }
     });
+    
+    popularSearches.addEventListener('click', function(e) {
+        if (e.target.tagName === 'LI') {
+            const keyword = e.target.getAttribute('data-keyword');
+            searchInput.value = keyword;
+            closePanels();
+            searchSongs();
+        }
+    });
+    
+    // 绑定面板背景遮罩点击事件
+    panelOverlay.addEventListener('click', closePanels);
     
     // 绑定播放控制事件
     playBtn.addEventListener('click', togglePlay);
@@ -141,7 +240,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 绑定新增按钮事件
     repeatBtn.addEventListener('click', toggleRepeat);
-    muteBtn.addEventListener('click', toggleMute);
     
     // 绑定音频事件
     audioPlayer.addEventListener('timeupdate', updateProgress);
@@ -210,6 +308,27 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+// 显示热门歌单面板
+function showPlaylistPanel() {
+    closePanels();
+    playlistPanel.classList.add('active');
+    panelOverlay.classList.add('active');
+}
+
+// 显示热门搜索面板
+function showSearchPanel() {
+    closePanels();
+    searchPanel.classList.add('active');
+    panelOverlay.classList.add('active');
+}
+
+// 关闭所有面板
+function closePanels() {
+    playlistPanel.classList.remove('active');
+    searchPanel.classList.remove('active');
+    panelOverlay.classList.remove('active');
+}
+
 // 键盘快捷键处理函数
 function handleKeyboardShortcuts(e) {
     // 防止在输入框中触发快捷键
@@ -239,14 +358,9 @@ function handleKeyboardShortcuts(e) {
         return;
     }
     
-    // R键切换单曲循环，M键切换静音
+    // R键切换单曲循环
     if (e.code === 'KeyR') {
         toggleRepeat();
-        return;
-    }
-    
-    if (e.code === 'KeyM') {
-        toggleMute();
         return;
     }
 }
@@ -831,40 +945,20 @@ function resetButtonStyle(button) {
     button.style.transition = 'all 0.3s ease';
 }
 
+// 使用通用重置按钮函数替代单独的重置函数
 // 重置分享按钮样式
 function resetShareButton() {
-    const icon = shareBtn.querySelector('i');
-    icon.className = 'fas fa-share-alt';
-    resetButtonStyle(shareBtn);
-    // 3秒后恢复默认状态
-    setTimeout(() => {
-        shareBtn.style.background = '';
-        shareBtn.style.boxShadow = '';
-    }, 3000);
+    resetButton(shareBtn, 'fas fa-share-alt');
 }
 
 // 重置下载歌词按钮样式
 function resetDownloadLyricButton() {
-    const icon = downloadLyricBtn.querySelector('i');
-    icon.className = 'fas fa-download';
-    resetButtonStyle(downloadLyricBtn);
-    // 3秒后恢复默认状态
-    setTimeout(() => {
-        downloadLyricBtn.style.background = '';
-        downloadLyricBtn.style.boxShadow = '';
-    }, 3000);
+    resetButton(downloadLyricBtn, 'fas fa-download');
 }
 
 // 重置下载歌曲按钮样式
 function resetDownloadSongButton() {
-    const icon = downloadSongBtn.querySelector('i');
-    icon.className = 'fas fa-music';
-    resetButtonStyle(downloadSongBtn);
-    // 3秒后恢复默认状态
-    setTimeout(() => {
-        downloadSongBtn.style.background = '';
-        downloadSongBtn.style.boxShadow = '';
-    }, 3000);
+    resetButton(downloadSongBtn, 'fas fa-music');
 }
 
 // 通用重置按钮函数
@@ -879,6 +973,31 @@ function resetButton(btn, iconClass, iconElement) {
         btn.style.background = '';
         btn.style.boxShadow = '';
     }, 3000);
+}
+
+// 通用按钮反馈函数
+function showButtonFeedback(button, iconClass, startColor, endColor, resetIconClass, resetTime = 1000) {
+    const icon = button.querySelector('i');
+    icon.className = iconClass;
+    button.style.background = `linear-gradient(90deg, ${startColor}, ${endColor})`;
+    button.style.boxShadow = `0 6px 15px rgba(${getColorRGBA(startColor)}, 0.3)`;
+    
+    if (resetIconClass) {
+        setTimeout(() => resetButton(button, resetIconClass), resetTime);
+    }
+}
+
+// 将十六进制颜色转换为RGBA值
+function getColorRGBA(hexColor) {
+    // 移除#号
+    const hex = hexColor.replace('#', '');
+    
+    // 解析RGB值
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    
+    return `${r}, ${g}, ${b}`;
 }
 
 // 切换单曲循环模式
@@ -903,30 +1022,6 @@ function toggleRepeat() {
     
     // 重置按钮样式，使其与播放/暂停按钮保持一致
     resetButtonStyle(repeatBtn);
-}
-
-// 切换静音状态
-function toggleMute() {
-    isMuted = !isMuted;
-    
-    if (isMuted) {
-        // 保存当前音量并静音
-        lastVolume = audioPlayer.volume;
-        audioPlayer.volume = 0;
-        muteBtn.title = '取消静音';
-        
-        // 更新按钮图标
-        const icon = muteBtn.querySelector('i');
-        icon.className = 'fas fa-volume-mute';
-    } else {
-        // 恢复音量
-        audioPlayer.volume = lastVolume;
-        muteBtn.title = '静音';
-        
-        // 更新按钮图标
-        const icon = muteBtn.querySelector('i');
-        icon.className = 'fas fa-volume-up';
-    }
 }
 
 // 处理歌曲播放结束
@@ -1054,18 +1149,21 @@ function updateMediaSessionMetadata() {
     
     const currentSong = currentSongList[currentSongIndex];
     
+    // 获取当前显示的专辑封面图片URL
+    const albumPicUrl = albumPic.src || currentSong.pic || 'https://placehold.co/180x180/1a1a2e/ffffff?text=专辑封面';
+    
     // 更新媒体会话元数据
     mediaSession.metadata = new MediaMetadata({
         title: currentSong.name || '未知歌曲',
         artist: currentSong.artistsname || '未知艺术家',
         album: currentSong.album || '未知专辑',
         artwork: [
-            { src: currentSong.pic || 'https://placehold.co/96x96/1a1a2e/ffffff?text=网', sizes: '96x96', type: 'image/png' },
-            { src: currentSong.pic || 'https://placehold.co/128x128/1a1a2e/ffffff?text=网易', sizes: '128x128', type: 'image/png' },
-            { src: currentSong.pic || 'https://placehold.co/192x192/1a1a2e/ffffff?text=网易音乐', sizes: '192x192', type: 'image/png' },
-            { src: currentSong.pic || 'https://placehold.co/256x256/1a1a2e/ffffff?text=网易音乐榜', sizes: '256x256', type: 'image/png' },
-            { src: currentSong.pic || 'https://placehold.co/384x384/1a1a2e/ffffff?text=网易音乐榜', sizes: '384x384', type: 'image/png' },
-            { src: currentSong.pic || 'https://placehold.co/512x512/1a1a2e/ffffff?text=网易音乐榜', sizes: '512x512', type: 'image/png' }
+            { src: albumPicUrl, sizes: '96x96', type: 'image/png' },
+            { src: albumPicUrl, sizes: '128x128', type: 'image/png' },
+            { src: albumPicUrl, sizes: '192x192', type: 'image/png' },
+            { src: albumPicUrl, sizes: '256x256', type: 'image/png' },
+            { src: albumPicUrl, sizes: '384x384', type: 'image/png' },
+            { src: albumPicUrl, sizes: '512x512', type: 'image/png' }
         ]
     });
 }
@@ -1199,10 +1297,7 @@ function favoriteSong() {
         alert(`已收藏歌曲: ${currentSong.name}`);
         
         // 添加视觉反馈
-        const icon = favoriteBtn.querySelector('i');
-        icon.className = 'fas fa-heart';
-        favoriteBtn.style.background = 'linear-gradient(90deg, #ff7eee, #4facfe)';
-        favoriteBtn.style.boxShadow = '0 6px 15px rgba(79, 172, 254, 0.3)';
+        showButtonFeedback(favoriteBtn, 'fas fa-heart', '#ff7eee', '#4facfe');
     }
     
     // 保存到本地存储
@@ -1222,7 +1317,7 @@ function shareSong() {
     if (!hasSongsToPlay()) return;
     
     const currentSong = currentSongList[currentSongIndex];
-    const shareText = `我正在听 ${currentSong.name} - ${currentSong.artistsname}，快来一起欣赏吧！`;
+    const shareText = `Ajeo分享 ${currentSong.name} - ${currentSong.artistsname}，请复制下方链接到浏览器收听！`;
     
     if (navigator.share) {
         navigator.share({
@@ -1235,12 +1330,7 @@ function shareSong() {
             alert('分享链接已复制到剪贴板');
             
             // 添加视觉反馈
-            const icon = shareBtn.querySelector('i');
-            icon.className = 'fas fa-check';
-            shareBtn.style.background = 'linear-gradient(90deg, #51cf66, #8ce99a)';
-            shareBtn.style.boxShadow = '0 6px 15px rgba(81, 207, 102, 0.3)';
-            
-            setTimeout(() => resetButton(shareBtn, 'fas fa-share-alt'), 1000);
+            showButtonFeedback(shareBtn, 'fas fa-check', '#51cf66', '#8ce99a', 'fas fa-share-alt');
         });
     }
 }
@@ -1277,12 +1367,7 @@ function downloadLyrics() {
     URL.revokeObjectURL(url);
     
     // 添加视觉反馈
-    const icon = downloadLyricBtn.querySelector('i');
-    icon.className = 'fas fa-check';
-    downloadLyricBtn.style.background = 'linear-gradient(90deg, #51cf66, #8ce99a)';
-    downloadLyricBtn.style.boxShadow = '0 6px 15px rgba(81, 207, 102, 0.3)';
-    
-    setTimeout(() => resetButton(downloadLyricBtn, 'fas fa-download'), 1000);
+    showButtonFeedback(downloadLyricBtn, 'fas fa-check', '#51cf66', '#8ce99a', 'fas fa-download');
 }
 
 // 下载歌曲
@@ -1302,12 +1387,7 @@ function downloadSong() {
         document.body.removeChild(a);
         
         // 添加视觉反馈
-        const icon = downloadSongBtn.querySelector('i');
-        icon.className = 'fas fa-check';
-        downloadSongBtn.style.background = 'linear-gradient(90deg, #51cf66, #8ce99a)';
-        downloadSongBtn.style.boxShadow = '0 6px 15px rgba(81, 207, 102, 0.3)';
-        
-        setTimeout(() => resetButton(downloadSongBtn, 'fas fa-music'), 1000);
+        showButtonFeedback(downloadSongBtn, 'fas fa-check', '#51cf66', '#8ce99a', 'fas fa-music');
     } else {
         alert('暂无下载链接');
     }
