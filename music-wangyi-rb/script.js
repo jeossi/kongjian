@@ -62,7 +62,6 @@ const playlistPanel = document.getElementById('playlist-panel');
 const searchPanel = document.getElementById('search-panel');
 const popularPlaylists = document.getElementById('popular-playlists');
 const popularSearches = document.getElementById('popular-searches');
-const closeButtons = document.querySelectorAll('.close-btn');
 const panelOverlay = document.createElement('div');
 panelOverlay.className = 'panel-overlay';
 document.body.appendChild(panelOverlay);
@@ -93,54 +92,68 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 定义热门歌单ID数据（统一管理，避免数据重复）
     const popularPlaylistIds = [
-        "12589832642",
-        "4897639127",
-        "8799505292",
-        "12639638645",
-        "12767620640",
-        "12528734640"
+        "7219768967","4985489887","6829713162","368254901","12589832642","8201823014","4897639127","8799505292","12639638645","12767620640","12528734640"
     ];
     
     // 动态生成热门歌单面板中的列表项
+    popularPlaylists.innerHTML = '';
+    
+    // 获取面板头部元素
+    const playlistPanelHeader = document.querySelector('#playlist-panel .panel-header');
+    
+    // 创建关闭按钮
+    const closePlaylistBtn = document.createElement('button');
+    closePlaylistBtn.className = 'panel-close';
+    closePlaylistBtn.innerHTML = '<i class="fas fa-times"></i>';
+    closePlaylistBtn.addEventListener('click', () => closePanel(playlistPanel));
+    playlistPanelHeader.appendChild(closePlaylistBtn);
+    
     popularPlaylistIds.forEach(id => {
-        const li = document.createElement('li');
-        li.textContent = id;
-        li.setAttribute('data-id', id);
-        popularPlaylists.appendChild(li);
+        const tag = document.createElement('div');
+        tag.className = 'hot-tag';
+        tag.textContent = id;
+        tag.setAttribute('data-id', id);
+        popularPlaylists.appendChild(tag);
     });
     
     // 定义热门搜索关键词数据（统一管理，避免数据重复）
     const popularSearchKeywords = [
-        "王佳音",
-        "鱼蛋",
-        "窝窝",
-        "艺凌",
-        "洋澜一",
-        "任夏",
-        "魏佳艺",
-        "韩小欠",
-        "单依纯",
-        "DJ",
-        "喝茶",
-        "古筝",
-        "助眠",
-        "治愈房车",
-        "经典老歌",
-        "70后",
-        "80后",
-        "90后"
+		"大潞","烟嗓船长","文夫","马键涛","就是南方凯","程响","郭静","赵乃吉",
+        "王佳音","鱼蛋","窝窝","艺凌","洋澜一","任夏","魏佳艺","韩小欠","单依纯",
+        "DJ","茶道","古筝","助眠","钢琴","萨克斯","笛子","吉他","二胡","古风","民谣","健身","佛教",
+		"治愈房车","老歌","70后","80后","90后","00后",       
+		"周杰伦","林俊杰","邓紫棋","陈奕迅","汪苏泷","林宥嘉","薛之谦","吴亦凡","刀郎",
+        "周深","王子健","Beyond","五月天","伍佰","王一佳","王菲","陶喆",
+        "七月上","于春洋","周传雄","张杰","半吨兄弟","张学友",
+        "跳楼机","搀扶"
     ];
     
     // 动态生成热门搜索面板中的列表项
+    popularSearches.innerHTML = '';
+    
+    // 获取搜索面板头部元素
+    const searchPanelHeader = document.querySelector('#search-panel .panel-header');
+    
+    // 创建关闭按钮
+    const closeSearchBtn = document.createElement('button');
+    closeSearchBtn.className = 'panel-close';
+    closeSearchBtn.innerHTML = '<i class="fas fa-times"></i>';
+    closeSearchBtn.addEventListener('click', () => closePanel(searchPanel));
+    searchPanelHeader.appendChild(closeSearchBtn);
+    
     popularSearchKeywords.forEach(keyword => {
-        const li = document.createElement('li');
-        li.textContent = keyword;
-        li.setAttribute('data-keyword', keyword);
-        popularSearches.appendChild(li);
+        const tag = document.createElement('div');
+        tag.className = 'hot-tag';
+        tag.textContent = keyword;
+        tag.setAttribute('data-keyword', keyword);
+        popularSearches.appendChild(tag);
     });
     
     // 默认加载热歌榜
     loadChartSongs('热歌榜');
+    
+    // 初始化收藏按钮状态
+    updateFavoriteButtonState();
     
     // 绑定榜单按钮事件
     chartButtons.forEach(button => {
@@ -201,35 +214,47 @@ document.addEventListener('DOMContentLoaded', function() {
             showPanelFunction();
         });
     }
-    
+
+    // 创建通用的输入框处理函数
+    function setupGenericInputHandlers(inputElement, panelElement) {
+        setupInputHandlers(inputElement, () => showPanel(panelElement, inputElement));
+    }
+
     // 为歌单和搜索输入框设置事件处理
-    setupInputHandlers(playlistInput, showPlaylistPanel);
-    setupInputHandlers(searchInput, showSearchPanel);
+    setupGenericInputHandlers(playlistInput, playlistPanel);
+    setupGenericInputHandlers(searchInput, searchPanel);
     
-    // 绑定弹出面板关闭按钮事件
-    closeButtons.forEach(button => {
-        button.addEventListener('click', closePanels);
-    });
-    
+    // 通用面板列表项点击处理函数
+    function handlePanelItemClick(e, tagClass, dataAttribute, setInputValue, closeAction) {
+        if (e.target.classList.contains(tagClass)) {
+            const data = e.target.getAttribute(dataAttribute);
+            setInputValue(data);
+            closePanels();
+            closeAction();
+        }
+    }
+
     // 绑定面板列表项点击事件
     popularPlaylists.addEventListener('click', function(e) {
-        if (e.target.tagName === 'LI') {
-            const playlistId = e.target.getAttribute('data-id');
-            playlistInput.value = playlistId;
-            closePanels();
-            playCustomPlaylist();
-        }
+        handlePanelItemClick(
+            e, 
+            'hot-tag', 
+            'data-id', 
+            (data) => playlistInput.value = data, 
+            playCustomPlaylist
+        );
     });
-    
+
     popularSearches.addEventListener('click', function(e) {
-        if (e.target.tagName === 'LI') {
-            const keyword = e.target.getAttribute('data-keyword');
-            searchInput.value = keyword;
-            closePanels();
-            searchSongs();
-        }
+        handlePanelItemClick(
+            e, 
+            'hot-tag', 
+            'data-keyword', 
+            (data) => searchInput.value = data, 
+            searchSongs
+        );
     });
-    
+
     // 绑定面板背景遮罩点击事件
     panelOverlay.addEventListener('click', closePanels);
     
@@ -306,27 +331,50 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 100); // 100ms的延迟来检测滚动结束
         });
     }
+
+    // 确保输入框按钮正确定位
+    positionInputButtons();
+    
+    // 添加窗口大小改变事件监听器，确保在窗口大小改变时按钮仍然正确定位
+    window.addEventListener('resize', positionInputButtons);
 });
+
+// 显示面板的通用函数
+function showPanel(panel, inputElement) {
+    closePanels();
+    // 设置面板位置在输入框下方
+    const inputRect = inputElement.getBoundingClientRect();
+    panel.style.top = (inputRect.bottom + window.scrollY + 5) + 'px';
+    panel.style.left = (inputRect.left + window.scrollX) + 'px';
+    panel.style.width = inputRect.width + 'px';
+    panel.classList.add('active');
+    panelOverlay.classList.add('active');
+}
 
 // 显示热门歌单面板
 function showPlaylistPanel() {
-    closePanels();
-    playlistPanel.classList.add('active');
-    panelOverlay.classList.add('active');
+    showPanel(playlistPanel, playlistInput);
 }
 
 // 显示热门搜索面板
 function showSearchPanel() {
-    closePanels();
-    searchPanel.classList.add('active');
-    panelOverlay.classList.add('active');
+    showPanel(searchPanel, searchInput);
+}
+
+// 关闭指定面板
+function closePanel(panel) {
+    panel.classList.remove('active');
+    panelOverlay.classList.remove('active');
+    // 重置面板位置样式
+    panel.style.top = '';
+    panel.style.left = '';
+    panel.style.width = '';
 }
 
 // 关闭所有面板
 function closePanels() {
-    playlistPanel.classList.remove('active');
-    searchPanel.classList.remove('active');
-    panelOverlay.classList.remove('active');
+    closePanel(playlistPanel);
+    closePanel(searchPanel);
 }
 
 // 键盘快捷键处理函数
@@ -370,6 +418,40 @@ function updatePlaylistTitle(chartName) {
     playlistTitle.innerHTML = `${chartName}列表 <span id="song-count">(0首)</span>`;
     // 更新计数元素引用
     songCountElement.innerHTML = '(0首)';
+}
+
+// 通用API调用函数
+function callApi(url, loadingMessage, successCallback, errorCallback) {
+    // 显示加载状态
+    showLoadingState(loadingMessage);
+    
+    fetch(url)
+        .then(response => {
+            // 检查响应状态
+            if (!response.ok) {
+                throw new Error(`网络响应错误: ${response.status} ${response.statusText}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.code === 200) {
+                successCallback(data);
+            } else {
+                console.error('API调用失败:', data.msg);
+                if (errorCallback) {
+                    errorCallback(data);
+                } else {
+                    showErrorState(`API调用失败: ${data.msg || '未知错误'}`);
+                }
+            }
+        })
+        .catch(error => {
+            console.error('API调用出错:', error);
+            showErrorState('网络错误，请稍后重试');
+            if (errorCallback) {
+                errorCallback(error);
+            }
+        });
 }
 
 // 加载榜单歌曲
@@ -624,6 +706,9 @@ function playSong(index) {
     
     // 更新活动歌曲的样式
     updateActiveSongStyle();
+    
+    // 更新收藏按钮状态
+    updateFavoriteButtonState();
     
     // 滚动到播放器区域
     const playerSection = document.querySelector('.player-section');
@@ -1287,29 +1372,23 @@ function favoriteSong() {
     if (isAlreadyFavorited) {
         // 如果已经收藏，则取消收藏
         favoriteSongs = favoriteSongs.filter(song => song.id !== currentSong.id);
-        alert(`已取消收藏歌曲: ${currentSong.name}`);
+        // 移除alert弹窗，仅通过按钮状态变化提示用户
         
-        // 更新按钮图标
-        resetButton(favoriteBtn, 'fas fa-heart');
+        // 更新按钮图标，不添加背景色和边框
+        favoriteBtn.innerHTML = '<i class="far fa-heart"></i> 收藏';
+        resetButtonStyle(favoriteBtn);
     } else {
         // 如果未收藏，则添加到收藏列表
         favoriteSongs.push(currentSong);
-        alert(`已收藏歌曲: ${currentSong.name}`);
+        // 移除alert弹窗，仅通过按钮状态变化提示用户
         
-        // 添加视觉反馈
-        showButtonFeedback(favoriteBtn, 'fas fa-heart', '#ff7eee', '#4facfe');
+        // 更新按钮图标，不添加背景色和边框
+        favoriteBtn.innerHTML = '<i class="fas fa-heart"></i> 收藏';
+        resetButtonStyle(favoriteBtn);
     }
     
     // 保存到本地存储
     localStorage.setItem('favoriteSongs', JSON.stringify(favoriteSongs));
-    
-    // 3秒后恢复按钮样式
-    setTimeout(() => {
-        if (!favoriteSongs.some(song => song.id === currentSong.id)) {
-            // 如果未收藏，恢复默认样式
-            resetButtonStyle(favoriteBtn);
-        }
-    }, 3000);
 }
 
 // 分享歌曲
@@ -1318,21 +1397,80 @@ function shareSong() {
     
     const currentSong = currentSongList[currentSongIndex];
     const shareText = `Ajeo分享 ${currentSong.name} - ${currentSong.artistsname}，请复制下方链接到浏览器收听！`;
+    const shareUrl = window.location.href;
+    const fullShareText = shareText + '\n' + shareUrl;
+    
+    // 滚动到当前播放的歌曲项
+    const currentSongItem = document.querySelector(`.song-item[data-index="${currentSongIndex}"]`);
+    if (currentSongItem) {
+        currentSongItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
     
     if (navigator.share) {
         navigator.share({
             title: '分享歌曲',
             text: shareText,
-            url: window.location.href
-        }).catch(error => console.log('分享取消或失败:', error));
-    } else {
-        navigator.clipboard.writeText(shareText).then(() => {
-            alert('分享链接已复制到剪贴板');
-            
-            // 添加视觉反馈
-            showButtonFeedback(shareBtn, 'fas fa-check', '#51cf66', '#8ce99a', 'fas fa-share-alt');
+            url: shareUrl
+        }).catch(error => {
+            console.log('分享取消或失败:', error);
+            // 分享失败时复制到剪贴板
+            copyToClipboard(fullShareText);
+            alert('分享失败，链接已复制到剪贴板');
         });
+    } else {
+        // 不支持Web Share API时直接复制到剪贴板
+        copyToClipboard(fullShareText);
+        alert('链接已复制到剪贴板');
+        
+        // 添加视觉反馈
+        showButtonFeedback(shareBtn, 'fas fa-check', '#51cf66', '#8ce99a', 'fas fa-share-alt');
     }
+}
+
+// 复制文本到剪贴板
+function copyToClipboard(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+        // 使用现代剪贴板API
+        navigator.clipboard.writeText(text).then(() => {
+            console.log('复制成功');
+        }).catch(err => {
+            console.error('复制失败:', err);
+            // 降级到传统方法
+            fallbackCopyTextToClipboard(text);
+        });
+    } else {
+        // 降级到传统方法
+        fallbackCopyTextToClipboard(text);
+    }
+}
+
+// 传统复制方法
+function fallbackCopyTextToClipboard(text) {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.style.position = "fixed";
+    textArea.style.left = "-999999px";
+    textArea.style.top = "-999999px";
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    
+    try {
+        const successful = document.execCommand('copy');
+        if (!successful) {
+            console.error('复制命令失败');
+            // 添加用户友好的提示
+            alert('复制到剪贴板失败，请手动复制以下内容：\n\n' + text);
+        } else {
+            console.log('复制成功');
+        }
+    } catch (err) {
+        console.error('复制失败:', err);
+        // 添加用户友好的提示
+        alert('复制到剪贴板失败，请手动复制以下内容：\n\n' + text);
+    }
+    
+    document.body.removeChild(textArea);
 }
 
 // 下载歌词
@@ -1393,14 +1531,14 @@ function downloadSong() {
     }
 }
 
-// 显示加载状态
+// 显示加载状态的通用函数
 function showLoadingState(message) {
     if (songPlaceholder) {
         songPlaceholder.innerHTML = `<p><i class="fas fa-spinner fa-spin"></i> ${message}</p>`;
     }
 }
 
-// 显示错误状态
+// 显示错误状态的通用函数
 function showErrorState(message) {
     if (songPlaceholder) {
         songPlaceholder.innerHTML = `<p><i class="fas fa-exclamation-circle"></i> ${message}</p>`;
@@ -1484,7 +1622,13 @@ function playCustomPlaylist() {
     const apiUrl = `https://node.api.xfabe.com/api/wangyi/userSongs?uid=${playlistId}&limit=100`;
     
     fetch(apiUrl)
-        .then(response => response.json())
+        .then(response => {
+            // 检查响应状态
+            if (!response.ok) {
+                throw new Error(`网络响应错误: ${response.status} ${response.statusText}`);
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.code === 200) {
                 // 保存歌单信息
@@ -1525,14 +1669,71 @@ function playCustomPlaylist() {
                 // 如果启用了自动播放且列表不为空，自动播放第一首
                 if (isAutoPlayEnabled && currentSongList.length > 0) {
                     playSong(0);
+                } else if (currentSongList.length === 0) {
+                    // 如果歌单为空
+                    showErrorState('该歌单为空');
                 }
             } else {
                 console.error('加载歌单失败:', data.msg);
-                showErrorState('加载歌单失败');
+                showErrorState(`加载歌单失败: ${data.msg || '未知错误'}`);
+                // 显示更明确的错误消息
+                alert(`加载歌单失败: ${data.msg || '歌单不存在或无法访问'}`);
             }
         })
         .catch(error => {
             console.error('加载歌单出错:', error);
             showErrorState('网络错误，请稍后重试');
+            // 显示更明确的错误消息
+            alert(`加载歌单出错: ${error.message || '网络连接失败，请检查网络设置'}`);
         });
+}
+
+// 更新收藏按钮状态
+function updateFavoriteButtonState() {
+    if (!hasSongsToPlay()) return;
+    
+    const currentSong = currentSongList[currentSongIndex];
+    const isAlreadyFavorited = favoriteSongs.some(song => song.id === currentSong.id);
+    
+    // 更新按钮图标和样式
+    if (isAlreadyFavorited) {
+        // 如果已收藏，显示实心心形图标
+        favoriteBtn.innerHTML = '<i class="fas fa-heart"></i> 收藏';
+        favoriteBtn.style.background = 'linear-gradient(90deg, #ff7eee, #4facfe)';
+    } else {
+        // 如果未收藏，显示空心心形图标
+        favoriteBtn.innerHTML = '<i class="far fa-heart"></i> 收藏';
+        favoriteBtn.style.background = '';
+    }
+    
+    resetButtonStyle(favoriteBtn);
+}
+
+// 添加函数确保输入框按钮正确定位
+function positionInputButtons() {
+    // 获取所有输入框按钮
+    const inputButtons = document.querySelectorAll('.input-button');
+    
+    // 为每个按钮设置定位样式
+    inputButtons.forEach(button => {
+        button.style.position = 'absolute';
+        button.style.right = '5px';
+        button.style.top = '50%';
+        button.style.transform = 'translateY(-50%)';
+        button.style.width = '40px';
+        button.style.height = '40px';
+        button.style.borderRadius = '50%';
+        button.style.border = 'none';
+        button.style.background = 'transparent';
+        button.style.color = '#f0f0f0';
+        button.style.fontSize = '1.5rem';
+        button.style.cursor = 'pointer';
+        button.style.display = 'flex';
+        button.style.alignItems = 'center';
+        button.style.justifyContent = 'center';
+        button.style.zIndex = '9999';
+        button.style.margin = '0';
+        button.style.padding = '0';
+        button.style.boxShadow = 'none';
+    });
 }
