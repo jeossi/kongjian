@@ -1246,11 +1246,11 @@ body {
 .hot-search-close {
   position: absolute;
   top: 8px;
-  right: 12px;
+  right: 5px; /* 向右移动 */
   background: transparent;
   border: none;
   color: #888;
-  font-size: 28px;
+  font-size: 24px; /* 稍小一些 */
   cursor: pointer;
   z-index: 10;
   transition: transform 0.2s ease;
@@ -1327,17 +1327,17 @@ body {
 /* 面板右上角关闭按钮 */
 .panel-close {
     position: absolute;
-    top: 8px;
-    right: 8px;
+    top: 8x;
+    right: -5px; /* 向右移动 */
     background: transparent;
     border: none;
     color: #888;
-    font-size: 28px;
+    font-size: 24px; /* 稍小一些 */
     cursor: pointer;
     z-index: 10;
     transition: transform 0.2s ease;
-    width: 30px;
-    height: 30px;
+    width: 25px; /* 稍小一些 */
+    height: 25px; /* 稍小一些 */
     display: flex;
     align-items: center;
     justify-content: center;
