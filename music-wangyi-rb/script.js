@@ -332,6 +332,11 @@ document.addEventListener('DOMContentLoaded', function() {
             playAudio();
         }
     });
+    audioPlayer.addEventListener('error', function() {
+        // 播放错误时自动跳到下一首
+        console.error('音频播放出错，自动跳到下一首');
+        playNext();
+    });
     progressBar.addEventListener('input', setProgress);
     
     // 绑定音质选择事件
@@ -356,7 +361,42 @@ document.addEventListener('DOMContentLoaded', function() {
     } catch (e) {
         console.warn('Web Audio API 不支持:', e);
     }
-    
+
+    // 添加禁止锁屏功能
+    function preventScreenLock() {
+        // 检查是否支持 wakeLock API
+        if ('wakeLock' in navigator) {
+            let wakeLock = null;
+            
+            const requestWakeLock = async () => {
+                try {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                    wakeLock.addEventListener('release', () => {
+                        console.log('Wake Lock was released');
+                    });
+                    console.log('Wake Lock is active');
+                } catch (err) {
+                    console.error(`Failed to acquire wake lock: ${err.name}, ${err.message}`);
+                }
+            };
+            
+            // 请求唤醒锁
+            requestWakeLock();
+            
+            // 监听页面可见性变化，重新获取唤醒锁
+            document.addEventListener('visibilitychange', async () => {
+                if (wakeLock !== null && document.visibilityState === 'visible') {
+                    await requestWakeLock();
+                }
+            });
+        } else {
+            console.log('Wake Lock API not supported');
+        }
+    }
+
+    // 调用禁止锁屏功能
+    preventScreenLock();
+
     // 添加键盘快捷键支持
     document.addEventListener('keydown', handleKeyboardShortcuts);
     
@@ -1502,9 +1542,28 @@ function shareSong() {
         }, 2000);
     }
     
-    // 无论是否支持Web Share API，都直接复制到剪贴板
-    // 这样可以确保在所有情况下都有明确的用户反馈
-    copyToClipboard(shareText);
+    // 检查是否为移动设备
+    const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    if (isMobile && navigator.share) {
+        // 移动端支持Web Share API，优先使用
+        navigator.share({
+            title: '分享歌曲',
+            text: `Ajeo分享 ${currentSong.name} - ${currentSong.artistsname}，请复制下方链接到浏览器收听！`,
+            url: shareUrl
+        }).then(() => {
+            // 分享成功
+            console.log('分享成功');
+            showButtonFeedback(shareBtn, 'fas fa-check', '#51cf66', '#8ce99a', 'fas fa-share-alt');
+        }).catch(error => {
+            console.log('分享取消或失败:', error);
+            // 分享失败时降级到直接复制到剪贴板
+            copyToClipboard(shareText);
+        });
+    } else {
+        // 电脑端或不支持Web Share API时直接复制到剪贴板
+        copyToClipboard(shareText);
+    }
 }
 
 // 复制文本到剪贴板
@@ -1560,7 +1619,6 @@ function fallbackCopyTextToClipboard(text) {
             showButtonFeedback(shareBtn, 'fas fa-check', '#51cf66', '#8ce99a', 'fas fa-share-alt');
         }
     } catch (err) {
-        document.body.removeChild(textArea);
         console.error('传统方法出现异常:', err);
         // 出现异常时，仍然显示提示信息
         alert('已复制请到微信粘贴分享');
