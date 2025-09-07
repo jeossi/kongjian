@@ -1435,3 +1435,26 @@ body {
         font-size: 1.2rem;
     }
 }
+
+/* 版权信息样式 */
+.footer {
+    text-align: center;
+    padding: 15px 0 10px 0; /* 调整内边距 */
+    margin-top: 10px; /* 减小与上方元素的间距 */
+    color: #a0a0c0;
+    font-size: 0.9rem;
+    border-top: none; /* 移除顶部边框 */
+}
+
+.copyright p {
+    margin: 5px 0;
+}
+
+.copyright a {
+    color: #4facfe;
+    text-decoration: none;
+}
+
+.copyright a:hover {
+    text-decoration: underline;
+}
