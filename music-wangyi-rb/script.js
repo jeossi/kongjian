@@ -386,11 +386,45 @@ document.addEventListener('DOMContentLoaded', function() {
 // 显示面板的通用函数
 function showPanel(panel, inputElement) {
     closePanels();
-    // 设置面板位置在输入框下方
+    
+    // 获取输入框和面板的位置信息
     const inputRect = inputElement.getBoundingClientRect();
-    panel.style.top = (inputRect.bottom + window.scrollY + 5) + 'px';
-    panel.style.left = (inputRect.left + window.scrollX) + 'px';
-    panel.style.width = inputRect.width + 'px';
+    const panelHeight = 300; // 面板最大高度
+    
+    // 计算面板应该显示的位置
+    let top, left, width;
+    
+    // 获取视口尺寸
+    const viewportHeight = window.innerHeight;
+    const viewportWidth = window.innerWidth;
+    
+    // 计算面板底部位置
+    const panelBottom = inputRect.bottom + panelHeight;
+    
+    // 判断面板是否会在视口底部溢出
+    if (panelBottom > viewportHeight) {
+        // 如果会溢出，则向上弹出
+        top = (inputRect.top - panelHeight - 5 + window.scrollY);
+    } else {
+        // 否则向下弹出
+        top = (inputRect.bottom + 5 + window.scrollY);
+    }
+    
+    // 设置面板位置
+    left = (inputRect.left + window.scrollX);
+    width = inputRect.width;
+    
+    // 设置面板样式
+    panel.style.top = top + 'px';
+    panel.style.left = left + 'px';
+    panel.style.width = width + 'px';
+    
+    // 在小屏幕上调整面板宽度以适应屏幕
+    if (viewportWidth <= 768) {
+        panel.style.left = '10px';
+        panel.style.width = (viewportWidth - 20) + 'px';
+    }
+    
     panel.classList.add('active');
     panelOverlay.classList.add('active');
 }
