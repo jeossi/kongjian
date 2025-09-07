@@ -32,7 +32,7 @@ body {
 }
 
 .container {
-    max-width: 100%;
+    max-width: 100%; /* 恢复为100%，撤回之前的1200px修改 */
     margin: 0 auto;
     padding: 20px;
     width: 100%;
@@ -48,7 +48,7 @@ body {
 
 .header h1 {
     color: #ffffff;
-    font-size: 2.8rem;
+    font-size: 2.8rem; /* 恢复为2.8rem，撤回之前的2.2rem修改 */
     font-weight: 700;
     letter-spacing: 1px;
     text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
@@ -701,7 +701,7 @@ body {
 }
 
 .song-title-artist h2 {
-    font-size: 1.8rem;
+    font-size: 1.8rem; /* 恢复为1.8rem，撤回之前的1.5rem修改 */
     margin: 0;
     margin-bottom: 5px;
     color: #ffffff;
@@ -712,7 +712,7 @@ body {
 .song-title-artist p {
     margin: 0;
     color: #a0a0c0;
-    font-size: 1.2rem;
+    font-size: 1.2rem; /* 恢复为1.2rem，撤回之前的1.1rem修改 */
 }
 
 /* 歌词区域 */
@@ -1385,7 +1385,7 @@ body {
     color: #412f1f;
     padding: 3px 5px;
     border-radius: 18px;
-    font-size: 18px; /* 从14px增加到18px */
+    font-size: 18px; /* 恢复为18px，撤回之前的1.1rem修改 */
     cursor: pointer;
     transition: all 0.2s ease;
 }
@@ -1421,14 +1421,14 @@ body {
     
     .panel-list li, .hot-tag {
         padding: 3px 5px;
-        font-size: 18px; /* 从14px增加到18px */
+        font-size: 18px; /* 恢复为18px，撤回之前的1.1rem修改 */
     }
 }
 
 @media screen and (max-width: 480px) {
     .panel-list li, .hot-tag {
         padding: 3px 5px;
-        font-size: 18px; /* 从14px增加到18px */
+        font-size: 18px; /* 恢复为18px，撤回之前的1.1rem修改 */
     }
     
     .panel-header h3 {
@@ -1437,12 +1437,18 @@ body {
 }
 
 /* 版权信息样式 */
+.footer-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
 .footer {
     text-align: center;
     padding: 15px 0 10px 0; /* 调整内边距 */
     margin-top: 10px; /* 减小与上方元素的间距 */
     color: #a0a0c0;
-    font-size: 0.9rem;
+    font-size: 0.8rem; /* 从0.9rem减小到0.8rem，使其在大屏幕上更合适 */
     border-top: none; /* 移除顶部边框 */
 }
 
