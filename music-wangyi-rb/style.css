@@ -1385,7 +1385,7 @@ body {
     color: #412f1f;
     padding: 3px 5px;
     border-radius: 18px;
-    font-size: 14px;
+    font-size: 18px; /* 从14px增加到18px */
     cursor: pointer;
     transition: all 0.2s ease;
 }
@@ -1421,14 +1421,14 @@ body {
     
     .panel-list li, .hot-tag {
         padding: 3px 5px;
-        font-size: 14px;
+        font-size: 18px; /* 从14px增加到18px */
     }
 }
 
 @media screen and (max-width: 480px) {
     .panel-list li, .hot-tag {
         padding: 3px 5px;
-        font-size: 14px;
+        font-size: 18px; /* 从14px增加到18px */
     }
     
     .panel-header h3 {
