@@ -6,10 +6,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>网易音乐榜</title>
-    <link rel="stylesheet" href="style.css?v=9.6.2157">
+    <title>网易音乐</title>
+    <link rel="stylesheet" href="style.css?v=9.7.1443">
     <!-- Font Awesome图标库 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/regular.min.css">
     <!-- 添加网站图标 -->
     <link rel="icon" href="favicon.ico" type="image/x-icon">
 </head>
@@ -17,7 +18,7 @@
     <div class="container">
         <!-- 头部区域 -->
         <header class="header">
-            <h1><i class="fas fa-music"></i> 网易音乐榜</h1>
+            <h1><i class="fas fa-music"></i> 网易音乐</h1>
         </header>
 
         <!-- 主要内容区域 -->
@@ -39,11 +40,11 @@
                             <p id="size">大小: --MB</p>
                             <p id="format">格式: --</p>
                         </div>
-                        <!-- 歌名和艺术家显示在封面下方 -->
-                        <div class="song-title-artist">
-                            <h2 id="song-name">请选择歌曲</h2>
-                            <p id="artist">艺术家</p>
-                        </div>
+                    </div>
+                    <!-- 歌名和艺术家显示在封面下方 -->
+                    <div class="song-title-artist">
+                        <h2 id="song-name">请选择歌曲</h2>
+                        <p id="artist">艺术家</p>
                     </div>
                     <!-- 歌词显示区域 -->
                     <div class="lyrics-wrapper">
@@ -110,6 +111,7 @@
                     <div class="input-group-container">
                         <!-- 播放歌单输入组 -->
                         <div class="input-group">
+                            <label for="playlist-input" class="input-label"><i class="fas fa-list"></i> 播放歌单</label>
                             <input type="text" id="playlist-input" class="input-with-button" placeholder="请输入歌单ID或选择预设歌单" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
                             <button id="play-playlist-btn" class="input-button">
                                 <i class="fas fa-play-circle"></i>
@@ -118,6 +120,7 @@
                         
                         <!-- 搜索输入组 -->
                         <div class="input-group">
+                            <label for="search-input" class="input-label"><i class="fas fa-music"></i> 搜索歌曲</label>
                             <input type="text" id="search-input" class="input-with-button" placeholder="搜索歌手或歌名" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
                             <button id="search-btn" class="input-button">
                                 <i class="fas fa-search"></i>
@@ -144,12 +147,10 @@
     <div id="playlist-panel" class="popup-panel">
         <div class="panel-header">
             <h3>热门歌单ID</h3>
-            <button class="close-btn">&times;</button>
+            <!-- 关闭按钮将通过JavaScript动态添加到这里 -->
         </div>
         <div class="panel-content">
-            <ul id="popular-playlists" class="panel-list">
-                <!-- 歌单ID将通过JavaScript动态生成，避免数据重复 -->
-            </ul>
+            <div class="hot-search-tags" id="popular-playlists"></div>
         </div>
     </div>
     
@@ -157,16 +158,14 @@
     <div id="search-panel" class="popup-panel">
         <div class="panel-header">
             <h3>热门搜索</h3>
-            <button class="close-btn">&times;</button>
+            <!-- 关闭按钮将通过JavaScript动态添加到这里 -->
         </div>
         <div class="panel-content">
-            <ul id="popular-searches" class="panel-list">
-                <!-- 搜索关键词将通过JavaScript动态生成，避免数据重复 -->
-            </ul>
+            <div class="hot-search-tags" id="popular-searches"></div>
         </div>
     </div>
 
     <audio id="audio-player" autoplay playsinline webkit-playsinline></audio>
-    <script src="script.js?v=9.6.2157"></script>
+    <script src="script.js?v=9.7.1443"></script>
 </body>
 </html>
