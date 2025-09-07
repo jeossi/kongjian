@@ -68,7 +68,7 @@ body {
     display: flex;
     justify-content: center;
     gap: 5px;
-    margin-bottom: 30px;
+    margin-bottom: 5px; /* 从30px减小到15px以减小与播放歌单输入区域的间距 */
     flex-wrap: nowrap;
     overflow-x: auto; /* 允许水平滚动以防内容过多 */
     -webkit-overflow-scrolling: touch; /* 平滑滚动 */
@@ -167,6 +167,15 @@ body {
         gap: 8px !important;
     }
 
+    .player-top {
+        position: relative;
+        min-height: 200px;
+        display: flex;
+        align-items: flex-start;
+        gap: 10px; /* 从20px减小到10px */
+        flex-wrap: nowrap; /* 不允许换行 */
+    }
+
     .album-art {
         width: 120px;
         height: 120px;
@@ -174,6 +183,7 @@ body {
         min-height: 120px;
         margin: 0 auto; /* 居中显示 */
         aspect-ratio: 1 / 1; /* 确保始终是1:1比例 */
+        order: 1;
     }
     
     .album-art img {
@@ -184,19 +194,12 @@ body {
         min-height: inherit;
     }
     
-    .song-title-artist {
-        width: 100%;
-        text-align: center;
-        margin: 10px 0;
-        order: 3; /* 确保在最后显示 */
-    }
-    
     .song-info-block {
-        text-align: center;
+        text-align: left;
         flex: 1;
-        margin: 10px 0;
+        margin: 0 10px;
         order: 2; /* 确保在中间显示 */
-        min-width: 100%; /* 在小屏幕上占满宽度 */
+        min-width: 150px; /* 确保有足够的显示空间 */
     }
     
     .player-controls {
@@ -215,6 +218,21 @@ body {
         height: 40px;
         min-width: 40px;
         font-size: 1.2rem;
+    }
+    
+    /* 添加输入框和按钮的响应式样式 */
+    .input-with-button {
+        height: 45px; /* 减小高度以适应小屏幕 */
+        padding: 5px 45px 5px 12px; /* 调整padding */
+    }
+    
+    .input-button {
+        width: 35px; /* 减小按钮尺寸 */
+        height: 35px; /* 减小按钮尺寸 */
+        right: 5px; /* 保持右对齐 */
+        top: 50%; /* 垂直居中 */
+        transform: translateY(-50%) !important; /* 精确垂直居中 */
+        font-size: 1.3rem; /* 调整图标大小 */
     }
 }
 
@@ -239,6 +257,15 @@ body {
         gap: 5px !important;
     }
 
+    .player-top {
+        position: relative;
+        min-height: 200px;
+        display: flex;
+        align-items: flex-start;
+        gap: 10px; /* 从20px减小到10px */
+        flex-wrap: nowrap; /* 不允许换行 */
+    }
+
     .album-art {
         width: 100px;
         height: 100px;
@@ -246,6 +273,7 @@ body {
         min-height: 100px;
         margin: 0 auto; /* 居中显示 */
         aspect-ratio: 1 / 1; /* 确保始终是1:1比例 */
+        order: 1;
     }
     
     .album-art img {
@@ -256,19 +284,12 @@ body {
         min-height: inherit;
     }
     
-    .song-title-artist {
-        width: 100%;
-        text-align: center;
-        margin: 10px 0;
-        order: 3; /* 确保在最后显示 */
-    }
-    
     .song-info-block {
-        text-align: center;
+        text-align: left;
         flex: 1;
-        margin: 10px 0;
+        margin: 0 10px;
         order: 2; /* 确保在中间显示 */
-        min-width: 100%; /* 在小屏幕上占满宽度 */
+        min-width: 150px; /* 确保有足够的显示空间 */
     }
     
     .player-controls {
@@ -287,6 +308,21 @@ body {
         height: 35px;
         min-width: 35px;
         font-size: 1rem;
+    }
+    
+    /* 添加输入框和按钮的响应式样式 */
+    .input-with-button {
+        height: 40px; /* 进一步减小高度 */
+        padding: 5px 40px 5px 10px; /* 调整padding */
+    }
+    
+    .input-button {
+        width: 30px; /* 进一步减小按钮尺寸 */
+        height: 30px; /* 进一步减小按钮尺寸 */
+        right: 5px; /* 保持右对齐 */
+        top: 50%; /* 垂直居中 */
+        transform: translateY(-50%) !important; /* 精确垂直居中 */
+        font-size: 1.2rem; /* 调整图标大小 */
     }
 }
 
@@ -307,12 +343,22 @@ body {
         gap: 12px !important;
     }
     
+    .player-top {
+        position: relative;
+        min-height: 200px;
+        display: flex;
+        align-items: flex-start;
+        gap: 10px; /* 从20px减小到10px */
+        flex-wrap: nowrap; /* 不允许换行 */
+    }
+
     .album-art {
         width: 160px;
         height: 160px;
         min-width: 160px;
         min-height: 160px;
         aspect-ratio: 1 / 1; /* 确保始终是1:1比例 */
+        order: 1;
     }
     
     .album-art img {
@@ -325,6 +371,21 @@ body {
     
     .player-controls {
         gap: 6px; /* 小屏幕设备上保持原有间距 */
+    }
+    
+    /* 添加输入框和按钮的响应式样式 */
+    .input-with-button {
+        height: 48px; /* 适中高度 */
+        padding: 5px 48px 5px 15px; /* 调整padding */
+    }
+    
+    .input-button {
+        width: 38px; /* 适中按钮尺寸 */
+        height: 38px; /* 适中按钮尺寸 */
+        right: 5px; /* 保持右对齐 */
+        top: 50%; /* 垂直居中 */
+        transform: translateY(-50%) !important; /* 精确垂直居中 */
+        font-size: 1.4rem; /* 调整图标大小 */
     }
 }
 
@@ -349,6 +410,15 @@ body {
         gap: 10px !important;
     }
 
+    .player-top {
+        position: relative;
+        min-height: 200px;
+        display: flex;
+        align-items: flex-start;
+        gap: 10px; /* 从20px减小到10px */
+        flex-wrap: nowrap; /* 不允许换行 */
+    }
+
     .album-art {
         width: 160px;
         height: 160px;
@@ -356,6 +426,7 @@ body {
         min-height: 160px;
         margin: 0 auto; /* 居中显示 */
         aspect-ratio: 1 / 1; /* 确保始终是1:1比例 */
+        order: 1;
     }
     
     .album-art img {
@@ -366,23 +437,31 @@ body {
         min-height: inherit;
     }
     
-    .song-title-artist {
-        width: 100%;
-        text-align: center;
-        margin: 10px 0;
-        order: 3; /* 确保在最后显示 */
-    }
-    
     .song-info-block {
-        text-align: center;
+        text-align: left;
         flex: 1;
-        margin: 10px 0;
+        margin: 0 10px;
         order: 2; /* 确保在中间显示 */
-        min-width: 100%; /* 在小屏幕上占满宽度 */
+        min-width: 150px; /* 确保有足够的显示空间 */
     }
     
     .player-controls {
         gap: 6px; /* 小屏幕设备上保持原有间距 */
+    }
+    
+    /* 添加输入框和按钮的响应式样式 */
+    .input-with-button {
+        height: 50px; /* 标准高度 */
+        padding: 5px 50px 5px 15px; /* 标准padding */
+    }
+    
+    .input-button {
+        width: 40px; /* 标准按钮尺寸 */
+        height: 40px; /* 标准按钮尺寸 */
+        right: 5px; /* 保持右对齐 */
+        top: 50%; /* 垂直居中 */
+        transform: translateY(-50%) !important; /* 精确垂直居中 */
+        font-size: 1.5rem; /* 标准图标大小 */
     }
 }
 
@@ -406,6 +485,15 @@ body {
         gap: 8px !important;
     }
 
+    .player-top {
+        position: relative;
+        min-height: 200px;
+        display: flex;
+        align-items: flex-start;
+        gap: 10px; /* 从20px减小到10px */
+        flex-wrap: nowrap; /* 不允许换行 */
+    }
+
     .album-art {
         width: 140px;
         height: 140px;
@@ -413,6 +501,7 @@ body {
         min-height: 140px;
         margin: 0 auto; /* 居中显示 */
         aspect-ratio: 1 / 1; /* 确保始终是1:1比例 */
+        order: 1;
     }
     
     .album-art img {
@@ -423,23 +512,31 @@ body {
         min-height: 160px;
     }
     
-    .song-title-artist {
-        width: 100%;
-        text-align: center;
-        margin: 10px 0;
-        order: 3; /* 确保在最后显示 */
-    }
-    
     .song-info-block {
-        text-align: center;
+        text-align: left;
         flex: 1;
-        margin-left: 10px;
+        margin: 0 10px;
         order: 2; /* 确保在中间显示 */
-        min-width: 100%; /* 在小屏幕上占满宽度 */
+        min-width: 150px; /* 确保有足够的显示空间 */
     }
     
     .player-controls {
         gap: 4px; /* 极小屏幕上进一步减小间距 */
+    }
+    
+    /* 添加输入框和按钮的响应式样式 */
+    .input-with-button {
+        height: 48px; /* 适中高度 */
+        padding: 5px 48px 5px 15px; /* 调整padding */
+    }
+    
+    .input-button {
+        width: 38px; /* 适中按钮尺寸 */
+        height: 38px; /* 适中按钮尺寸 */
+        right: 5px; /* 保持右对齐 */
+        top: 50%; /* 垂直居中 */
+        transform: translateY(-50%) !important; /* 精确垂直居中 */
+        font-size: 1.4rem; /* 调整图标大小 */
     }
 }
 
@@ -457,6 +554,7 @@ body {
         min-width: 200px;
         min-height: 200px;
         aspect-ratio: 1 / 1; /* 确保始终是1:1比例 */
+        order: 1;
     }
     
     .album-art img {
@@ -465,14 +563,6 @@ body {
         object-fit: contain !important;
         min-width: inherit;
         min-height: inherit;
-    }
-    
-    /* 确保在大屏幕上也保持统一样式 */
-    .song-title-artist {
-        width: 100%;
-        text-align: center;
-        margin: 10px 0;
-        order: 3; /* 确保在最后显示 */
     }
     
     .song-info-block {
@@ -500,6 +590,21 @@ body {
         min-width: 50px !important;
         font-size: 1.5rem !important;
     }
+    
+    /* 添加输入框和按钮的响应式样式 */
+    .input-with-button {
+        height: 50px; /* 标准高度 */
+        padding: 5px 50px 5px 15px; /* 标准padding */
+    }
+    
+    .input-button {
+        width: 40px; /* 标准按钮尺寸 */
+        height: 40px; /* 标准按钮尺寸 */
+        right: 5px; /* 保持右对齐 */
+        top: 50%; /* 垂直居中 */
+        transform: translateY(-50%) !important; /* 精确垂直居中 */
+        font-size: 1.5rem; /* 标准图标大小 */
+    }
 }
 
 /* 大屏布局 - 歌曲信息在专辑封面右侧 */
@@ -509,7 +614,7 @@ body {
     display: flex;
     align-items: flex-start;
     gap: 10px; /* 从20px减小到10px */
-    flex-wrap: wrap; /* 允许换行 */
+    flex-wrap: nowrap; /* 不允许换行 */
 }
 
 .album-art {
@@ -581,13 +686,18 @@ body {
     color: #a0a0c0;
     font-size: 1rem;
     text-align: left;
+    word-wrap: break-word; /* 允许长单词换行 */
+    word-break: break-all; /* 强制换行，避免内容被截断 */
+    overflow-wrap: break-word; /* 确保长文本换行 */
+    line-height: 1.3; /* 增加行高以提高可读性 */
+    white-space: normal; /* 允许正常换行 */
+    hyphens: auto; /* 自动添加连字符 */
 }
 
 .song-title-artist {
     width: 100%;
     text-align: center;
     margin: 10px 0;
-    order: 3; /* 确保歌名和艺术家在最后显示 */
 }
 
 .song-title-artist h2 {
@@ -882,75 +992,96 @@ body {
 
 /* 新增播放歌单和搜索区域样式 */
 .playlist-input-section {
-    margin-bottom: 15px;
-    overflow-x: hidden; /* 防止水平滚动 */
-}
-
-.input-group-container {
-    display: flex;
-    gap: 15px;
-    align-items: center;
-    flex-wrap: wrap;
+    margin-bottom: 5px; /* 从15px减小到10px以减小与榜单导航的间距 */
     overflow-x: hidden; /* 防止水平滚动 */
 }
 
 .input-group {
-    position: relative;
-    flex: 1;
-    min-width: 0;
+    position: relative !important;
+    flex: 1 !important;
+    min-width: 0 !important;
+    display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    z-index: 0 !important;
+}
+
+.input-group-container {
+    display: flex !important;
+    gap: 15px !important;
+    align-items: center !important;
+    flex-wrap: wrap !important;
+    overflow-x: hidden !important; /* 防止水平滚动 */
+    position: relative !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.input-label {
+    display: block !important;
+    margin-bottom: 5px !important;
+    color: #a0a0c0 !important;
+    font-size: 1.1rem !important; /* 增大字体与热歌榜按钮一样大 */
+    font-weight: 500 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.input-label i {
+    margin-right: 8px !important; /* 为图标添加右边距 */
+    color: #4facfe !important; /* 为图标添加颜色 */
 }
 
 .input-with-button {
-    width: 100%;
-    padding: 12px 50px 12px 15px;
-    border-radius: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    background: rgba(255, 255, 255, 0.1);
-    color: #f0f0f0;
-    font-size: 1rem;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    backdrop-filter: blur(10px);
-    min-width: 0; /* 确保输入框可以收缩到适合容器的大小 */
-}
-
-.input-with-button::placeholder {
-    color: #a0a0c0;
-}
-
-.input-with-button:focus {
-    outline: none;
-    border-color: #4facfe;
-    box-shadow: 0 0 15px rgba(79, 172, 254, 0.4);
+    width: 100% !important;
+    padding: 5px 40px 5px 15px !important; /* 调整padding为按钮留出空间 */
+    border-radius: 20px !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: #f0f0f0 !important;
+    font-size: 1rem !important;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1) !important;
+    backdrop-filter: blur(10px) !important;
+    min-width: 0 !important; /* 确保输入框可以收缩到适合容器的大小 */
+    height: 40px !important; /* 设置固定高度 */
+    box-sizing: border-box !important; /* 确保padding包含在高度内 */
+    position: relative !important; /* 确保定位上下文 */
+    display: block !important; /* 确保正确显示 */
+    margin: 0 !important; /* 移除外边距 */
+    outline: none !important; /* 移除外轮廓 */
+    z-index: 1 !important; /* 确保输入框在正确层级 */
 }
 
 .input-button {
-    position: absolute;
-    right: 0;
-    top: 0;
-    width: 60px; /* 从50px增大到60px */
-    height: 100%;
-    border-radius: 0 20px 20px 0;
-    border: none;
-    background: transparent;
-    color: #f0f0f0;
-    font-size: 2rem; /* 从1.5rem增大到2rem */
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    position: absolute !important;
+    right: -5px !important; /* 向右偏移 */
+    top: 48px !important; /* 向下偏移5px，而不是垂直居中 */
+    width: 40px !important; /* 按钮宽度 */
+    height: 40px !important; /* 按钮高度 */
+    border-radius: 50% !important; /* 圆形按钮 */
+    border: none !important; /* 去除外框 */
+    background: transparent !important; /* 去除背景色 */
+    color: #f0f0f0 !important;
+    font-size: 1.5rem !important; /* 图标大小 */
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    box-shadow: none !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    z-index: 10 !important; /* 确保按钮在最上层 */
+    margin: 0 !important; /* 移除可能的外边距 */
+    padding: 0 !important; /* 移除可能的内边距 */
 }
 
 .input-button:hover {
-    background: rgba(255, 255, 255, 0.1);
-    transform: none;
-    box-shadow: none;
+    background: rgba(255, 255, 255, 0.1) !important; /* 悬停时轻微背景 */
+    box-shadow: none !important;
 }
 
 .input-button:active {
-    background: rgba(255, 255, 255, 0.2);
-    transform: none;
+    background: rgba(255, 255, 255, 0.2) !important; /* 按下时背景 */
 }
 
 .playlist-header h2 {
@@ -1111,23 +1242,66 @@ body {
     box-shadow: none; /* 去除阴影 */
 }
 
+/* 热门搜索面板右上角关闭按钮 */
+.hot-search-close {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  background: transparent;
+  border: none;
+  color: #888;
+  font-size: 28px;
+  cursor: pointer;
+  z-index: 10;
+  transition: transform 0.2s ease;
+}
+
+.hot-search-close:hover {
+  transform: scale(1.2);
+  color: #333;
+}
+
+/* 深色主题下的关闭按钮样式 */
+.dark-theme .hot-search-close {
+  color: #aaa;
+}
+
+.dark-theme .hot-search-close:hover {
+  color: #fff;
+}
+
+/* 深色主题热门搜索面板样式 */
+.dark-theme .popup-panel {
+    background: #252525;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+}
+
+.dark-theme .panel-header h3 {
+    color: #c77dff;
+}
+
+.dark-theme .hot-tag {
+    background: #3a3a3a;
+    color: #d0d0d0;
+}
+
+.dark-theme .hot-tag:hover {
+    background: #7b2cbf;
+    color: #ffd700;
+}
+
 /* 弹出面板样式 */
 .popup-panel {
     display: none;
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 90%;
-    max-width: 500px;
-    max-height: 80vh;
-    background: rgba(30, 30, 46, 0.8);
-    border-radius: 20px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(30, 30, 46, 0.8);
+    position: absolute;
+    max-height: 300px;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    padding: 15px;
     z-index: 1000;
     overflow: hidden;
+    margin-top: 5px;
 }
 
 .popup-panel.active {
@@ -1138,73 +1312,88 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px;
-    background: rgba(15, 15, 25, 0.8);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 0 0 15px 0;
+    border-bottom: 1px solid #eee;
+    position: relative;
 }
 
 .panel-header h3 {
     margin: 0;
-    color: #ffffff;
+    color: #6a1b9a;
     font-size: 1.4rem;
-    font-weight: 700;
+    font-weight: 600;
 }
 
-.close-btn {
+/* 面板右上角关闭按钮 */
+.panel-close {
+    position: absolute;
+    top: 8px;
+    right: 8px;
     background: transparent;
     border: none;
-    color: #a0a0c0;
-    font-size: 2rem;
+    color: #888;
+    font-size: 28px;
     cursor: pointer;
-    width: 40px;
-    height: 40px;
+    z-index: 10;
+    transition: transform 0.2s ease;
+    width: 30px;
+    height: 30px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 50%;
-    transition: all 0.3s ease;
 }
 
-.close-btn:hover {
-    background: rgba(255, 255, 255, 0.1);
-    color: #f0f0f0;
+.panel-close:hover {
+    transform: scale(1.2);
+    color: #333;
+}
+
+/* 深色主题下的面板关闭按钮样式 */
+.dark-theme .panel-close {
+    color: #aaa;
+}
+
+.dark-theme .panel-close:hover {
+    color: #fff;
 }
 
 .panel-content {
-    padding: 20px;
+    padding: 15px 0 0 0;
     max-height: 60vh;
     overflow-y: auto;
+    position: relative;
+    margin-top: 0; /* 不再需要为关闭按钮留出空间 */
+}
+
+.hot-search-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
 }
 
 .panel-list {
     list-style: none;
     margin: 0;
     padding: 0;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 15px;
-}
-
-.panel-list li {
-    padding: 15px 10px;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 12px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    color: #f0f0f0;
-    font-size: 0.9rem;
-    text-align: center;
     display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 60px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    flex-wrap: wrap;
+    gap: 8px;
 }
 
-.panel-list li:hover {
-    background: linear-gradient(135deg, #4facfe 0%, #6a82fb 100%);
-    transform: translateY(-3px);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+.panel-list li, .hot-tag {
+    background: #f5edff;
+    color: #412f1f;
+    padding: 3px 5px;
+    border-radius: 18px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.panel-list li:hover, .hot-tag:hover {
+    background: #8e44ad;
+    color: #ffd700;
+    transform: translateY(-2px);
 }
 
 /* 面板背景遮罩 */
@@ -1225,33 +1414,21 @@ body {
 
 /* 响应式设计 - 小屏幕 */
 @media screen and (max-width: 768px) {
-    .panel-list {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
-    }
-    
-    .panel-list li {
-        padding: 12px 8px;
-        font-size: 0.8rem;
-        min-height: 50px;
-    }
-}
-
-@media screen and (max-width: 480px) {
     .popup-panel {
         width: 95%;
         max-width: 95%;
     }
     
-    .panel-list {
-        grid-template-columns: 1fr;
-        gap: 8px;
+    .panel-list li, .hot-tag {
+        padding: 3px 5px;
+        font-size: 14px;
     }
-    
-    .panel-list li {
-        padding: 10px 5px;
-        font-size: 0.85rem;
-        min-height: 45px;
+}
+
+@media screen and (max-width: 480px) {
+    .panel-list li, .hot-tag {
+        padding: 3px 5px;
+        font-size: 14px;
     }
     
     .panel-header h3 {
