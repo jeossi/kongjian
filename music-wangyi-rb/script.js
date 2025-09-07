@@ -84,6 +84,71 @@ document.addEventListener('DOMContentLoaded', function() {
     const sharedSongName = urlParams.get('songName');
     const sharedArtist = urlParams.get('artist');
     
+    // 初始化MediaSession API
+    initMediaSession();
+    
+    // 监听页面可见性变化
+    handleVisibilityChange();
+    
+    // 定义热门歌单ID数据（统一管理，避免数据重复）
+    const popularPlaylistIds = [
+        "12589832642","4897639127","8799505292","12639638645","12767620640","12528734640"
+    ];
+    
+    // 动态生成热门歌单面板中的列表项
+    popularPlaylists.innerHTML = '';
+    
+    // 获取面板头部元素
+    const playlistPanelHeader = document.querySelector('#playlist-panel .panel-header');
+    
+    // 创建关闭按钮
+    const closePlaylistBtn = document.createElement('button');
+    closePlaylistBtn.className = 'panel-close';
+    closePlaylistBtn.innerHTML = '<i class="fas fa-times"></i>';
+    closePlaylistBtn.addEventListener('click', () => closePanel(playlistPanel));
+    playlistPanelHeader.appendChild(closePlaylistBtn);
+    
+    popularPlaylistIds.forEach(id => {
+        const tag = document.createElement('div');
+        tag.className = 'hot-tag';
+        tag.textContent = id;
+        tag.setAttribute('data-id', id);
+        popularPlaylists.appendChild(tag);
+    });
+    
+    // 定义热门搜索关键词数据（统一管理，避免数据重复）
+    const popularSearchKeywords = [
+        "大潞","烟嗓船长","文夫","马键涛","就是南方凯","程响","郭静","赵乃吉",
+        "王佳音","鱼蛋","窝窝","艺凌","洋澜一","任夏","魏佳艺","韩小欠","单依纯",
+        "DJ","喝茶","古筝","助眠","钢琴","萨克斯","笛子","吉他",
+        "治愈房车","经典老歌","70后","80后","90后",        
+        "周杰伦","林俊杰","邓紫棋","陈奕迅","汪苏泷","林宥嘉","薛之谦","吴亦凡","刀郎",
+        "周深","王子健","Beyond","五月天","伍佰","王一佳","王菲","陶喆",
+        "七月上","于春洋","周传雄","张杰","半吨兄弟","张学友",
+        "跳楼机","搀扶"
+    ];
+    
+    // 动态生成热门搜索面板中的列表项
+    popularSearches.innerHTML = '';
+    
+    // 获取搜索面板头部元素
+    const searchPanelHeader = document.querySelector('#search-panel .panel-header');
+    
+    // 创建关闭按钮
+    const closeSearchBtn = document.createElement('button');
+    closeSearchBtn.className = 'panel-close';
+    closeSearchBtn.innerHTML = '<i class="fas fa-times"></i>';
+    closeSearchBtn.addEventListener('click', () => closePanel(searchPanel));
+    searchPanelHeader.appendChild(closeSearchBtn);
+    
+    popularSearchKeywords.forEach(keyword => {
+        const tag = document.createElement('div');
+        tag.className = 'hot-tag';
+        tag.textContent = keyword;
+        tag.setAttribute('data-keyword', keyword);
+        popularSearches.appendChild(tag);
+    });
+    
     // 如果有分享的歌曲信息，则直接播放该歌曲
     if (sharedSongId && sharedSongName && sharedArtist) {
         // 创建一个临时的歌曲对象
@@ -126,71 +191,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if (savedFavorites) {
             favoriteSongs = JSON.parse(savedFavorites);
         }
-        
-        // 初始化MediaSession API
-        initMediaSession();
-        
-        // 监听页面可见性变化
-        handleVisibilityChange();
-        
-        // 定义热门歌单ID数据（统一管理，避免数据重复）
-        const popularPlaylistIds = [
-            "12589832642","4897639127","8799505292","12639638645","12767620640","12528734640"
-        ];
-        
-        // 动态生成热门歌单面板中的列表项
-        popularPlaylists.innerHTML = '';
-        
-        // 获取面板头部元素
-        const playlistPanelHeader = document.querySelector('#playlist-panel .panel-header');
-        
-        // 创建关闭按钮
-        const closePlaylistBtn = document.createElement('button');
-        closePlaylistBtn.className = 'panel-close';
-        closePlaylistBtn.innerHTML = '<i class="fas fa-times"></i>';
-        closePlaylistBtn.addEventListener('click', () => closePanel(playlistPanel));
-        playlistPanelHeader.appendChild(closePlaylistBtn);
-        
-        popularPlaylistIds.forEach(id => {
-            const tag = document.createElement('div');
-            tag.className = 'hot-tag';
-            tag.textContent = id;
-            tag.setAttribute('data-id', id);
-            popularPlaylists.appendChild(tag);
-        });
-        
-        // 定义热门搜索关键词数据（统一管理，避免数据重复）
-        const popularSearchKeywords = [
-            "大潞","烟嗓船长","文夫","马键涛","就是南方凯","程响","郭静","赵乃吉",
-            "王佳音","鱼蛋","窝窝","艺凌","洋澜一","任夏","魏佳艺","韩小欠","单依纯",
-            "DJ","喝茶","古筝","助眠","钢琴","萨克斯","笛子","吉他",
-            "治愈房车","经典老歌","70后","80后","90后",        
-            "周杰伦","林俊杰","邓紫棋","陈奕迅","汪苏泷","林宥嘉","薛之谦","吴亦凡","刀郎",
-            "周深","王子健","Beyond","五月天","伍佰","王一佳","王菲","陶喆",
-            "七月上","于春洋","周传雄","张杰","半吨兄弟","张学友",
-            "跳楼机","搀扶"
-        ];
-        
-        // 动态生成热门搜索面板中的列表项
-        popularSearches.innerHTML = '';
-        
-        // 获取搜索面板头部元素
-        const searchPanelHeader = document.querySelector('#search-panel .panel-header');
-        
-        // 创建关闭按钮
-        const closeSearchBtn = document.createElement('button');
-        closeSearchBtn.className = 'panel-close';
-        closeSearchBtn.innerHTML = '<i class="fas fa-times"></i>';
-        closeSearchBtn.addEventListener('click', () => closePanel(searchPanel));
-        searchPanelHeader.appendChild(closeSearchBtn);
-        
-        popularSearchKeywords.forEach(keyword => {
-            const tag = document.createElement('div');
-            tag.className = 'hot-tag';
-            tag.textContent = keyword;
-            tag.setAttribute('data-keyword', keyword);
-            popularSearches.appendChild(tag);
-        });
         
         // 默认加载热歌榜
         loadChartSongs('热歌榜');
