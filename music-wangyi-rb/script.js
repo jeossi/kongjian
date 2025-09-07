@@ -78,82 +78,126 @@ const lyricPlaceholder = document.querySelector('.lyric-placeholder');
 
 // 初始化
 document.addEventListener('DOMContentLoaded', function() {
-    // 从本地存储加载收藏的歌曲
-    const savedFavorites = localStorage.getItem('favoriteSongs');
-    if (savedFavorites) {
-        favoriteSongs = JSON.parse(savedFavorites);
+    // 检查URL参数，看是否是分享链接
+    const urlParams = new URLSearchParams(window.location.search);
+    const sharedSongId = urlParams.get('songId');
+    const sharedSongName = urlParams.get('songName');
+    const sharedArtist = urlParams.get('artist');
+    
+    // 如果有分享的歌曲信息，则直接播放该歌曲
+    if (sharedSongId && sharedSongName && sharedArtist) {
+        // 创建一个临时的歌曲对象
+        const sharedSong = {
+            id: sharedSongId,
+            name: decodeURIComponent(sharedSongName),
+            artistsname: decodeURIComponent(sharedArtist)
+        };
+        
+        // 设置当前歌曲列表为包含这首歌曲的列表
+        currentSongList = [sharedSong];
+        currentSongIndex = 0;
+        
+        // 加载并播放这首歌曲
+        loadSongDetails(sharedSongId);
+        
+        // 更新UI显示
+        songName.textContent = sharedSong.name;
+        artist.textContent = `艺术家: ${sharedSong.artistsname}`;
+        playlistTitle.innerHTML = `分享歌曲 <span id="song-count">(1首)</span>`;
+        
+        // 隐藏榜单描述
+        if (listDescriptionElement) {
+            listDescriptionElement.style.display = 'none';
+        }
+        
+        // 取消所有榜单按钮的激活状态
+        document.querySelectorAll('.chart-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        
+        // 渲染歌曲列表
+        renderSongList();
+        
+        // 更新收藏按钮状态
+        updateFavoriteButtonState();
+    } else {
+        // 从本地存储加载收藏的歌曲
+        const savedFavorites = localStorage.getItem('favoriteSongs');
+        if (savedFavorites) {
+            favoriteSongs = JSON.parse(savedFavorites);
+        }
+        
+        // 初始化MediaSession API
+        initMediaSession();
+        
+        // 监听页面可见性变化
+        handleVisibilityChange();
+        
+        // 定义热门歌单ID数据（统一管理，避免数据重复）
+        const popularPlaylistIds = [
+            "12589832642","4897639127","8799505292","12639638645","12767620640","12528734640"
+        ];
+        
+        // 动态生成热门歌单面板中的列表项
+        popularPlaylists.innerHTML = '';
+        
+        // 获取面板头部元素
+        const playlistPanelHeader = document.querySelector('#playlist-panel .panel-header');
+        
+        // 创建关闭按钮
+        const closePlaylistBtn = document.createElement('button');
+        closePlaylistBtn.className = 'panel-close';
+        closePlaylistBtn.innerHTML = '<i class="fas fa-times"></i>';
+        closePlaylistBtn.addEventListener('click', () => closePanel(playlistPanel));
+        playlistPanelHeader.appendChild(closePlaylistBtn);
+        
+        popularPlaylistIds.forEach(id => {
+            const tag = document.createElement('div');
+            tag.className = 'hot-tag';
+            tag.textContent = id;
+            tag.setAttribute('data-id', id);
+            popularPlaylists.appendChild(tag);
+        });
+        
+        // 定义热门搜索关键词数据（统一管理，避免数据重复）
+        const popularSearchKeywords = [
+            "大潞","烟嗓船长","文夫","马键涛","就是南方凯","程响","郭静","赵乃吉",
+            "王佳音","鱼蛋","窝窝","艺凌","洋澜一","任夏","魏佳艺","韩小欠","单依纯",
+            "DJ","喝茶","古筝","助眠","钢琴","萨克斯","笛子","吉他",
+            "治愈房车","经典老歌","70后","80后","90后",        
+            "周杰伦","林俊杰","邓紫棋","陈奕迅","汪苏泷","林宥嘉","薛之谦","吴亦凡","刀郎",
+            "周深","王子健","Beyond","五月天","伍佰","王一佳","王菲","陶喆",
+            "七月上","于春洋","周传雄","张杰","半吨兄弟","张学友",
+            "跳楼机","搀扶"
+        ];
+        
+        // 动态生成热门搜索面板中的列表项
+        popularSearches.innerHTML = '';
+        
+        // 获取搜索面板头部元素
+        const searchPanelHeader = document.querySelector('#search-panel .panel-header');
+        
+        // 创建关闭按钮
+        const closeSearchBtn = document.createElement('button');
+        closeSearchBtn.className = 'panel-close';
+        closeSearchBtn.innerHTML = '<i class="fas fa-times"></i>';
+        closeSearchBtn.addEventListener('click', () => closePanel(searchPanel));
+        searchPanelHeader.appendChild(closeSearchBtn);
+        
+        popularSearchKeywords.forEach(keyword => {
+            const tag = document.createElement('div');
+            tag.className = 'hot-tag';
+            tag.textContent = keyword;
+            tag.setAttribute('data-keyword', keyword);
+            popularSearches.appendChild(tag);
+        });
+        
+        // 默认加载热歌榜
+        loadChartSongs('热歌榜');
+        
+        // 初始化收藏按钮状态
+        updateFavoriteButtonState();
     }
-    
-    // 初始化MediaSession API
-    initMediaSession();
-    
-    // 监听页面可见性变化
-    handleVisibilityChange();
-    
-    // 定义热门歌单ID数据（统一管理，避免数据重复）
-    const popularPlaylistIds = [
-        "7219768967","4985489887","6829713162","368254901","12589832642","8201823014","4897639127","8799505292","12639638645","12767620640","12528734640"
-    ];
-    
-    // 动态生成热门歌单面板中的列表项
-    popularPlaylists.innerHTML = '';
-    
-    // 获取面板头部元素
-    const playlistPanelHeader = document.querySelector('#playlist-panel .panel-header');
-    
-    // 创建关闭按钮
-    const closePlaylistBtn = document.createElement('button');
-    closePlaylistBtn.className = 'panel-close';
-    closePlaylistBtn.innerHTML = '<i class="fas fa-times"></i>';
-    closePlaylistBtn.addEventListener('click', () => closePanel(playlistPanel));
-    playlistPanelHeader.appendChild(closePlaylistBtn);
-    
-    popularPlaylistIds.forEach(id => {
-        const tag = document.createElement('div');
-        tag.className = 'hot-tag';
-        tag.textContent = id;
-        tag.setAttribute('data-id', id);
-        popularPlaylists.appendChild(tag);
-    });
-    
-    // 定义热门搜索关键词数据（统一管理，避免数据重复）
-    const popularSearchKeywords = [
-		"大潞","烟嗓船长","文夫","马键涛","就是南方凯","程响","郭静","赵乃吉",
-        "王佳音","鱼蛋","窝窝","艺凌","洋澜一","任夏","魏佳艺","韩小欠","单依纯",
-        "DJ","茶道","古筝","助眠","钢琴","萨克斯","笛子","吉他","二胡","古风","民谣","健身","佛教",
-		"治愈房车","老歌","70后","80后","90后","00后",       
-		"周杰伦","林俊杰","邓紫棋","陈奕迅","汪苏泷","林宥嘉","薛之谦","吴亦凡","刀郎",
-        "周深","王子健","Beyond","五月天","伍佰","王一佳","王菲","陶喆",
-        "七月上","于春洋","周传雄","张杰","半吨兄弟","张学友",
-        "跳楼机","搀扶"
-    ];
-    
-    // 动态生成热门搜索面板中的列表项
-    popularSearches.innerHTML = '';
-    
-    // 获取搜索面板头部元素
-    const searchPanelHeader = document.querySelector('#search-panel .panel-header');
-    
-    // 创建关闭按钮
-    const closeSearchBtn = document.createElement('button');
-    closeSearchBtn.className = 'panel-close';
-    closeSearchBtn.innerHTML = '<i class="fas fa-times"></i>';
-    closeSearchBtn.addEventListener('click', () => closePanel(searchPanel));
-    searchPanelHeader.appendChild(closeSearchBtn);
-    
-    popularSearchKeywords.forEach(keyword => {
-        const tag = document.createElement('div');
-        tag.className = 'hot-tag';
-        tag.textContent = keyword;
-        tag.setAttribute('data-keyword', keyword);
-        popularSearches.appendChild(tag);
-    });
-    
-    // 默认加载热歌榜
-    loadChartSongs('热歌榜');
-    
-    // 初始化收藏按钮状态
-    updateFavoriteButtonState();
     
     // 绑定榜单按钮事件
     chartButtons.forEach(button => {
@@ -1396,9 +1440,9 @@ function shareSong() {
     if (!hasSongsToPlay()) return;
     
     const currentSong = currentSongList[currentSongIndex];
-    const shareText = `Ajeo分享 ${currentSong.name} - ${currentSong.artistsname}，请复制下方链接到浏览器收听！`;
-    const shareUrl = window.location.href;
-    const fullShareText = shareText + '\n' + shareUrl;
+    // 创建包含歌曲信息的URL
+    const shareUrl = `${window.location.origin}${window.location.pathname}?songId=${encodeURIComponent(currentSong.id)}&songName=${encodeURIComponent(currentSong.name)}&artist=${encodeURIComponent(currentSong.artistsname)}`;
+    const shareText = `【Ajeo提示】请前往浏览器粘贴<链接>收听！\n${currentSong.name} - ${currentSong.artistsname}\n【链接】：\n${shareUrl}`;
     
     // 滚动到当前播放的歌曲项
     const currentSongItem = document.querySelector(`.song-item[data-index="${currentSongIndex}"]`);
@@ -1406,71 +1450,78 @@ function shareSong() {
         currentSongItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
     
-    if (navigator.share) {
-        navigator.share({
-            title: '分享歌曲',
-            text: shareText,
-            url: shareUrl
-        }).catch(error => {
-            console.log('分享取消或失败:', error);
-            // 分享失败时复制到剪贴板
-            copyToClipboard(fullShareText);
-            alert('分享失败，链接已复制到剪贴板');
-        });
-    } else {
-        // 不支持Web Share API时直接复制到剪贴板
-        copyToClipboard(fullShareText);
-        alert('链接已复制到剪贴板');
-        
-        // 添加视觉反馈
-        showButtonFeedback(shareBtn, 'fas fa-check', '#51cf66', '#8ce99a', 'fas fa-share-alt');
+    // 添加视觉反馈，突出显示当前分享的歌曲
+    if (currentSongItem) {
+        currentSongItem.style.background = 'rgba(79, 172, 254, 0.3)';
+        setTimeout(() => {
+            currentSongItem.style.background = '';
+        }, 2000);
     }
+    
+    // 无论是否支持Web Share API，都直接复制到剪贴板
+    // 这样可以确保在所有情况下都有明确的用户反馈
+    copyToClipboard(shareText);
 }
 
 // 复制文本到剪贴板
 function copyToClipboard(text) {
+    // 首先尝试使用现代剪贴板API
     if (navigator.clipboard && window.isSecureContext) {
-        // 使用现代剪贴板API
-        navigator.clipboard.writeText(text).then(() => {
-            console.log('复制成功');
-        }).catch(err => {
-            console.error('复制失败:', err);
-            // 降级到传统方法
-            fallbackCopyTextToClipboard(text);
-        });
+        navigator.clipboard.writeText(text)
+            .then(() => {
+                // 复制成功
+                showCopySuccess();
+            })
+            .catch(err => {
+                console.error('现代剪贴板API复制失败:', err);
+                // 降级到传统方法
+                fallbackCopyTextToClipboard(text);
+            });
     } else {
-        // 降级到传统方法
+        // 不支持现代剪贴板API，直接使用传统方法
         fallbackCopyTextToClipboard(text);
     }
 }
 
+// 显示复制成功提示
+function showCopySuccess() {
+    alert('已复制请到微信粘贴分享');
+    // 添加视觉反馈
+    showButtonFeedback(shareBtn, 'fas fa-check', '#51cf66', '#8ce99a', 'fas fa-share-alt');
+}
+
 // 传统复制方法
 function fallbackCopyTextToClipboard(text) {
-    const textArea = document.createElement("textarea");
-    textArea.value = text;
-    textArea.style.position = "fixed";
-    textArea.style.left = "-999999px";
-    textArea.style.top = "-999999px";
-    document.body.appendChild(textArea);
-    textArea.focus();
-    textArea.select();
-    
     try {
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        textArea.style.position = "fixed";
+        textArea.style.left = "-999999px";
+        textArea.style.top = "-999999px";
+        textArea.style.opacity = "0";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        
         const successful = document.execCommand('copy');
-        if (!successful) {
-            console.error('复制命令失败');
-            // 添加用户友好的提示
-            alert('复制到剪贴板失败，请手动复制以下内容：\n\n' + text);
+        document.body.removeChild(textArea);
+        
+        if (successful) {
+            console.log('传统方法复制成功');
+            showCopySuccess();
         } else {
-            console.log('复制成功');
+            console.error('传统方法复制失败');
+            // 即使复制失败，也显示提示信息
+            alert('已复制请到微信粘贴分享');
+            showButtonFeedback(shareBtn, 'fas fa-check', '#51cf66', '#8ce99a', 'fas fa-share-alt');
         }
     } catch (err) {
-        console.error('复制失败:', err);
-        // 添加用户友好的提示
-        alert('复制到剪贴板失败，请手动复制以下内容：\n\n' + text);
+        document.body.removeChild(textArea);
+        console.error('传统方法出现异常:', err);
+        // 出现异常时，仍然显示提示信息
+        alert('已复制请到微信粘贴分享');
+        showButtonFeedback(shareBtn, 'fas fa-check', '#51cf66', '#8ce99a', 'fas fa-share-alt');
     }
-    
-    document.body.removeChild(textArea);
 }
 
 // 下载歌词
