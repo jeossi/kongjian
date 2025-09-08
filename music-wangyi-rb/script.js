@@ -119,14 +119,14 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 定义热门搜索关键词数据（统一管理，避免数据重复）
     const popularSearchKeywords = [
-        "大潞","烟嗓船长","文夫","马键涛","就是南方凯","程响","郭静","赵乃吉",
+        "李发发","张梦弘","大潞","烟嗓船长","文夫","马键涛","就是南方凯","程响","郭静","赵乃吉",
         "王佳音","鱼蛋","窝窝","艺凌","洋澜一","任夏","魏佳艺","韩小欠","单依纯",
         "DJ","茶道","古筝","助眠","健身","钢琴","萨克斯","笛子","吉他","二胡","古风","民谣","佛教",
         "治愈房车","经典老歌","70后","80后","90后",        
         "周杰伦","林俊杰","邓紫棋","陈奕迅","汪苏泷","林宥嘉","薛之谦","吴亦凡","刀郎",
         "周深","王子健","Beyond","五月天","伍佰","王一佳","王菲","陶喆",
         "七月上","于春洋","周传雄","张杰","半吨兄弟","张学友",
-        "跳楼机","搀扶"
+        "你来时携风带雨","跳楼机","搀扶"
     ];
     
     // 动态生成热门搜索面板中的列表项
@@ -439,7 +439,7 @@ function showPanel(panel, inputElement) {
     
     // 获取输入框和面板的位置信息
     const inputRect = inputElement.getBoundingClientRect();
-    const panelHeight = 300; // 面板最大高度
+    const panelMaxHeight = 300; // 面板最大高度
     
     // 计算面板应该显示的位置
     let top, left, width;
@@ -449,12 +449,12 @@ function showPanel(panel, inputElement) {
     const viewportWidth = window.innerWidth;
     
     // 计算面板底部位置
-    const panelBottom = inputRect.bottom + panelHeight;
+    const panelBottom = inputRect.bottom + panelMaxHeight;
     
     // 判断面板是否会在视口底部溢出
     if (panelBottom > viewportHeight) {
         // 如果会溢出，则向上弹出
-        top = (inputRect.top - panelHeight - 5 + window.scrollY);
+        top = (inputRect.top - panelMaxHeight - 5 + window.scrollY);
     } else {
         // 否则向下弹出
         top = (inputRect.bottom + 5 + window.scrollY);
@@ -468,6 +468,8 @@ function showPanel(panel, inputElement) {
     panel.style.top = top + 'px';
     panel.style.left = left + 'px';
     panel.style.width = width + 'px';
+    // 移除固定高度设置，让内容决定高度，但不超过最大高度
+    panel.style.maxHeight = panelMaxHeight + 'px';
     
     // 在小屏幕上调整面板宽度以适应屏幕
     if (viewportWidth <= 768) {
