@@ -48,8 +48,8 @@ body {
 
 .header h1 {
     color: #ffffff;
-    font-size: 2.8rem; /* 恢复为2.8rem，撤回之前的2.2rem修改 */
-    font-weight: 700;
+    font-size: 2.6rem; /* 恢复为2.8rem，撤回之前的2.2rem修改 */
+    font-weight: 600;
     letter-spacing: 1px;
     text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
     background: linear-gradient(90deg, #ff7eee, #4facfe);
@@ -1290,6 +1290,23 @@ body {
     color: #ffd700;
 }
 
+/* 深色主题下的面板内容滚动条样式 */
+.dark-theme .panel-content::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.dark-theme .panel-content::-webkit-scrollbar-thumb {
+    background: #7b2cbf;
+}
+
+.dark-theme .panel-content::-webkit-scrollbar-thumb:hover {
+    background: #c77dff;
+}
+
+.dark-theme .panel-content {
+    scrollbar-color: #7b2cbf rgba(255, 255, 255, 0.05);
+}
+
 /* 弹出面板样式 */
 .popup-panel {
     display: none;
@@ -1359,16 +1376,44 @@ body {
 
 .panel-content {
     padding: 15px 0 0 0;
-    max-height: 60vh;
-    overflow-y: auto;
+    max-height: 200px; /* 固定最大高度 */
+    overflow-y: auto; /* 垂直滚动 */
+    overflow-x: hidden; /* 隐藏水平滚动条 */
     position: relative;
     margin-top: 0; /* 不再需要为关闭按钮留出空间 */
+}
+
+/* 为面板内容添加滚动条样式 */
+.panel-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.panel-content::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 3px;
+}
+
+.panel-content::-webkit-scrollbar-thumb {
+    background: #8e44ad;
+    border-radius: 3px;
+}
+
+.panel-content::-webkit-scrollbar-thumb:hover {
+    background: #6a1b9a;
+}
+
+/* Firefox滚动条样式 */
+.panel-content {
+    scrollbar-width: thin;
+    scrollbar-color: #8e44ad rgba(0, 0, 0, 0.05);
 }
 
 .hot-search-tags {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
+    /* 确保标签容器不会超出面板内容区域 */
+    max-height: 100%;
 }
 
 .panel-list {
@@ -1378,6 +1423,8 @@ body {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
+    /* 确保列表容器不会超出面板内容区域 */
+    max-height: 100%;
 }
 
 .panel-list li, .hot-tag {
@@ -1388,6 +1435,11 @@ body {
     font-size: 18px; /* 恢复为18px，撤回之前的1.1rem修改 */
     cursor: pointer;
     transition: all 0.2s ease;
+    /* 防止标签内容过长 */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
 }
 
 .panel-list li:hover, .hot-tag:hover {
