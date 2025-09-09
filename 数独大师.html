@@ -2237,7 +2237,7 @@
 
         if (currentDatabase === 'recommended') {
             const boardResponse = await fetchWithTimeout(
-                `https://sugoku.onrender.com/board?difficulty=${difficulty}`,
+                `https://ajeo.cc/https://sugoku.onrender.com/board?difficulty=${difficulty}`,
                 { timeout: 5000 }
             );
 
@@ -2248,7 +2248,7 @@
             boardData = await boardResponse.json();
 
             const solutionResponse = await fetchWithTimeout(
-                'https://sugoku.onrender.com/solve',
+                'https://ajeo.cc/https://sugoku.onrender.com/solve',
                 {
                     method: 'POST',
                     body: encodeParams({ board: boardData.board }),
@@ -2668,3 +2668,4 @@
     </script>
 </body>
 </html>
+
