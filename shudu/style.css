@@ -13,10 +13,30 @@ body {
     background: linear-gradient(135deg, #1a2980, #26d0ce);
     padding: 10px;
     color: #fff;
+    margin: 0; /* 确保body没有外边距 */
 }
+
 html {
     font-size: 16px;
+    height: 100%; /* 确保html高度为100% */
 }
+
+.game-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    /* 移除max-width: 600px限制，让容器能填满整个屏幕 */
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
+    padding: 3px;
+    position: relative;
+    overflow: visible;
+    /* 添加以下属性以支持缩放 */
+    transform-origin: top left;
+}
+
 .header {
     text-align: center;
     margin-top: 0px;
@@ -103,11 +123,13 @@ h1 {
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     flex-shrink: 0;
 }
+    
 .share-btn i {
     color: #ff0000 !important;      /* 红色图标 */
     font-size: 22px;
     margin-bottom: 1px;
 }
+    
 .share-btn span {
     color: #00008B !important;      /* 深蓝色文字 */
     font-size: 10px;
@@ -131,23 +153,47 @@ h1 {
 }
 .timer span {
     margin-left: 3px;
+
 }
+
+/* 九宫格包装容器 */
+.sudoku-wrapper {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 1px 0;
+    /* 确保包装容器保持正方形 */
+    aspect-ratio: 1/1;
+    /* 添加contain属性确保正确布局 */
+    contain: layout style;
+    padding: 0; /* 确保没有内边距 */
+}
+
+/* 九宫格容器 */
 .sudoku-container {
     display: grid;
     grid-template-columns: repeat(9, 1fr);
+    grid-template-rows: repeat(9, 1fr);
     grid-gap: 0;
     width: 100%;
-    margin: 0 auto;
-    border: 1px solid #444;
+    /* 移除max-width: 500px限制 */
+    aspect-ratio: 1/1;
+    border: 3px solid #333;
     border-radius: 8px;
     overflow: hidden;
     background: #fff;
-    margin-top: 1px;
-    margin-bottom: 1px;
-    aspect-ratio: 1/1;
+    box-sizing: border-box;
+    position: relative;
+    margin: 0 auto;
+    /* 确保容器保持正方形 */
+    contain: layout style;
+    /* 确保网格正确对齐 */
+    justify-items: stretch;
+    align-items: stretch;
 }
+
 .cell {
-    aspect-ratio: 1;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -157,14 +203,41 @@ h1 {
     position: relative;
     cursor: pointer;
     transition: all 0.2s ease;
+    border-right: 1px solid #ccc;
+    border-bottom: 1px solid #ccc;
+    box-sizing: border-box;
+    /* 确保单元格保持正方形 */
+    aspect-ratio: 1/1;
+    /* 确保正确显示 */
+    contain: layout style;
+    /* 确保内容正确对齐 */
+    min-width: 0;
+    min-height: 0;
 }
+
+/* 移除最右边列的右边框 */
+.cell:nth-child(9n) {
+    border-right: none;
+}
+
+/* 移除最下面行的底边框 */
+.cell:nth-child(n+73):nth-child(-n+81) {
+    border-bottom: none;
+}
+
+/* 添加九宫格粗线 */
+/* 每个3x3宫格的右边框 */
 .cell:nth-child(3n):not(:nth-child(9n)) {
     border-right: 3px solid #333;
 }
+
+/* 每个3x3宫格的底边框 */
 .cell:nth-child(n+19):nth-child(-n+27),
-.cell:nth-child(n+46):nth-child(-n+54) {
+.cell:nth-child(n+46):nth-child(-n+54),
+.cell:nth-child(n+73):nth-child(-n+81) {
     border-bottom: 3px solid #333;
 }
+
 .cell.given {
     color: #000000;
     font-weight: 400;
@@ -557,43 +630,117 @@ h1 {
 /* 移动端优化 - 基于i.css的媒体查询 */
 @media (max-width: 480px) {
     body {
-        padding: 5px;
+        padding: 0px; /* 从5px改为0px，解决最小屏幕时九宫格离屏左右间距太大的问题 */
+        margin: 0px; /* 确保body没有外边距 */
+        height: 100vh; /* 确保body高度为100% */
+        overflow: hidden; /* 防止滚动 */
+        display: block; /* 改为block显示 */
+    }
+    
+    html {
+        height: 100%; /* 确保html高度为100% */
+        overflow: hidden; /* 防止滚动 */
     }
     
     .header {
         margin-bottom: 5px;
+        padding: 0 5px; /* 减少标题的内边距 */
+        width: 100%; /* 确保标题宽度为100% */
     }
     
     h1 {
         font-size: 1.5rem;
         letter-spacing: 2px;
+        margin: 0; /* 移除标题的默认外边距 */
+        width: 100%; /* 确保标题宽度为100% */
+        text-align: center; /* 居中对齐 */
     }
     
     .game-container {
-        padding: 2px;
-        width: 100%;
-        max-width: 100%;
+        padding: 0px; /* 从2px改为0px，进一步减少间距 */
+        margin: 0px; /* 确保容器没有外边距 */
+        width: 100vw; /* 使用视口宽度 */
+        height: 100vh; /* 使用视口高度 */
+        max-width: none; /* 移除最大宽度限制 */
+        /* 确保容器不会超出可视区域 */
+        overflow: hidden;
+        border-radius: 0; /* 移除圆角 */
+        box-shadow: none; /* 移除阴影 */
+        background: rgba(255, 255, 255, 1); /* 调整背景透明度 */
+        /* 添加以下属性以支持缩放 */
+        transform-origin: top left;
+        position: absolute; /* 绝对定位 */
+        top: 0;
+        left: 0;
+        display: flex;
+        flex-direction: column;
     }
     
-    .sudoku-container {
+    .left-column {
         width: 100%;
-        aspect-ratio: 1/1;
-    }
-    
-    .cell {
-        font-size: 1.8rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
     }
     
     .game-info {
         flex-wrap: nowrap;
         overflow-x: auto;
-        padding: 0 5px;
+        padding: 0 0px; /* 从5px改为0px */
+        margin: 0 0px; /* 添加外边距控制 */
         gap: 5px;
+        width: 100%;
+    }
+    
+    .info-container {
+        padding: 0 0px; /* 从5px改为0px */
+        margin: 0 0px; /* 添加外边距控制 */
+        gap: 5px;
+        width: 100%;
+    }
+    
+    .sudoku-wrapper {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 1px 0;
+        /* 确保包装容器保持正方形 */
+        aspect-ratio: 1/1;
+        /* 确保在缩放时正确显示 */
+        contain: layout style;
+        padding: 0; /* 确保没有内边距 */
+    }
+    
+    .sudoku-container {
+        width: 100%;
+        aspect-ratio: 1/1;
+        margin: 0; /* 移除margin: 0 auto */
+        /* 确保边框正确显示 */
+        box-sizing: border-box;
+        /* 确保在移动端也保持正方形 */
+        max-width: 100%; /* 确保没有最大宽度限制 */
+        /* 确保网格正确对齐 */
+        justify-items: stretch;
+        align-items: stretch;
+        border-radius: 0; /* 移除圆角 */
+    }
+    
+    .cell {
+        font-size: 1.8rem;
+        /* 确保在移动端单元格也保持正方形 */
+        aspect-ratio: 1/1;
+        /* 确保边框正确显示 */
+        box-sizing: border-box;
+        /* 确保内容正确对齐 */
+        min-width: 0;
+        min-height: 0;
     }
     
     .difficulty-selector {
         flex-wrap: nowrap;
-        gap: 15px;
+        gap: 10px; /* 减少间距 */
+        padding: 0 5px; /* 减少内边距 */
     }
     
     .difficulty-btn {
@@ -604,11 +751,6 @@ h1 {
     .database-btn {
         font-size: 14px;
         padding: 5px 9px;
-    }
-    
-    .info-container {
-        padding: 0 5px;
-        gap: 5px;
     }
     
     .message {
@@ -624,7 +766,8 @@ h1 {
     
     .controls {
         gap: 20px;
-        padding: 0 10px 5px;
+        padding: 0 5px; /* 从10px改为5px */
+        margin: 0 5px; /* 添加外边距控制 */
         justify-content: flex-start;
     }
     
@@ -634,6 +777,7 @@ h1 {
         width: 50px;
         height: 48px;
         font-size: 0.8rem;
+        margin: 0 2px; /* 减少按钮外边距 */
     }
     
     .control-btn i {
@@ -642,27 +786,31 @@ h1 {
     
     .number-pad {
         padding: 3px 0;
+        margin: 0; /* 移除外边距 */
     }
     
     .number-buttons-container {
         gap: 5px;
-        justify-content: flex-start;
-        padding: 0 10px;
+        justify-content: center; /* 改为居中对齐 */
+        padding: 0 5px; /* 从10px改为5px */
+        margin: 0; /* 移除外边距 */
     }
     
     .number-btn {
         width: 28px;
         height: 38px;
         font-size: 2.4rem;
+        margin: 0 1px; /* 减少按钮外边距 */
     }
     
     .copyright {
         font-size: 0.7rem;
         padding: 3px;
+        margin: 0; /* 移除外边距 */
     }
     
     .share-button-container {
-        margin-left: 15px;
+        margin-left: 10px; /* 从15px改为10px */
     }
     
     .share-btn {
@@ -680,8 +828,8 @@ h1 {
         font-size: 12px;
         position: fixed;
         top: auto;
-        left: 10px;
-        right: 10px;
+        left: 5px; /* 从10px改为5px */
+        right: 5px; /* 从10px改为5px */
         max-width: 200px;
         margin-top: 5px;
     }
@@ -706,4 +854,329 @@ h1 {
 /* 新增下拉菜单激活样式 */
 .dropdown-open .dropdown-content {
     display: block;
+}
+
+/* 大屏模式下的两列布局 (最小宽度1200px) */
+@media (min-width: 1200px) {
+    .game-container {
+        flex-direction: row;
+        max-width: 1200px;
+        padding: 20px;
+        gap: 20px;
+        overflow: hidden; /* 防止内容溢出 */
+        /* 确保容器在缩放时正确显示 */
+        contain: layout style;
+    }
+    
+    .left-column {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        /* 缩放左列以适应可视区域 */
+        transform-origin: top center;
+        max-height: calc(100vh - 100px); /* 保留一些边距 */
+        overflow: hidden;
+        width: 100%;
+        /* 确保缩放时正确显示 */
+        contain: layout style;
+    }
+    
+    .right-column {
+        width: 300px;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        justify-content: center;
+        max-height: calc((100vw - 400px) * 0.8);
+    }
+    
+    .header {
+        width: 100%;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    
+    .game-info {
+        width: 100%;
+        margin-bottom: 15px;
+    }
+    
+    .info-container {
+        width: 100%;
+        margin-bottom: 15px;
+    }
+    
+    .sudoku-wrapper {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 1px 0;
+        /* 确保包装容器保持正方形 */
+        aspect-ratio: 1/1;
+        /* 添加最大宽度限制 */
+        max-width: min(100%, calc(100vh - 200px));
+        /* 确保在大屏模式下也正确显示 */
+        contain: layout style;
+    }
+    
+    .sudoku-container {
+        width: 100%;
+        aspect-ratio: 1/1;
+        margin: 0;
+        border: 3px solid #333;
+        border-radius: 8px;
+        overflow: hidden;
+        background: #fff;
+        box-sizing: border-box;
+        position: relative;
+        display: grid;
+        grid-template-columns: repeat(9, 1fr);
+        grid-template-rows: repeat(9, 1fr);
+        grid-gap: 0;
+        /* 确保容器保持正方形 */
+        max-width: 100%;
+        max-height: 100%;
+        /* 添加contain属性确保正确布局 */
+        contain: layout style;
+        /* 确保网格正确对齐 */
+        justify-items: stretch;
+        align-items: stretch;
+    }
+    
+    .cell {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.8rem;
+        font-weight: 300;
+        background: #fff;
+        position: relative;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border-right: 1px solid #ccc;
+        border-bottom: 1px solid #ccc;
+        box-sizing: border-box;
+        overflow: hidden;
+        /* 确保在大屏模式下单元格也保持正方形 */
+        aspect-ratio: 1/1;
+        /* 确保正确显示 */
+        contain: layout style;
+        /* 确保内容正确对齐 */
+        min-width: 0;
+        min-height: 0;
+    }
+    
+    /* 移除最右边列的右边框 */
+    .cell:nth-child(9n) {
+        border-right: none;
+    }
+
+    /* 移除最下面行的底边框 */
+    .cell:nth-child(n+73):nth-child(-n+81) {
+        border-bottom: none;
+    }
+
+    /* 添加九宫格粗线 */
+    /* 每个3x3宫格的右边框 */
+    .cell:nth-child(3n):not(:nth-child(9n)) {
+        border-right: 3px solid #333;
+    }
+
+    /* 每个3x3宫格的底边框 */
+    .cell:nth-child(n+19):nth-child(-n+27),
+    .cell:nth-child(n+46):nth-child(-n+54),
+    .cell:nth-child(n+73):nth-child(-n+81) {
+        border-bottom: 3px solid #333;
+    }
+    
+    .cell {
+        font-size: clamp(1.5rem, 2.5vw, 2.8rem);
+    }
+    
+    .controls-wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        max-height: calc((100vw - 400px) * 0.4);
+        align-self: center;
+        width: 100%;
+    }
+    
+    .controls {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: repeat(3, 1fr);
+        gap: 10px;
+        justify-content: center;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        align-self: center;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .control-btn {
+        width: 100%;
+        min-width: auto;
+        margin: 0;
+    }
+    
+    /* 确保分享按钮在清除按钮旁边（第2列第3行） */
+    .share-button-container {
+        grid-column: 2;
+        grid-row: 3;
+    }
+    
+    /* 确保清除按钮在第1列第3行 */
+    .clear-btn {
+        grid-column: 1;
+        grid-row: 3;
+    }
+    
+    /* 撤回按钮在第1列第1行 */
+    .undo-btn {
+        grid-column: 1;
+        grid-row: 1;
+    }
+    
+    /* 删除按钮在第2列第1行 */
+    .trash-btn {
+        grid-column: 2;
+        grid-row: 1;
+    }
+    
+    /* 笔记按钮在第1列第2行 */
+    .notes-btn {
+        grid-column: 1;
+        grid-row: 2;
+    }
+    
+    /* 提示按钮在第2列第2行 */
+    .hint-btn {
+        grid-column: 2;
+        grid-row: 2;
+    }
+    
+    .number-pad {
+        margin: 0;
+        padding: 0;
+        align-self: center;
+        width: 100%;
+    }
+    
+    .number-buttons-container {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: repeat(4, 1fr);
+        gap: 10px;
+        width: 100%;
+        padding: 0;
+        justify-content: center;
+    }
+    
+    /* 按钮位置通过JavaScript控制，CSS只需要定义网格布局 */
+    
+    /* 确保X按钮在第三行中间位置 */
+    .number-buttons-container .number-btn:nth-child(10) {
+        grid-column: 2;
+        grid-row: 3;
+    }
+    
+    /* 调整其他按钮的位置 */
+    .number-buttons-container .number-btn:nth-child(1) {
+        grid-column: 1;
+        grid-row: 1;
+    }
+    
+    .number-buttons-container .number-btn:nth-child(2) {
+        grid-column: 2;
+        grid-row: 1;
+    }
+    
+    .number-buttons-container .number-btn:nth-child(3) {
+        grid-column: 3;
+        grid-row: 1;
+    }
+    
+    .number-buttons-container .number-btn:nth-child(4) {
+        grid-column: 1;
+        grid-row: 2;
+    }
+    
+    .number-buttons-container .number-btn:nth-child(5) {
+        grid-column: 2;
+        grid-row: 2;
+    }
+    
+    .number-buttons-container .number-btn:nth-child(6) {
+        grid-column: 3;
+        grid-row: 2;
+    }
+    
+    .number-buttons-container .number-btn:nth-child(7) {
+        grid-column: 1;
+        grid-row: 3;
+    }
+    
+    .number-buttons-container .number-btn:nth-child(8) {
+        grid-column: 1;
+        grid-row: 4;
+    }
+    
+    .number-buttons-container .number-btn:nth-child(9) {
+        grid-column: 3;
+        grid-row: 3;
+    }
+    
+    .share-button-container {
+        margin: 0;
+        display: flex;
+        justify-content: center;
+    }
+    
+    .share-btn {
+        width: 100%;
+        height: 50px;
+        background-color: #FF5722 !important;
+        border: 2px solid #D84315 !important;
+        color: white !important;
+        font-weight: bold;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        z-index: 10;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+    }
+    
+    .share-btn:hover {
+        background-color: #E64A19 !important;
+        box-shadow: 0 6px 12px rgba(0,0,0,0.4) !important;
+        transform: translateY(-2px);
+    }
+    
+    .share-btn i {
+        color: white !important;
+        font-size: 20px;
+    }
+    
+    .share-btn span {
+        color: white !important;
+        font-size: 14px;
+    }
+    
+    .copyright {
+        margin-top: auto;
+        background-color: rgba(255, 255, 255, 0.9);
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        padding: 10px;
+        flex-shrink: 0;
+        color: #2c3e50;
+        font-weight: 500;
+    }
 }
