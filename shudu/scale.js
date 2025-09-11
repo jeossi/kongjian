@@ -1,108 +1,103 @@
 // 动态缩放功能以确保整个页面完整显示在可视区域内
-function scaleSudokuContainer() {
+function scaleGameContainer() {
     const gameContainer = document.querySelector('.game-container');
     const sudokuWrapper = document.querySelector('.sudoku-wrapper');
     const sudokuContainer = document.querySelector('.sudoku-container');
     
-    if (!gameContainer) return;
+    if (!gameContainer || !sudokuWrapper || !sudokuContainer) return;
     
     // 获取可视区域尺寸
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
     
-    // 检查是否为移动端（屏幕宽度小于等于480px）
-    const isMobile = window.innerWidth <= 480;
+    // 获取游戏容器的尺寸
+    const gameContainerWidth = gameContainer.offsetWidth || 0;
+    const gameContainerHeight = gameContainer.offsetHeight || 0;
     
-    // 重置所有变换
-    gameContainer.style.transform = '';
-    if (sudokuWrapper) sudokuWrapper.style.transform = '';
+    // 确保我们有有效的尺寸
+    if (gameContainerWidth <= 0 || gameContainerHeight <= 0) {
+        console.log('游戏容器尺寸无效，跳过缩放');
+        return;
+    }
     
-    if (isMobile) {
-        // 在移动端，将整个游戏容器缩放到填满可视区域
-        // 强制重排以获取准确尺寸
-        gameContainer.offsetHeight;
-        
-        // 获取游戏容器的实际尺寸
-        const gameContainerRect = gameContainer.getBoundingClientRect();
-        const gameContainerWidth = gameContainerRect.width || viewportWidth;
-        const gameContainerHeight = gameContainerRect.height || viewportHeight;
-        
-        // 计算缩放比例，确保整个游戏容器能填满可视区域
-        const scaleX = viewportWidth / gameContainerWidth;
-        const scaleY = viewportHeight / gameContainerHeight;
-        const scaleRatio = Math.min(scaleX, scaleY);
-        
-        // 应用缩放到游戏容器
+    // 计算缩放比例，确保整个游戏容器都能显示在可视区域内
+    const scaleX = viewportWidth / gameContainerWidth;
+    const scaleY = viewportHeight / gameContainerHeight;
+    const scaleRatio = Math.min(scaleX, scaleY, 1); // 确保不会放大超过原始尺寸
+    
+    console.log('缩放计算:', {
+        viewportWidth,
+        viewportHeight,
+        gameContainerWidth,
+        gameContainerHeight,
+        scaleX,
+        scaleY,
+        scaleRatio
+    });
+    
+    // 应用缩放
+    if (scaleRatio < 1) {
         gameContainer.style.transform = `scale(${scaleRatio})`;
         gameContainer.style.transformOrigin = 'top left';
+        console.log('应用缩放，比例:', scaleRatio);
     } else {
-        // 在大屏模式下，保持原有的缩放逻辑
-        if (!sudokuWrapper || !sudokuContainer) return;
-        
-        const leftColumn = document.querySelector('.left-column');
-        if (!leftColumn) return;
-        
-        // 获取可视区域高度
-        const viewportHeight = window.innerHeight;
-        // 获取可视区域宽度
-        const viewportWidth = window.innerWidth;
-        
-        // 计算左列其他元素的高度
-        const gameInfo = document.querySelector('.game-info');
-        const infoContainer = document.querySelector('.info-container');
-        const header = document.querySelector('.header');
-        
-        let otherElementsHeight = 40; // 默认边距
-        
-        if (header) {
-            otherElementsHeight += header.offsetHeight;
-        }
-        
-        if (gameInfo) {
-            otherElementsHeight += gameInfo.offsetHeight;
-        }
-        
-        if (infoContainer) {
-            otherElementsHeight += infoContainer.offsetHeight;
-        }
-        
-        // 计算可用于九宫格的最大高度和宽度
-        const availableHeight = viewportHeight - otherElementsHeight - 50; // 额外边距
-        const availableWidth = viewportWidth - 40; // 减少边距以适应大屏
-        
-        // 获取九宫格容器当前尺寸
-        const sudokuHeight = sudokuContainer.offsetHeight;
-        const sudokuWidth = sudokuContainer.offsetWidth;
-        
-        // 计算最大可用尺寸（考虑容器的实际可用空间）
-        const maxSize = Math.min(availableHeight, availableWidth);
-        
-        // 如果九宫格尺寸超过可用尺寸，则进行缩放
-        if ((sudokuHeight > availableHeight || sudokuWidth > availableWidth) && sudokuHeight > 0) {
-            const scaleRatio = Math.min(maxSize / Math.max(sudokuHeight, sudokuWidth), 1); // 确保不超过原始大小
-            
-            // 应用缩放到九宫格包装容器
-            sudokuWrapper.style.transform = `scale(${scaleRatio})`;
-            sudokuWrapper.style.transformOrigin = 'top center';
-        } else {
-            // 如果不需要缩放，则移除缩放样式
-            sudokuWrapper.style.transform = '';
-        }
+        gameContainer.style.transform = '';
+        console.log('无需缩放');
+    }
+}
+
+// 统一的屏幕缩放处理函数
+function handleScreenScaling() {
+    const sudokuWrapper = document.querySelector('.sudoku-wrapper');
+    const sudokuContainer = document.querySelector('.sudoku-container');
+    
+    if (!sudokuWrapper || !sudokuContainer) return;
+    
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    
+    // 为中等屏幕设置特殊样式
+    sudokuWrapper.style.display = 'flex';
+    sudokuWrapper.style.justifyContent = 'center';
+    sudokuWrapper.style.alignItems = 'center';
+    sudokuWrapper.style.maxWidth = '100%';
+    sudokuWrapper.style.overflow = 'hidden';
+    
+    // 计算更精确的尺寸
+    const targetSize = Math.min(viewportWidth - 30, viewportHeight - 200);
+    const currentSize = Math.min(sudokuContainer.offsetWidth, sudokuContainer.offsetHeight);
+    
+    console.log('屏幕尺寸计算:', {targetSize, currentSize});
+    
+    if (currentSize > targetSize && targetSize > 0) {
+        const scaleRatio = Math.min(targetSize / currentSize, 1);
+        console.log('应用缩放，比例:', scaleRatio);
+        sudokuWrapper.style.transform = `scale(${scaleRatio})`;
+        sudokuWrapper.style.transformOrigin = 'top center';
+    } else {
+        console.log('无需缩放');
+        sudokuWrapper.style.transform = '';
     }
 }
 
 // 页面加载完成后执行缩放
 document.addEventListener('DOMContentLoaded', () => {
     // 初始化完成后执行缩放
-    setTimeout(scaleSudokuContainer, 100);
+    setTimeout(scaleGameContainer, 100);
     
     // 窗口大小改变时重新执行缩放
-    window.addEventListener('resize', scaleSudokuContainer);
+    window.addEventListener('resize', () => {
+        // 添加延迟以确保DOM更新完成
+        setTimeout(scaleGameContainer, 100);
+    });
 });
 
 // 在游戏渲染完成后也执行缩放
 function onGameRendered() {
-    setTimeout(scaleSudokuContainer, 50);
+    // 添加一个小延迟确保DOM完全更新
+    setTimeout(() => {
+        scaleGameContainer();
+    }, 50);
 }
 
 // 提供一个全局函数供其他脚本调用
