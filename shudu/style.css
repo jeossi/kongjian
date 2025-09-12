@@ -297,16 +297,84 @@ h1 {
 .number-buttons-container {
     display: flex;
     flex-wrap: nowrap;
-    justify-content: center;
+    justify-content: flex-start;
     gap: 8px;
     overflow-x: auto;
     width: 100%;
     padding: 0 5px;
     -webkit-overflow-scrolling: touch;
+    align-items: center;
 }
+
+/* 大屏端特殊处理 - 使用网格布局并调整X按钮位置 */
+@media (min-width: 1200px) {
+    .number-buttons-container {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: repeat(4, 1fr);
+        gap: 10px;
+        justify-content: center;
+        overflow-x: visible;
+    }
+    
+    /* 确保X按钮在原来8的位置（第1列第4行） */
+    .number-buttons-container .number-btn:nth-child(10) {
+        grid-column: 1;
+        grid-row: 4;
+    }
+    
+    /* 调整其他按钮的位置 */
+    .number-buttons-container .number-btn:nth-child(1) {
+        grid-column: 1;
+        grid-row: 1;
+    }
+    
+    .number-buttons-container .number-btn:nth-child(2) {
+        grid-column: 2;
+        grid-row: 1;
+    }
+    
+    .number-buttons-container .number-btn:nth-child(3) {
+        grid-column: 3;
+        grid-row: 1;
+    }
+    
+    .number-buttons-container .number-btn:nth-child(4) {
+        grid-column: 1;
+        grid-row: 2;
+    }
+    
+    .number-buttons-container .number-btn:nth-child(5) {
+        grid-column: 2;
+        grid-row: 2;
+    }
+    
+    .number-buttons-container .number-btn:nth-child(6) {
+        grid-column: 3;
+        grid-row: 2;
+    }
+    
+    .number-buttons-container .number-btn:nth-child(7) {
+        grid-column: 1;
+        grid-row: 3;
+    }
+    
+    /* 将原来的数字8移动到X按钮原来的位置（第2列第3行） */
+    .number-buttons-container .number-btn:nth-child(8) {
+        grid-column: 2;
+        grid-row: 3;
+    }
+    
+    .number-buttons-container .number-btn:nth-child(9) {
+        grid-column: 3;
+        grid-row: 3;
+    }
+}
+
 .number-buttons-container::-webkit-scrollbar {
     display: none;
 }
+
 .number-buttons-container {
     scrollbar-width: none;
 }
@@ -535,11 +603,23 @@ h1 {
 }
 .notes-btn {
     position: relative;
+    overflow: visible;
 }
+
+.hint-btn {
+    position: relative;
+    overflow: visible;
+}
+
+.undo-btn {
+    position: relative;
+    overflow: visible;
+}
+
 .notes-badge {
     position: absolute;
-    top: -1px;
-    right: -1px;
+    top: -5px;
+    right: -5px;
     background-color: red;
     color: white;
     border-radius: 50%;
@@ -548,41 +628,49 @@ h1 {
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 14px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    z-index: 10000; /* 大幅提高层级 */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    overflow: visible; /* 确保内容不被裁剪 */
 }
-.hint-btn {
-    position: relative;
-}
+
 .hint-badge {
     position: absolute;
-    top: -1px;
-    right: -1px;
+    top: -5px;
+    right: -5px;
     background-color: #FF9800;
     color: white;
     border-radius: 50%;
-    width: 25px;
-    height: 25px;
+    width: 20px;
+    height: 20px;
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 14px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    z-index: 10000; /* 大幅提高层级 */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    overflow: visible; /* 确保内容不被裁剪 */
 }
-.undo-btn {
-    position: relative;
-}
+
 .undo-badge {
     position: absolute;
-    top: -1px;
-    right: -1px;
+    top: -5px;
+    right: -5px;
     background-color: #e74c3c;
     color: white;
     border-radius: 50%;
-    width: 25px;
-    height: 25px;
+    width: 20px;
+    height: 20px;
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 14px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    z-index: 10000; /* 大幅提高层级 */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    overflow: visible; /* 确保内容不被裁剪 */
 }
 .fireworks-container {
     position: fixed;
@@ -715,7 +803,7 @@ h1 {
     /* 确保每个单元格都是正方形，但保持字体大小一致 */
     .cell {
         aspect-ratio: 1/1;
-        font-size: 1.8rem; /* 在移动端使用较小的字体大小以适应屏幕 */
+        font-size: 2.2rem; /* 增大移动端字体大小以提高可读性 */
         /* 确保内容居中 */
         display: flex;
         align-items: center;
@@ -782,6 +870,9 @@ h1 {
         padding: 0 5px 5px;
         justify-content: center;
         width: 100%;
+        /* 增加上边距和内边距，为角标提供更多空间 */
+        margin: 25px 0 5px 0;
+        padding: 12px 3px;
     }
     
     .control-btn {
@@ -791,6 +882,8 @@ h1 {
         height: 45px;
         font-size: 0.8rem;
         padding: 5px;
+        /* 增加按钮的外边距，为角标提供更多空间 */
+        margin: 0 6px;
     }
     
     .control-btn i {
@@ -875,6 +968,43 @@ h1 {
     .dropdown-content a {
         padding: 10px 12px;
     }
+    
+    /* 确保按钮角标在移动端也能完整显示 */
+    .notes-btn, .hint-btn, .undo-btn {
+        position: relative;
+        overflow: visible;
+    }
+    
+    .notes-badge, .hint-badge, .undo-badge {
+        position: absolute;
+        top: -8px; /* 调整位置 */
+        right: -8px; /* 调整位置 */
+        background: #e74c3c;
+        color: white;
+        border-radius: 50%;
+        width: 25px; /* 稍微增大尺寸 */
+        height: 25px; /* 稍微增大尺寸 */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+        font-weight: bold;
+        z-index: 10000; /* 大幅提高层级 */
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2); /* 增强阴影效果 */
+        overflow: visible;
+    }
+    
+    .notes-badge {
+        background-color: red;
+    }
+    
+    .hint-badge {
+        background-color: #FF9800;
+    }
+    
+    .undo-badge {
+        background-color: #e74c3c;
+    }
 }
 
 /* 中等屏幕设备优化 (769px - 1199px) */
@@ -941,7 +1071,7 @@ h1 {
     /* 确保每个单元格都是正方形 */
     .cell {
         aspect-ratio: 1/1;
-        font-size: 2rem;
+        font-size: 2.6rem;
         /* 确保内容居中 */
         display: flex;
         align-items: center;
@@ -995,6 +1125,9 @@ h1 {
         padding: 0 10px 10px;
         justify-content: center;
         width: 100%;
+        /* 增加上边距和内边距，为角标提供更多空间 */
+        margin: 30px 0 10px 0;
+        padding: 15px 5px;
     }
     
     .control-btn {
@@ -1004,6 +1137,8 @@ h1 {
         height: 50px;
         font-size: 0.9rem;
         padding: 6px;
+        /* 增加按钮的外边距，为角标提供更多空间 */
+        margin: 0 8px;
     }
     
     .control-btn i {
@@ -1035,6 +1170,43 @@ h1 {
         text-align: center;
         width: 100%;
     }
+    
+    /* 确保按钮角标在中等屏幕设备上也能完整显示 */
+    .notes-btn, .hint-btn, .undo-btn {
+        position: relative;
+        overflow: visible;
+    }
+    
+    .notes-badge, .hint-badge, .undo-badge {
+        position: absolute;
+        top: -10px; /* 调整位置 */
+        right: -10px; /* 调整位置 */
+        background: #e74c3c;
+        color: white;
+        border-radius: 50%;
+        width: 25px; /* 稍微增大尺寸 */
+        height: 25px; /* 稍微增大尺寸 */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+        font-weight: bold;
+        z-index: 10000; /* 大幅提高层级 */
+        box-shadow: 0 2px 6px rgba(0,0,0,0.3); /* 增强阴影效果 */
+        overflow: visible;
+    }
+    
+    .notes-badge {
+        background-color: red;
+    }
+    
+    .hint-badge {
+        background-color: #FF9800;
+    }
+    
+    .undo-badge {
+        background-color: #e74c3c;
+    }
 }
 
 /* 小屏幕设备优化 */
@@ -1057,7 +1229,7 @@ h1 {
     }
     
     .cell {
-        font-size: 1.5rem;
+        font-size: 1.8rem;
     }
     
     .control-btn {
@@ -1171,6 +1343,9 @@ h1 {
         aspect-ratio: 1/1;
         /* 优化九宫格显示，确保完整显示 */
         max-width: min(100%, calc(100vh - 250px));
+        /* 增加外边距，为角标提供更多空间 */
+        margin: 20px 0 30px 0; /* 增大上下边距 */
+        padding: 10px; /* 增加内边距 */
     }
     
     .sudoku-container {
@@ -1268,198 +1443,62 @@ h1 {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
         grid-template-rows: repeat(3, 1fr);
-        gap: 15px; /* 增加按钮间距 */
+        gap: 20px; /* 增大按钮间距 */
         justify-content: center;
         width: 100%;
-        margin: 20px 0 0 0; /* 增加上边距，将按钮向下移动 */
-        padding: 10px 0; /* 增加上下内边距 */
+        margin: 5px 0 0 0; /* 增大上边距，为角标提供更多空间 */
+        padding: 15px 0; /* 增大内边距 */
         align-self: center;
         position: relative;
         z-index: 1;
+        /* 增加外边距和内边距，为角标提供更多空间 */
+        margin: 10px 0 10px 0; /* 进一步增大上边距 */
+        padding: 20px 20px; /* 显著增加左右内边距，特别是右边内边距 */
     }
     
     .control-btn {
         width: 100%;
         min-width: auto;
         margin: 0;
-        padding: 10px 5px; /* 增加内边距确保内容完整显示 */
+        padding: 15px 8px; /* 增大内边距确保内容完整显示 */
+        /* 增加按钮的外边距，为角标提供更多空间 */
+        margin: 30 0px; /* 增加水平外边距，特别是右边距 */
     }
     
-    /* 确保分享按钮在清除按钮旁边（第2列第3行） */
-    .share-button-container {
-        grid-column: 2;
-        grid-row: 3;
+    /* 确保按钮角标在大屏端也能完整显示 */
+    .notes-btn, .hint-btn, .undo-btn {
+        position: relative;
+        overflow: visible;
     }
     
-    /* 确保清除按钮在第1列第3行 */
-    .clear-btn {
-        grid-column: 1;
-        grid-row: 3;
-    }
-    
-    /* 撤回按钮在第1列第1行 */
-    .undo-btn {
-        grid-column: 1;
-        grid-row: 1;
-    }
-    
-    /* 删除按钮在第2列第1行 */
-    .trash-btn {
-        grid-column: 2;
-        grid-row: 1;
-    }
-    
-    /* 笔记按钮在第1列第2行 */
-    .notes-btn {
-        grid-column: 1;
-        grid-row: 2;
-    }
-    
-    /* 提示按钮在第2列第2行 */
-    .hint-btn {
-        grid-column: 2;
-        grid-row: 2;
-    }
-    
-    .number-pad {
-        margin: 0;
-        padding: 0;
-        align-self: center;
-        width: 100%;
-    }
-    
-    .number-buttons-container {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        grid-template-rows: repeat(4, 1fr);
-        gap: 10px;
-        width: 100%;
-        padding: 0;
-        justify-content: center;
-    }
-    
-    /* 按钮位置通过JavaScript控制，CSS只需要定义网格布局 */
-    
-    /* 确保X按钮在第三行中间位置 */
-    .number-buttons-container .number-btn:nth-child(10) {
-        grid-column: 2;
-        grid-row: 3;
-    }
-    
-    /* 调整其他按钮的位置 */
-    .number-buttons-container .number-btn:nth-child(1) {
-        grid-column: 1;
-        grid-row: 1;
-    }
-    
-    .number-buttons-container .number-btn:nth-child(2) {
-        grid-column: 2;
-        grid-row: 1;
-    }
-    
-    .number-buttons-container .number-btn:nth-child(3) {
-        grid-column: 3;
-        grid-row: 1;
-    }
-    
-    .number-buttons-container .number-btn:nth-child(4) {
-        grid-column: 1;
-        grid-row: 2;
-    }
-    
-    .number-buttons-container .number-btn:nth-child(5) {
-        grid-column: 2;
-        grid-row: 2;
-    }
-    
-    .number-buttons-container .number-btn:nth-child(6) {
-        grid-column: 3;
-        grid-row: 2;
-    }
-    
-    .number-buttons-container .number-btn:nth-child(7) {
-        grid-column: 1;
-        grid-row: 3;
-    }
-    
-    .number-buttons-container .number-btn:nth-child(8) {
-        grid-column: 1;
-        grid-row: 4;
-    }
-    
-    .number-buttons-container .number-btn:nth-child(9) {
-        grid-column: 3;
-        grid-row: 3;
-    }
-    
-    .share-button-container {
-        margin: 0;
+    .notes-badge, .hint-badge, .undo-badge {
+        position: absolute;
+        top: -12px; /* 调整位置，进一步向外移动 */
+        right: -12px; /* 调整位置，进一步向外移动 */
+        background: #e74c3c;
+        color: white;
+        border-radius: 50%;
+        width: 25px; /* 稍微增大尺寸 */
+        height: 25px; /* 稍微增大尺寸 */
         display: flex;
-        justify-content: center;
-    }
-    
-    .share-btn {
-        width: 100%;
-        min-width: 40px;
-        height: 50px;
-        padding: 5px 0;
-        border: none;
-        border-radius: 8px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        display: flex;
-        flex-direction: column;
         align-items: center;
         justify-content: center;
-        gap: 3px;
-        color: #2c3e50;
-        background: #f8f8f8;
-        font-size: 0.9rem;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        position: relative;
+        font-size: 0.8rem;
+        font-weight: bold;
+        z-index: 10000; /* 大幅提高层级，确保不会被遮挡 */
+        box-shadow: 0 2px 8px rgba(0,0,0,0.4); /* 增强阴影效果 */
+        overflow: visible;
     }
     
-    .share-btn:hover {
-        background: #90EE90;
-        transform: translateY(-2px);
+    .notes-badge {
+        background-color: red;
     }
     
-    .share-btn i {
-        color: #2c3e50 !important;
-        font-size: 1.3rem;
+    .hint-badge {
+        background-color: #FF9800;
     }
     
-    .share-btn span {
-        color: #2c3e50 !important;
-        font-size: 0.9rem;
+    .undo-badge {
+        background-color: #e74c3c;
     }
-    
-    .copyright {
-        margin-top: auto;
-        background-color: rgba(255, 255, 255, 0.9);
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        padding: 10px;
-        flex-shrink: 0;
-        color: #2c3e50;
-        font-weight: 500;
-    }
-}
-
-/* 合并徽章样式 */
-.undo-badge, .notes-badge, .hint-badge {
-    position: absolute;
-    top: -5px;
-    right: -5px;
-    background: #e74c3c;
-    color: white;
-    border-radius: 50%;
-    width: 20px;
-    height: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.7rem;
-    font-weight: bold;
 }
