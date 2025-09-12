@@ -96,6 +96,23 @@ document.addEventListener('DOMContentLoaded', function() {
         "12589832642","4897639127","8799505292","12639638645","12767620640","12528734640"
     ];
     
+    // 定义歌单ID到中文名称的映射
+    const playlistIdToNameMap = {
+        "14263579239": "Ajeo歌单",
+        "13634731044": "2025破亿金曲",
+        "7219768967": "2025热门流行",
+        "4985489887": "DJ精选",
+        "368254901": "怀旧粤语",
+        "6829713162": "歌曲杂货铺",
+        "8438624285": "车载音乐",
+        "12589832642": "情歌中文DJ",
+        "4897639127": "天赐的声音",
+        "8799505292": "评论10W+的音乐",
+        "12639638645": "酒吧中文DJ",
+        "12767620640": "重低音DJ舞曲",
+        "12528734640": "短视频DJ"
+    };
+    
     // 动态生成热门歌单面板中的列表项
     popularPlaylists.innerHTML = '';
     
@@ -112,7 +129,8 @@ document.addEventListener('DOMContentLoaded', function() {
     popularPlaylistIds.forEach(id => {
         const tag = document.createElement('div');
         tag.className = 'hot-tag';
-        tag.textContent = id;
+        // 使用映射表显示中文名称，如果没有映射则显示ID
+        tag.textContent = playlistIdToNameMap[id] || id;
         tag.setAttribute('data-id', id);
         popularPlaylists.appendChild(tag);
     });
