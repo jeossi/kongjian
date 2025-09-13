@@ -688,6 +688,21 @@ h1 {
     height: 5px;
     border-radius: 50%;
     pointer-events: none;
+    animation: fireworkAnimation 1.5s ease-out forwards;
+}
+
+@keyframes fireworkAnimation {
+    0% {
+        transform: scale(0);
+        opacity: 1;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        transform: scale(2);
+        opacity: 0;
+    }
 }
 .number-btn.disabled {
     opacity: 0.5;
