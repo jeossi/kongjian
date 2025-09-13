@@ -1,3 +1,4 @@
+// 修复后的JavaScript文件内容
 document.addEventListener('DOMContentLoaded', () => {
     // 数独状态变量
     let board = Array(9).fill().map(() => Array(9).fill(0));
@@ -153,6 +154,10 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             // 输入数字
             inputNumber(activeNumber);
+            // 用户输入数字后清除解题技巧线条
+            if (typeof window.clearTechniqueLines === "function") {
+                window.clearTechniqueLines();
+            }
         }
     }
     
@@ -224,284 +229,186 @@ document.addEventListener('DOMContentLoaded', () => {
     // 输入数字
     function inputNumber(num) {
         if (selectedCell.row === -1 || selectedCell.col === -1) return;
-        if (givenCells[selectedCell.row][selectedCell.col]) return;
-
-        const row = selectedCell.row;
-        const col = selectedCell.col;
-        const cell = document.querySelector(`.cell[data-row="${row}"][data-col="${col}"]`);
-
-        clearConflictHighlights();
-
-        // 检查数字是否有效
-        if (!isNumberValid(row, col, num)) {
-            // 冲突格子都闪烁
+        
+        const { row, col } = selectedCell;
+        if (givenCells[row][col]) {
+            showMessage('不能修改题目给定的数字', 'error');
+            return;
+        }
+        
+        // 检查是否与现有数字冲突
+        const isConflict = !isNumberValid(row, col, num);
+        
+        // 如果有冲突，闪烁提示相关单元格
+        if (isConflict) {
+            // 收集冲突的单元格
             let conflictCells = [];
-            // 行
+            
+            // 检查行
             for (let c = 0; c < 9; c++) {
                 if (c !== col && (userBoard[row][c] === num || board[row][c] === num)) {
                     conflictCells.push(document.querySelector(`.cell[data-row="${row}"][data-col="${c}"]`));
                 }
             }
-            // 列
+            
+            // 检查列
             for (let r = 0; r < 9; r++) {
                 if (r !== row && (userBoard[r][col] === num || board[r][col] === num)) {
                     conflictCells.push(document.querySelector(`.cell[data-row="${r}"][data-col="${col}"]`));
                 }
             }
-            // 宫
+            
+            // 检查宫
             const boxRowStart = Math.floor(row / 3) * 3;
             const boxColStart = Math.floor(col / 3) * 3;
             for (let r = boxRowStart; r < boxRowStart + 3; r++) {
                 for (let c = boxColStart; c < boxColStart + 3; c++) {
-                    if ((r !== row || c !== col) && (userBoard[r][c] === num || board[r][c] === num)) {
+                    if (!(r === row && c === col) && (userBoard[r][c] === num || board[r][c] === num)) {
                         conflictCells.push(document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`));
                     }
                 }
             }
-            // 当前格
-            conflictCells.push(cell);
-            conflictCells.forEach(c => c && c.classList.add('conflict'));
+            
+            // 当前单元格也加入冲突列表
+            const currentCell = document.querySelector(`.cell[data-row="${row}"][data-col="${col}"]`);
+            conflictCells.push(currentCell);
+            
+            // 闪烁效果
+            conflictCells.forEach(cell => {
+                if (cell) cell.classList.add('conflict');
+            });
+            
             setTimeout(() => {
-                conflictCells.forEach(c => c && c.classList.remove('conflict'));
+                conflictCells.forEach(cell => {
+                    if (cell) cell.classList.remove('conflict');
+                });
             }, 1500);
+            
+            showMessage('数字冲突！请检查', 'error');
+            return; // 阻止输入
+        }
+        
+        // 保存到历史记录
+        moveHistory.push({
+            row,
+            col,
+            prevValue: userBoard[row][col],
+            newValue: num,
+            prevNotes: [...notes[row][col]],
+            prevErrorCount: errorCount
+        });
+        
+        userBoard[row][col] = num;
+        notes[row][col] = Array(9).fill(false);
+        
+        // 更新UI
+        const cell = document.querySelector(`.cell[data-row="${row}"][data-col="${col}"]`);
+        cell.textContent = num;
+        
+        // 检查输入的数字是否与解题结果一致
+        if (num === solution[row][col]) {
+            cell.classList.add('user-input', 'correct');
+            cell.classList.remove('wrong');
+        } else {
+            cell.classList.add('user-input', 'wrong');
+            cell.classList.remove('correct');
+        }
+        
+        cell.classList.remove('notes');
+        
+        // 高亮相同数字
+        highlightRelatedCells(row, col);
+        
+        // 检查是否完成
+        if (checkCompletion()) {
+            endGame();
             return;
         }
         
-        // 保存历史（包含当前错误计数）
-        const prevValue = userBoard[selectedCell.row][selectedCell.col];
-        const prevNotes = JSON.parse(JSON.stringify(notes[selectedCell.row][selectedCell.col]));
-        moveHistory.push({
-            row: selectedCell.row,
-            col: selectedCell.col,
-            prevValue: prevValue,
-            newValue: notesMode ? prevValue : num,
-            prevNotes: JSON.parse(JSON.stringify(notes[selectedCell.row][selectedCell.col])),
-            prevErrorCount: errorCount // 保存当前错误计数
-        });
-        
-        if (notesMode) {
-            // 笔记模式 - 切换笔记状态
-            notes[selectedCell.row][selectedCell.col][num - 1] = !notes[selectedCell.row][selectedCell.col][num - 1];
-            updateCellNotes(selectedCell.row, selectedCell.col);
-        } else {
-            // 正常模式 - 设置主数字
-            userBoard[selectedCell.row][selectedCell.col] = num;
-            
-            // 清除该数字的所有笔记
-            notes[selectedCell.row][selectedCell.col] = Array(9).fill(false);
-            
-            // 更新UI
-            cell.textContent = num;
-            cell.classList.remove('notes');
-            
-            // 检查数字是否正确
-            if (num === solution[selectedCell.row][selectedCell.col]) {
-                cell.classList.remove('wrong');
-                cell.classList.add('user-input', 'correct');
-            } else {
-                cell.classList.remove('correct');
-                cell.classList.add('user-input', 'wrong');
-                // 错误计数增加
-                errorCount++;
-                updateUndoBadge();
-            }
-            
-            // 检查是否完成
-            if (checkCompletion()) {
-                return; // 游戏完成时直接返回
-            }
-        }
-        
-        // 更新高亮
-        highlightRelatedCells(selectedCell.row, selectedCell.col);
-        
-        // 检查数字按钮状态
         updateNumberButtonsState();
     }
-    
-    // 检查数字在单元格中是否有效
-    function isNumberValid(row, col, num) {
-        // 检查行
-        for (let c = 0; c < 9; c++) {
-            if (c !== col && (userBoard[row][c] === num || board[row][c] === num)) {
-                return false;
-            }
-        }
-        
-        // 检查列
-        for (let r = 0; r < 9; r++) {
-            if (r !== row && (userBoard[r][col] === num || board[r][col] === num)) {
-                return false;
-            }
-        }
-        
-        // 检查宫
-        const boxRowStart = Math.floor(row / 3) * 3;
-        const boxColStart = Math.floor(col / 3) * 3;
-        
-        for (let r = boxRowStart; r < boxRowStart + 3; r++) {
-            for (let c = boxColStart; c < boxColStart + 3; c++) {
-                if (r !== row && c !== col && (userBoard[r][c] === num || board[r][c] === num)) {
-                    return false;
-                }
-            }
-        }
-        
-        return true;
-    }
-    
+
     // 删除数字
     function deleteNumber() {
         if (selectedCell.row === -1 || selectedCell.col === -1) return;
-        if (givenCells[selectedCell.row][selectedCell.col]) return;
         
-        const cell = document.querySelector(`.cell[data-row="${selectedCell.row}"][data-col="${selectedCell.col}"]`);
+        const { row, col } = selectedCell;
+        if (givenCells[row][col]) {
+            showMessage('不能删除题目给定的数字', 'error');
+            return;
+        }
         
-        // 保存历史（包含当前错误计数）
-        const prevValue = userBoard[selectedCell.row][selectedCell.col];
-        const prevNotes = JSON.parse(JSON.stringify(notes[selectedCell.row][selectedCell.col]));
+        // 保存到历史记录
         moveHistory.push({
-            row: selectedCell.row,
-            col: selectedCell.col,
-            prevValue: prevValue,
+            row,
+            col,
+            prevValue: userBoard[row][col],
             newValue: 0,
-            prevNotes: JSON.parse(JSON.stringify(notes[selectedCell.row][selectedCell.col])),
-            prevErrorCount: errorCount // 保存当前错误计数
+            prevNotes: [...notes[row][col]],
+            prevErrorCount: errorCount
         });
         
-        if (notesMode) {
-            // 笔记模式 - 清除所有笔记
-            notes[selectedCell.row][selectedCell.col] = Array(9).fill(false);
-            updateCellNotes(selectedCell.row, selectedCell.col);
-        } else {
-            // 正常模式 - 如果单元格中有笔记，则清除笔记，否则清除主数字
-            if (notes[selectedCell.row][selectedCell.col].some(note => note)) {
-                // 清除笔记但保留主数字
-                notes[selectedCell.row][selectedCell.col] = Array(9).fill(false);
-                updateCellNotes(selectedCell.row, selectedCell.col);
-            } else {
-                // 清除主数字
-                userBoard[selectedCell.row][selectedCell.col] = 0;
-                cell.textContent = '';
-                cell.classList.remove('user-input', 'correct', 'wrong');
-                
-                // 如果清除主数字后还有笔记，则显示笔记
-                if (notes[selectedCell.row][selectedCell.col].some(note => note)) {
-                    cell.classList.add('notes');
-                    updateCellNotes(selectedCell.row, selectedCell.col);
-                } else {
-                    cell.classList.remove('notes');
-                }
-                
-                // 如果清除的是错误输入，减少错误计数
-                if (cell.classList.contains('wrong')) {
-                    errorCount = Math.max(0, errorCount - 1);
-                    updateUndoBadge();
-                }
-            }
-        }
+        userBoard[row][col] = 0;
+        notes[row][col] = Array(9).fill(false);
         
-        // 更新高亮
-        highlightRelatedCells(selectedCell.row, selectedCell.col);
+        // 更新UI
+        const cell = document.querySelector(`.cell[data-row="${row}"][data-col="${col}"]`);
+        cell.textContent = '';
+        cell.classList.remove('user-input', 'correct', 'wrong');
         
-        // 检查数字按钮状态
-        updateNumberButtonsState();
-    }
-    
-    // 全清除功能
-    function clearAllNonGiven() {
-        for (let row = 0; row < 9; row++) {
-            for (let col = 0; col < 9; col++) {
-                if (!givenCells[row][col]) {
-                    userBoard[row][col] = 0;
-                    notes[row][col] = Array(9).fill(false);
-                }
-            }
-        }
-
-        const cells = document.querySelectorAll('.cell:not(.given)');
-        cells.forEach(cell => {
-            const row = parseInt(cell.dataset.row);
-            const col = parseInt(cell.dataset.col);
-            
-            cell.textContent = '';
-            cell.classList.remove('user-input', 'correct', 'wrong', 'notes');
-        });
-
-        moveHistory = [];
-        errorCount = 0;
         updateUndoBadge();
-        clearAllHighlights();
-        showMessage('已清除所有用户输入', 'success');
-    }
-    
-    // 检查是否完成
-    function checkCompletion() {
-        for (let row = 0; row < 9; row++) {
-            for (let col = 0; col < 9; col++) {
-                if (userBoard[row][col] === 0 && board[row][col] === 0) {
-                    return false;
-                }
-                if (userBoard[row][col] !== 0 && userBoard[row][col] !== solution[row][col]) {
-                    return false;
-                }
-            }
+        updateNumberButtonsState();
+        
+        // 删除操作后清除解题技巧线条
+        if (typeof window.clearTechniqueLines === "function") {
+            window.clearTechniqueLines();
         }
         
-        // 完成游戏
-        clearInterval(timerInterval);
-        showFireworks();
-        showMessage('恭喜你完成了数独！', 'success');
-        document.getElementById('hint-btn').disabled = true;
-        return true;
+        showMessage('已删除数字', 'success');
     }
     
     // 撤回操作
     function undoMove() {
-        if (moveHistory.length === 0) return;
+        if (moveHistory.length === 0) {
+            showMessage('没有可撤回的操作', 'info');
+            return;
+        }
         
         const lastMove = moveHistory.pop();
-        const cell = document.querySelector(`.cell[data-row="${lastMove.row}"][data-col="${lastMove.col}"]`);
-        
-        // 恢复之前的值
         userBoard[lastMove.row][lastMove.col] = lastMove.prevValue;
-        
-        // 恢复之前的笔记
         notes[lastMove.row][lastMove.col] = lastMove.prevNotes;
-        
-        // 恢复错误计数
         errorCount = lastMove.prevErrorCount;
-        updateUndoBadge();
         
         // 更新UI
-        if (lastMove.prevValue === 0 && lastMove.prevNotes.some(note => note)) {
-            // 如果之前是笔记模式且有笔记
-            cell.classList.add('notes');
-            updateCellNotes(lastMove.row, lastMove.col);
-        } else if (lastMove.prevValue === 0) {
-            // 如果之前是空的
+        const cell = document.querySelector(`.cell[data-row="${lastMove.row}"][data-col="${lastMove.col}"]`);
+        if (lastMove.prevValue === 0) {
             cell.textContent = '';
-            cell.classList.remove('user-input', 'correct', 'wrong', 'notes');
+            cell.classList.remove('user-input', 'correct', 'wrong');
+            if (lastMove.prevNotes.some(note => note)) {
+                updateCellNotes(lastMove.row, lastMove.col);
+            }
         } else {
-            // 如果之前有数字
             cell.textContent = lastMove.prevValue;
+            cell.classList.add('user-input');
             cell.classList.remove('notes');
             if (lastMove.prevValue === solution[lastMove.row][lastMove.col]) {
-                cell.classList.add('user-input', 'correct');
+                cell.classList.add('correct');
                 cell.classList.remove('wrong');
             } else {
-                cell.classList.add('user-input', 'wrong');
+                cell.classList.add('wrong');
                 cell.classList.remove('correct');
             }
         }
         
-        // 更新高亮
-        highlightRelatedCells(lastMove.row, lastMove.col);
-        
-        // 检查数字按钮状态
+        updateUndoBadge();
         updateNumberButtonsState();
         
-        showMessage('已撤回上一步操作', 'info');
+        // 撤回操作后清除解题技巧线条
+        if (typeof window.clearTechniqueLines === "function") {
+            window.clearTechniqueLines();
+        }
+        
+        showMessage('已撤回上一步操作', 'success');
     }
     
     // 切换笔记模式
@@ -521,103 +428,1035 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
-    // 给提示
+    // 更新单元格笔记显示
+    function updateCellNotes(row, col) {
+        const cell = document.querySelector(`.cell[data-row="${row}"][data-col="${col}"]`);
+        cell.innerHTML = '';
+        cell.classList.add('notes');
+        
+        if (!notes[row][col].some(note => note)) {
+            cell.classList.remove('notes');
+            return;
+        }
+        
+        const notesContainer = document.createElement('div');
+        notesContainer.style.display = 'grid';
+        notesContainer.style.gridTemplateColumns = 'repeat(3, 1fr)';
+        notesContainer.style.gridTemplateRows = 'repeat(3, 1fr)';
+        notesContainer.style.width = '100%';
+        notesContainer.style.height = '100%';
+        
+        for (let i = 0; i < 9; i++) {
+            const note = document.createElement('div');
+            note.style.display = 'flex';
+            note.style.alignItems = 'center';
+            note.style.justifyContent = 'center';
+            
+            if (notes[row][col][i]) {
+                note.textContent = i + 1;
+                note.style.fontSize = '0.8rem';
+                note.style.fontWeight = 'bold';
+                note.style.color = '#3498db';
+            } else {
+                note.textContent = '';
+            }
+            
+            notesContainer.appendChild(note);
+        }
+        
+        cell.appendChild(notesContainer);
+    }
+    
+    // 检查数字是否有效（不冲突）
+    function isNumberValid(row, col, num) {
+        // 检查行
+        for (let c = 0; c < 9; c++) {
+            if (c !== col && (userBoard[row][c] === num || board[row][c] === num)) {
+                return false;
+            }
+        }
+        
+        // 检查列
+        for (let r = 0; r < 9; r++) {
+            if (r !== row && (userBoard[r][col] === num || board[r][col] === num)) {
+                return false;
+            }
+        }
+        
+        // 检查宫
+        const boxRowStart = Math.floor(row / 3) * 3;
+        const boxColStart = Math.floor(col / 3) * 3;
+        for (let r = boxRowStart; r < boxRowStart + 3; r++) {
+            for (let c = boxColStart; c < boxColStart + 3; c++) {
+                if (!(r === row && c === col) && (userBoard[r][c] === num || board[r][c] === num)) {
+                    return false;
+                }
+            }
+        }
+        
+        return true;
+    }
+    
+    // 检查是否完成
+    function checkCompletion() {
+        for (let row = 0; row < 9; row++) {
+            for (let col = 0; col < 9; col++) {
+                if (userBoard[row][col] === 0 && board[row][col] === 0) {
+                    return false;
+                }
+                if (userBoard[row][col] !== solution[row][col]) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+    
+    // 结束游戏
+    function endGame() {
+        clearInterval(timerInterval);
+        showMessage('恭喜完成数独！', 'success');
+        showFireworks();
+    }
+    
+    // 清除所有非给定数字
+    function clearAllNonGiven() {
+        for (let row = 0; row < 9; row++) {
+            for (let col = 0; col < 9; col++) {
+                if (!givenCells[row][col]) {
+                    userBoard[row][col] = 0;
+                    notes[row][col] = Array(9).fill(false);
+                }
+            }
+        }
+        
+        moveHistory = [];
+        errorCount = 0;
+        updateUndoBadge();
+        renderGame();
+        clearAllHighlights();
+        clearSelection();
+        
+        // 重置操作后清除解题技巧线条
+        if (typeof window.clearTechniqueLines === "function") {
+            window.clearTechniqueLines();
+        }
+        
+        showMessage('已清除所有填写的数字和笔记', 'success');
+        updateNumberButtonsState();
+    }
+    
+    // 给出提示
     function giveHint() {
         const hintBtn = document.getElementById('hint-btn');
         const hintBadge = hintBtn.querySelector('.hint-badge');
         let hintsLeft = parseInt(hintBadge.textContent);
         
         if (hintsLeft <= 0) {
-            showMessage('提示次数已用完', 'warning');
+            showMessage('提示次数已用完！', 'error');
             return;
         }
         
-        // 找到一个空的单元格
-        const emptyCells = [];
-        for (let row = 0; row < 9; row++) {
-            for (let col = 0; col < 9; col++) {
-                if (userBoard[row][col] === 0 && board[row][col] === 0) {
-                    emptyCells.push({ row, col });
+        // 查找可以给出的提示
+        let found = false;
+        let technique = "";
+        let targetRow = -1, targetCol = -1, targetNum = -1;
+        let hintData = null; // 用于存储解题技巧的详细数据
+        
+        // 策略1：行唯一
+        if (!found) {
+            for (let row = 0; row < 9 && !found; row++) {
+                for (let col = 0; col < 9 && !found; col++) {
+                    if (userBoard[row][col] !== 0 || board[row][col] !== 0) continue;
+                    
+                    const possibleNumbers = getPossibleNumbers(row, col);
+                    if (possibleNumbers.length === 1) {
+                        found = true;
+                        technique = "行唯一";
+                        targetRow = row;
+                        targetCol = col;
+                        targetNum = possibleNumbers[0];
+                    }
                 }
             }
         }
         
-        if (emptyCells.length === 0) {
-            showMessage('数独已完成，无需提示', 'info');
-            return;
+        // 策略2：列唯一
+        if (!found) {
+            for (let col = 0; col < 9 && !found; col++) {
+                for (let row = 0; row < 9 && !found; row++) {
+                    if (userBoard[row][col] !== 0 || board[row][col] !== 0) continue;
+                    
+                    const possibleNumbers = getPossibleNumbers(row, col);
+                    if (possibleNumbers.length === 1) {
+                        found = true;
+                        technique = "列唯一";
+                        targetRow = row;
+                        targetCol = col;
+                        targetNum = possibleNumbers[0];
+                    }
+                }
+            }
         }
         
-        // 随机选择一个空单元格
-        const randomIndex = Math.floor(Math.random() * emptyCells.length);
-        const { row, col } = emptyCells[randomIndex];
-        
-        // 填入正确答案
-        userBoard[row][col] = solution[row][col];
-        
-        // 更新UI
-        const cell = document.querySelector(`.cell[data-row="${row}"][data-col="${col}"]`);
-        cell.textContent = solution[row][col];
-        cell.classList.add('user-input', 'correct');
-        cell.classList.remove('wrong');
-        
-        // 减少提示次数
-        hintsLeft--;
-        hintBadge.textContent = hintsLeft;
-        
-        if (hintsLeft === 0) {
-            hintBtn.disabled = true;
-            hintBtn.style.opacity = '0.5';
+        // 策略3：宫唯一
+        if (!found) {
+            for (let boxRow = 0; boxRow < 3 && !found; boxRow++) {
+                for (let boxCol = 0; boxCol < 3 && !found; boxCol++) {
+                    for (let row = boxRow * 3; row < boxRow * 3 + 3 && !found; row++) {
+                        for (let col = boxCol * 3; col < boxCol * 3 + 3 && !found; col++) {
+                            if (userBoard[row][col] !== 0 || board[row][col] !== 0) continue;
+                            
+                            const possibleNumbers = getPossibleNumbers(row, col);
+                            if (possibleNumbers.length === 1) {
+                                found = true;
+                                technique = "宫唯一";
+                                targetRow = row;
+                                targetCol = col;
+                                targetNum = possibleNumbers[0];
+                            }
+                        }
+                    }
+                }
+            }
         }
         
-        // 保存到历史记录
-        moveHistory.push({
-            row,
-            col,
-            prevValue: 0,
-            newValue: solution[row][col],
-            prevNotes: Array(9).fill(false),
-            prevErrorCount: errorCount
-        });
-        
-        // 更新高亮
-        highlightRelatedCells(row, col);
-        
-        // 检查数字按钮状态
-        updateNumberButtonsState();
-        
-        // 检查是否完成
-        if (checkCompletion()) {
-            return;
+        // 策略4：数对法
+        if (!found) {
+            // 检查行中的数对
+            for (let row = 0; row < 9 && !found; row++) {
+                const pairs = findNakedPairsInRow(row);
+                for (const pair of pairs) {
+                    const { col1, col2, nums } = pair;
+                    // 检查同一行中其他单元格是否可以排除这些数字
+                    for (let col = 0; col < 9; col++) {
+                        if (col !== col1 && col !== col2 && userBoard[row][col] === 0 && board[row][col] === 0) {
+                            for (const num of nums) {
+                                if (canPlaceNumber(row, col, num)) {
+                                    found = true;
+                                    technique = "数对法";
+                                    targetRow = row;
+                                    targetCol = col;
+                                    targetNum = num;
+                                    // 保存数对法的相关数据
+                                    hintData = {
+                                        row: targetRow,
+                                        col1: col1,
+                                        col2: col2,
+                                        num: targetNum,
+                                        pairRow: row,
+                                        pairCol1: col1,
+                                        pairCol2: col2
+                                    };
+                                    break;
+                                }
+                            }
+                            if (found) break;
+                        }
+                    }
+                    if (found) break;
+                }
+            }
+            
+            // 检查列中的数对
+            if (!found) {
+                for (let col = 0; col < 9 && !found; col++) {
+                    const pairs = findNakedPairsInCol(col);
+                    for (const pair of pairs) {
+                        const { row1, row2, nums } = pair;
+                        // 检查同一列中其他单元格是否可以排除这些数字
+                        for (let row = 0; row < 9; row++) {
+                            if (row !== row1 && row !== row2 && userBoard[row][col] === 0 && board[row][col] === 0) {
+                                for (const num of nums) {
+                                    if (canPlaceNumber(row, col, num)) {
+                                        found = true;
+                                        technique = "数对法";
+                                        targetRow = row;
+                                        targetCol = col;
+                                        targetNum = num;
+                                        // 保存数对法的相关数据
+                                        hintData = {
+                                            row: targetRow,
+                                            col1: col,
+                                            col2: col,
+                                            num: targetNum,
+                                            pairRow: targetRow,
+                                            pairCol1: col,
+                                            pairCol2: col
+                                        };
+                                        break;
+                                    }
+                                }
+                                if (found) break;
+                            }
+                        }
+                        if (found) break;
+                    }
+                    if (found) break;
+                }
+            }
+            
+            // 检查宫中的数对
+            if (!found) {
+                for (let boxRow = 0; boxRow < 3 && !found; boxRow++) {
+                    for (let boxCol = 0; boxCol < 3 && !found; boxCol++) {
+                        const pairs = findNakedPairsInBox(boxRow, boxCol);
+                        for (const pair of pairs) {
+                            const { positions, nums } = pair;
+                            // 检查同一宫中其他单元格是否可以排除这些数字
+                            for (let row = boxRow * 3; row < boxRow * 3 + 3; row++) {
+                                for (let col = boxCol * 3; col < boxCol * 3 + 3; col++) {
+                                    const isPairPosition = positions.some(pos => pos.row === row && pos.col === col);
+                                    if (!isPairPosition && userBoard[row][col] === 0 && board[row][col] === 0) {
+                                        for (const num of nums) {
+                                            if (canPlaceNumber(row, col, num)) {
+                                                found = true;
+                                                technique = "数对法";
+                                                targetRow = row;
+                                                targetCol = col;
+                                                targetNum = num;
+                                                // 保存数对法的相关数据
+                                                hintData = {
+                                                    row: targetRow,
+                                                    col1: positions[0].col,
+                                                    col2: positions[1].col,
+                                                    num: targetNum,
+                                                    pairRow: positions[0].row,
+                                                    pairCol1: positions[0].col,
+                                                    pairCol2: positions[1].col
+                                                };
+                                                break;
+                                            }
+                                        }
+                                        if (found) break;
+                                    }
+                                }
+                                if (found) break;
+                            }
+                            if (found) break;
+                        }
+                        if (found) break;
+                    }
+                }
+            }
         }
         
-        showMessage(`已给出提示：第${row+1}行第${col+1}列应填入${solution[row][col]}`, 'success');
+        // 策略5：区块摒除法
+        if (!found) {
+            const pointingPairs = findPointingPairs();
+            if (pointingPairs.length > 0) {
+                const pair = pointingPairs[0];
+                if (pair.excludePositions.length > 0) {
+                    found = true;
+                    technique = "区块摒除法";
+                    targetRow = pair.excludePositions[0].row;
+                    targetCol = pair.excludePositions[0].col;
+                    targetNum = pair.num;
+                    // 保存区块摒除法的相关数据
+                    hintData = {
+                        boxRow: pair.boxRow,
+                        boxCol: pair.boxCol,
+                        num: pair.num,
+                        positions: pair.positions,
+                        targetRow: targetRow,
+                        targetCol: targetCol
+                    };
+                }
+            }
+        }
+        
+        // 策略6：三链数法
+        if (!found) {
+            // 这里实现三链数法的逻辑
+            for (let row = 0; row < 9 && !found; row++) {
+                for (let col = 0; col < 9 && !found; col++) {
+                    if (userBoard[row][col] !== 0 || board[row][col] !== 0) continue;
+
+                    const possibleNumbers = getPossibleNumbers(row, col);
+                    if (possibleNumbers.length < 2 || possibleNumbers.length > 3) continue;
+
+                    for (let otherCol1 = col + 1; otherCol1 < 9 && !found; otherCol1++) {
+                        if (userBoard[row][otherCol1] !== 0 || board[row][otherCol1] !== 0) continue;
+                        const otherPossibleNumbers1 = getPossibleNumbers(row, otherCol1);
+                        if (otherPossibleNumbers1.length < 2 || otherPossibleNumbers1.length > 3) continue;
+
+                        for (let otherCol2 = otherCol1 + 1; otherCol2 < 9 && !found; otherCol2++) {
+                            if (userBoard[row][otherCol2] !== 0 || board[row][otherCol2] !== 0) continue;
+                            const otherPossibleNumbers2 = getPossibleNumbers(row, otherCol2);
+                            if (otherPossibleNumbers2.length < 2 || otherPossibleNumbers2.length > 3) continue;
+
+                            // 检查三个单元格的可能数字是否形成三链数
+                            const allPossible = new Set([...possibleNumbers, ...otherPossibleNumbers1, ...otherPossibleNumbers2]);
+                            if (allPossible.size === 3) {
+                                // 三链数法逻辑：在这三个列中排除这三个数字
+                                for (let c = 0; c < 9; c++) {
+                                    if (c === col || c === otherCol1 || c === otherCol2) continue;
+                                    if (userBoard[row][c] === 0 && board[row][c] === 0) {
+                                        for (let num of allPossible) {
+                                            if (canPlaceNumber(row, c, num)) {
+                                                found = true;
+                                                technique = "三链数法";
+                                                targetRow = row;
+                                                targetCol = c;
+                                                targetNum = num;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        // 策略7：矩形摒除法
+        if (!found) {
+            const rectangles = findRectangles();
+            if (rectangles.length > 0) {
+                const rectangle = rectangles[0];
+                if (rectangle.excludePositions.length > 0) {
+                    found = true;
+                    technique = "矩形摒除法";
+                    targetRow = rectangle.excludePositions[0].row;
+                    targetCol = rectangle.excludePositions[0].col;
+                    targetNum = rectangle.num;
+                    // 保存矩形摒除法的相关数据
+                    hintData = {
+                        row1: rectangle.row1,
+                        row2: rectangle.row2,
+                        col1: rectangle.col1,
+                        col2: rectangle.col2,
+                        num: rectangle.num,
+                        targetRow: targetRow,
+                        targetCol: targetCol
+                    };
+                }
+            }
+        }
+        
+        // 策略8：X-Wing法
+        if (!found) {
+            // 这里实现X-Wing法的逻辑
+            for (let num = 1; num <= 9 && !found; num++) {
+                // 行方向的X-Wing
+                const rowMap = {};
+                for (let row = 0; row < 9; row++) {
+                    rowMap[row] = [];
+                    for (let col = 0; col < 9; col++) {
+                        if (userBoard[row][col] === 0 && board[row][col] === 0 && canPlaceNumber(row, col, num)) {
+                            rowMap[row].push(col);
+                        }
+                    }
+                }
+
+                for (let row1 = 0; row1 < 9 && !found; row1++) {
+                    if (rowMap[row1].length !== 2) continue;
+
+                    for (let row2 = row1 + 1; row2 < 9 && !found; row2++) {
+                        if (rowMap[row2].length !== 2) continue;
+
+                        if (rowMap[row1][0] === rowMap[row2][0] && rowMap[row1][1] === rowMap[row2][1]) {
+                            // X-Wing模式形成，排除相应列中的数字
+                            for (let col = 0; col < 9; col++) {
+                                if (col !== rowMap[row1][0] && col !== rowMap[row1][1]) {
+                                    if (userBoard[0][col] === 0 && board[0][col] === 0 && canPlaceNumber(0, col, num)) {
+                                        found = true;
+                                        technique = "X-Wing法";
+                                        targetRow = 0;
+                                        targetCol = col;
+                                        targetNum = num;
+                                        // 保存X-Wing法的相关数据
+                                        hintData = {
+                                            row1: row1,
+                                            row2: row2,
+                                            col1: rowMap[row1][0],
+                                            col2: rowMap[row1][1],
+                                            num: num,
+                                            targetRow: targetRow,
+                                            targetCol: targetCol
+                                        };
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        // 策略9：从结果表中提取提示
+        if (!found) {
+            // 从solution结果表中提取一个未填写的单元格作为提示
+            const emptyCells = [];
+            for (let row = 0; row < 9; row++) {
+                for (let col = 0; col < 9; col++) {
+                    // 确保单元格为空且未被填写
+                    if (userBoard[row][col] === 0 && board[row][col] === 0) {
+                        emptyCells.push({ row, col });
+                    }
+                }
+            }
+
+            if (emptyCells.length > 0) {
+                // 选择第一个空单元格作为提示（按照从上到下、从左到右的顺序）
+                const firstEmptyCell = emptyCells[0];
+                found = true;
+                technique = "结果表提取";
+                targetRow = firstEmptyCell.row;
+                targetCol = firstEmptyCell.col;
+                targetNum = solution[targetRow][targetCol];
+            }
+        }
+
+        if (found) {
+            // 双重检查目标单元格是否为空
+            if (userBoard[targetRow][targetCol] !== 0 || board[targetRow][targetCol] !== 0) {
+                console.error('提示错误：目标单元格已被占用', {targetRow, targetCol, userBoard: userBoard[targetRow][targetCol], board: board[targetRow][targetCol]});
+                showMessage('提示错误：目标单元格已被占用', 'error');
+                // 恢复提示次数
+                hintsLeft++;
+                hintBadge.textContent = hintsLeft;
+                return;
+            }
+            
+            // 检查是否与现有数字冲突（即使是提示也应该检查）
+            const isConflict = !isNumberValid(targetRow, targetCol, targetNum);
+            
+            // 如果有冲突，闪烁提示相关单元格
+            if (isConflict) {
+                // 收集冲突的单元格
+                let conflictCells = [];
+                
+                // 检查行
+                for (let c = 0; c < 9; c++) {
+                    if (c !== targetCol && (userBoard[targetRow][c] === targetNum || board[targetRow][c] === targetNum)) {
+                        conflictCells.push(document.querySelector(`.cell[data-row="${targetRow}"][data-col="${c}"]`));
+                    }
+                }
+                
+                // 检查列
+                for (let r = 0; r < 9; r++) {
+                    if (r !== targetRow && (userBoard[r][targetCol] === targetNum || board[r][targetCol] === targetNum)) {
+                        conflictCells.push(document.querySelector(`.cell[data-row="${r}"][data-col="${targetCol}"]`));
+                    }
+                }
+                
+                // 检查宫
+                const boxRowStart = Math.floor(targetRow / 3) * 3;
+                const boxColStart = Math.floor(targetCol / 3) * 3;
+                for (let r = boxRowStart; r < boxRowStart + 3; r++) {
+                    for (let c = boxColStart; c < boxColStart + 3; c++) {
+                        if (!(r === targetRow && c === targetCol) && (userBoard[r][c] === targetNum || board[r][c] === targetNum)) {
+                            conflictCells.push(document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`));
+                        }
+                    }
+                }
+                
+                // 当前单元格也加入冲突列表
+                const currentCell = document.querySelector(`.cell[data-row="${targetRow}"][data-col="${targetCol}"]`);
+                conflictCells.push(currentCell);
+                
+                // 闪烁效果
+                conflictCells.forEach(cell => {
+                    if (cell) cell.classList.add('conflict');
+                });
+                
+                setTimeout(() => {
+                    conflictCells.forEach(cell => {
+                        if (cell) cell.classList.remove('conflict');
+                    });
+                }, 1500);
+                
+                showMessage('提示数字冲突！请检查', 'error');
+                return; // 阻止输入
+            }
+            
+            // 填入答案
+            userBoard[targetRow][targetCol] = targetNum;
+            
+            // 更新UI
+            const cell = document.querySelector(`.cell[data-row="${targetRow}"][data-col="${targetCol}"]`);
+            cell.textContent = targetNum;
+            
+            // 检查输入的数字是否与解题结果一致
+            if (targetNum === solution[targetRow][targetCol]) {
+                cell.classList.add('user-input', 'correct');
+                cell.classList.remove('wrong');
+            } else {
+                cell.classList.add('user-input', 'wrong');
+                cell.classList.remove('correct');
+            }
+            
+            // 减少提示次数
+            hintsLeft--;
+            hintBadge.textContent = hintsLeft;
+            
+            if (hintsLeft === 0) {
+                hintBtn.disabled = true;
+                hintBtn.style.opacity = '0.5';
+            }
+            
+            // 保存到历史记录
+            moveHistory.push({
+                row: targetRow,
+                col: targetCol,
+                prevValue: 0,
+                newValue: targetNum,
+                prevNotes: Array(9).fill(false),
+                prevErrorCount: errorCount
+            });
+            
+            // 清除之前的高亮显示
+            clearAllHighlights();
+            
+            // 高亮新写入的数字及相同的数
+            highlightRelatedCells(targetRow, targetCol);
+            
+            // 高亮提示的单元格
+            cell.classList.add('hint-highlight');
+            setTimeout(() => {
+                cell.classList.remove('hint-highlight');
+            }, 1500);
+            
+            // 检查数字按钮状态
+            updateNumberButtonsState();
+            
+            // 检查是否完成
+            if (checkCompletion()) {
+                return;
+            }
+            
+            // 绘制解题技巧可视化
+            if (technique === '行唯一') {
+                if (typeof window.drawTechniqueVisualization === "function") {
+                    window.drawTechniqueVisualization(technique, { row: targetRow, col: targetCol, num: targetNum });
+                }
+            } else if (technique === '列唯一') {
+                if (typeof window.drawTechniqueVisualization === "function") {
+                    window.drawTechniqueVisualization(technique, { row: targetRow, col: targetCol, num: targetNum });
+                }
+            } else if (technique === '宫唯一') {
+                if (typeof window.drawTechniqueVisualization === "function") {
+                    window.drawTechniqueVisualization(technique, { row: targetRow, col: targetCol, num: targetNum });
+                }
+            } else if (technique === '数对法') {
+                // 传递数对法的完整数据
+                if (typeof window.drawTechniqueVisualization === "function") {
+                    window.drawTechniqueVisualization(technique, hintData || { 
+                        row: targetRow, 
+                        col1: targetCol, 
+                        col2: targetCol, 
+                        num: targetNum,
+                        pairRow: targetRow,
+                        pairCol1: targetCol,
+                        pairCol2: targetCol
+                    });
+                }
+            } else if (technique === '区块摒除法') {
+                // 传递区块摒除法的完整数据
+                if (typeof window.drawTechniqueVisualization === "function") {
+                    window.drawTechniqueVisualization(technique, hintData || { 
+                        boxRow: Math.floor(targetRow/3), 
+                        boxCol: Math.floor(targetCol/3), 
+                        num: targetNum, 
+                        positions: [{row: targetRow, col: targetCol}],
+                        targetRow: targetRow,
+                        targetCol: targetCol
+                    });
+                }
+            } else if (technique === '三链数法') {
+                // 传递三链数法的完整数据
+                if (typeof window.drawTechniqueVisualization === "function") {
+                    window.drawTechniqueVisualization(technique, hintData || { 
+                        row: targetRow, 
+                        col1: targetCol, 
+                        col2: targetCol, 
+                        col3: targetCol, 
+                        num: targetNum,
+                        tripleRow: targetRow,
+                        tripleCol1: targetCol,
+                        tripleCol2: targetCol,
+                        tripleCol3: targetCol
+                    });
+                }
+            } else if (technique === 'X-Wing法') {
+                // 传递X-Wing法的完整数据
+                if (typeof window.drawTechniqueVisualization === "function") {
+                    window.drawTechniqueVisualization(technique, hintData || { 
+                        row1: targetRow, 
+                        row2: targetRow, 
+                        col1: targetCol, 
+                        col2: targetCol, 
+                        num: targetNum,
+                        targetRow: targetRow,
+                        targetCol: targetCol
+                    });
+                }
+            }
+            
+            showMessage(`方法：${technique}，已填入数字 ${targetNum}`, 'success');
+        } else {
+            hintBadge.textContent = hintsLeft + 1; // 恢复提示次数
+            showMessage('无法找到提示！', 'error');
+        }
     }
     
-    // 更新单元格笔记显示
-    function updateCellNotes(row, col) {
-        const cell = document.querySelector(`.cell[data-row="${row}"][data-col="${col}"]`);
-        cell.innerHTML = '';
+    // 查找行中的数对
+    function findNakedPairsInRow(row) {
+        const pairs = [];
+        const cellCandidates = [];
         
-        if (notes[row][col].some(note => note)) {
-            cell.classList.add('notes');
-            
-            // 创建3x3网格显示笔记
-            const noteGrid = document.createElement('div');
-            noteGrid.className = 'note-grid';
-            
-            for (let i = 0; i < 9; i++) {
-                const noteCell = document.createElement('div');
-                noteCell.className = 'note-cell';
-                if (notes[row][col][i]) {
-                    noteCell.textContent = i + 1;
+        // 获取行中每个空单元格的候选数字
+        for (let col = 0; col < 9; col++) {
+            if (userBoard[row][col] === 0 && board[row][col] === 0) {
+                const candidates = [];
+                for (let num = 1; num <= 9; num++) {
+                    if (canPlaceNumber(row, col, num)) {
+                        candidates.push(num);
+                    }
                 }
-                noteGrid.appendChild(noteCell);
+                if (candidates.length === 2) {
+                    cellCandidates.push({ col, candidates });
+                }
             }
-            
-            cell.appendChild(noteGrid);
-        } else {
-            cell.classList.remove('notes');
         }
+        
+        // 查找相同的候选数字对
+        for (let i = 0; i < cellCandidates.length; i++) {
+            for (let j = i + 1; j < cellCandidates.length; j++) {
+                const cell1 = cellCandidates[i];
+                const cell2 = cellCandidates[j];
+                
+                // 检查两个单元格是否有相同的候选数字
+                if (cell1.candidates[0] === cell2.candidates[0] && 
+                    cell1.candidates[1] === cell2.candidates[1]) {
+                    pairs.push({
+                        col1: cell1.col,
+                        col2: cell2.col,
+                        nums: cell1.candidates
+                    });
+                }
+            }
+        }
+        
+        return pairs;
+    }
+
+    // 查找列中的数对
+    function findNakedPairsInCol(col) {
+        const pairs = [];
+        const cellCandidates = [];
+        
+        // 获取列中每个空单元格的候选数字
+        for (let row = 0; row < 9; row++) {
+            if (userBoard[row][col] === 0 && board[row][col] === 0) {
+                const candidates = [];
+                for (let num = 1; num <= 9; num++) {
+                    if (canPlaceNumber(row, col, num)) {
+                        candidates.push(num);
+                    }
+                }
+                if (candidates.length === 2) {
+                    cellCandidates.push({ row, candidates });
+                }
+            }
+        }
+        
+        // 查找相同的候选数字对
+        for (let i = 0; i < cellCandidates.length; i++) {
+            for (let j = i + 1; j < cellCandidates.length; j++) {
+                const cell1 = cellCandidates[i];
+                const cell2 = cellCandidates[j];
+                
+                // 检查两个单元格是否有相同的候选数字
+                if (cell1.candidates[0] === cell2.candidates[0] && 
+                    cell1.candidates[1] === cell2.candidates[1]) {
+                    pairs.push({
+                        row1: cell1.row,
+                        row2: cell2.row,
+                        nums: cell1.candidates
+                    });
+                }
+            }
+        }
+        
+        return pairs;
+    }
+
+    // 查找宫中的数对
+    function findNakedPairsInBox(boxRow, boxCol) {
+        const pairs = [];
+        const cellCandidates = [];
+        
+        // 获取宫中每个空单元格的候选数字
+        for (let row = boxRow * 3; row < boxRow * 3 + 3; row++) {
+            for (let col = boxCol * 3; col < boxCol * 3 + 3; col++) {
+                if (userBoard[row][col] === 0 && board[row][col] === 0) {
+                    const candidates = [];
+                    for (let num = 1; num <= 9; num++) {
+                        if (canPlaceNumber(row, col, num)) {
+                            candidates.push(num);
+                        }
+                    }
+                    if (candidates.length === 2) {
+                        cellCandidates.push({ row, col, candidates });
+                    }
+                }
+            }
+        }
+        
+        // 查找相同的候选数字对
+        for (let i = 0; i < cellCandidates.length; i++) {
+            for (let j = i + 1; j < cellCandidates.length; j++) {
+                const cell1 = cellCandidates[i];
+                const cell2 = cellCandidates[j];
+                
+                // 检查两个单元格是否有相同的候选数字
+                if (cell1.candidates[0] === cell2.candidates[0] && 
+                    cell1.candidates[1] === cell2.candidates[1]) {
+                    pairs.push({
+                        positions: [cell1, cell2],
+                        nums: cell1.candidates
+                    });
+                }
+            }
+        }
+        
+        return pairs;
+    }
+    
+    // 查找区块摒除法的机会
+    function findPointingPairs() {
+        const pointingPairs = [];
+        
+        // 检查每个宫格
+        for (let boxRow = 0; boxRow < 3; boxRow++) {
+            for (let boxCol = 0; boxCol < 3; boxCol++) {
+                // 检查每个数字
+                for (let num = 1; num <= 9; num++) {
+                    // 检查宫格中数字num的候选位置
+                    const positions = [];
+                    for (let row = boxRow * 3; row < boxRow * 3 + 3; row++) {
+                        for (let col = boxCol * 3; col < boxCol * 3 + 3; col++) {
+                            if (userBoard[row][col] === 0 && board[row][col] === 0 && canPlaceNumber(row, col, num)) {
+                                positions.push({ row, col });
+                            }
+                        }
+                    }
+                    
+                    // 如果候选位置在同一行或同一列，则形成区块摒除
+                    if (positions.length >= 2) {
+                        // 检查是否在同一行
+                        const sameRow = positions.every(pos => pos.row === positions[0].row);
+                        // 检查是否在同一列
+                        const sameCol = positions.every(pos => pos.col === positions[0].col);
+                        
+                        if (sameRow || sameCol) {
+                            // 查找可以排除数字的位置
+                            const excludePositions = [];
+                            if (sameRow) {
+                                // 同一行，检查该行其他宫格中的位置
+                                for (let col = 0; col < 9; col++) {
+                                    // 跳过当前宫格中的列
+                                    if (col >= boxCol * 3 && col < boxCol * 3 + 3) continue;
+                                    
+                                    if (userBoard[positions[0].row][col] === 0 && board[positions[0].row][col] === 0 && 
+                                        canPlaceNumber(positions[0].row, col, num)) {
+                                        excludePositions.push({ row: positions[0].row, col });
+                                    }
+                                }
+                            } else if (sameCol) {
+                                // 同一列，检查该列其他宫格中的位置
+                                for (let row = 0; row < 9; row++) {
+                                    // 跳过当前宫格中的行
+                                    if (row >= boxRow * 3 && row < boxRow * 3 + 3) continue;
+                                    
+                                    if (userBoard[row][positions[0].col] === 0 && board[row][positions[0].col] === 0 && 
+                                        canPlaceNumber(row, positions[0].col, num)) {
+                                        excludePositions.push({ row, col: positions[0].col });
+                                    }
+                                }
+                            }
+                            
+                            if (excludePositions.length > 0) {
+                                pointingPairs.push({
+                                    boxRow,
+                                    boxCol,
+                                    num,
+                                    positions,
+                                    excludePositions
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        return pointingPairs;
+    }
+    
+    // 查找矩形摒除法的机会
+    function findRectangles() {
+        const rectangles = [];
+        
+        // 检查每个数字
+        for (let num = 1; num <= 9; num++) {
+            // 检查行方向的矩形
+            for (let row1 = 0; row1 < 9; row1++) {
+                const row1Positions = [];
+                for (let col = 0; col < 9; col++) {
+                    if (userBoard[row1][col] === 0 && board[row1][col] === 0 && canPlaceNumber(row1, col, num)) {
+                        row1Positions.push(col);
+                    }
+                }
+                
+                // 只考虑恰好有2或3个候选位置的行
+                if (row1Positions.length >= 2 && row1Positions.length <= 3) {
+                    for (let row2 = row1 + 1; row2 < 9; row2++) {
+                        const row2Positions = [];
+                        for (let col = 0; col < 9; col++) {
+                            if (userBoard[row2][col] === 0 && board[row2][col] === 0 && canPlaceNumber(row2, col, num)) {
+                                row2Positions.push(col);
+                            }
+                        }
+                        
+                        // 检查两行是否有相同的候选位置
+                        if (row2Positions.length >= 2 && row2Positions.length <= 3) {
+                            const commonPositions = row1Positions.filter(pos => row2Positions.includes(pos));
+                            
+                            if (commonPositions.length >= 2) {
+                                // 找到矩形模式，查找可以排除数字的位置
+                                const excludePositions = [];
+                                for (let col of commonPositions) {
+                                    for (let row = 0; row < 9; row++) {
+                                        // 跳过形成矩形的两行
+                                        if (row === row1 || row === row2) continue;
+                                        
+                                        if (userBoard[row][col] === 0 && board[row][col] === 0 && 
+                                            canPlaceNumber(row, col, num)) {
+                                            excludePositions.push({ row, col });
+                                        }
+                                    }
+                                }
+                                
+                                if (excludePositions.length > 0) {
+                                    rectangles.push({
+                                        row1,
+                                        row2,
+                                        col1: commonPositions[0],
+                                        col2: commonPositions[1],
+                                        num,
+                                        excludePositions
+                                    });
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        return rectangles;
+    }
+    
+    // 查找X-Wing模式
+    function findXWing() {
+        const xWings = [];
+        
+        // 检查每个数字
+        for (let num = 1; num <= 9; num++) {
+            // 检查行方向的X-Wing
+            for (let row1 = 0; row1 < 9; row1++) {
+                const row1Positions = [];
+                for (let col = 0; col < 9; col++) {
+                    if (userBoard[row1][col] === 0 && board[row1][col] === 0 && canPlaceNumber(row1, col, num)) {
+                        row1Positions.push(col);
+                    }
+                }
+                
+                // 只考虑恰好有两个候选位置的行
+                if (row1Positions.length === 2) {
+                    for (let row2 = row1 + 1; row2 < 9; row2++) {
+                        const row2Positions = [];
+                        for (let col = 0; col < 9; col++) {
+                            if (userBoard[row2][col] === 0 && board[row2][col] === 0 && canPlaceNumber(row2, col, num)) {
+                                row2Positions.push(col);
+                            }
+                        }
+                        
+                        // 检查两行是否有相同的候选位置
+                        if (row2Positions.length === 2 && 
+                            row1Positions[0] === row2Positions[0] && 
+                            row1Positions[1] === row2Positions[1]) {
+                            
+                            // 找到X-Wing模式，查找可以排除数字的位置
+                            const excludePositions = [];
+                            for (let col of row1Positions) {
+                                for (let row = 0; row < 9; row++) {
+                                    // 跳过形成X-Wing的两行
+                                    if (row === row1 || row === row2) continue;
+                                    
+                                    if (userBoard[row][col] === 0 && board[row][col] === 0 && 
+                                        canPlaceNumber(row, col, num)) {
+                                        excludePositions.push({ row, col });
+                                    }
+                                }
+                            }
+                            
+                            if (excludePositions.length > 0) {
+                                xWings.push({
+                                    row1,
+                                    row2,
+                                    col1: row1Positions[0],
+                                    col2: row1Positions[1],
+                                    num,
+                                    excludePositions
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        return xWings;
+    }
+    
+    // 获取可能数字
+    function getPossibleNumbers(row, col) {
+        const possible = [];
+        for (let num = 1; num <= 9; num++) {
+            if (isNumberValid(row, col, num)) {
+                possible.push(num);
+            }
+        }
+        return possible;
+    }
+    
+    // 检查数字是否可以放置在指定位置
+    function canPlaceNumber(row, col, num) {
+        // 检查行和列
+        for (let i = 0; i < 9; i++) {
+            const rowValue = userBoard[row][i] || board[row][i];
+            const colValue = userBoard[i][col] || board[i][col];
+            if (rowValue === num || colValue === num) return false;
+        }
+        
+        // 检查宫格
+        const boxRowStart = Math.floor(row / 3) * 3;
+        const boxColStart = Math.floor(col / 3) * 3;
+        for (let r = boxRowStart; r < boxRowStart + 3; r++) {
+            for (let c = boxColStart; c < boxColStart + 3; c++) {
+                const value = userBoard[r][c] || board[r][c];
+                if (value === num) return false;
+            }
+        }
+        
+        return true;
     }
     
     // 分享游戏
@@ -672,272 +1511,13 @@ document.addEventListener('DOMContentLoaded', () => {
         messageDisplay.textContent = text;
         messageDisplay.className = 'message';
         messageDisplay.classList.add(type);
-    }
-    
-    // 从URL加载游戏
-    function loadGameFromURL() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const gameParam = urlParams.get('game');
         
-        if (gameParam) {
-            try {
-                const base64Decoded = atob(decodeURIComponent(gameParam));
-                const binaryArray = new Uint8Array(base64Decoded.split('').map(char => char.charCodeAt(0)));
-                const decompressed = pako.ungzip(binaryArray, { to: 'string' });
-                const gameState = JSON.parse(decompressed);
-                
-                board = gameState.board;
-                solution = gameState.solution;
-                userBoard = gameState.userBoard;
-                givenCells = gameState.givenCells;
-                notes = gameState.notes;
-                
-                renderGame();
-                startTime = Date.now() - gameState.elapsedTime;
-                startGameTimer();
-                gameStarted = true;
-                
-                showMessage('已加载分享的数独', 'success');
-                return true;
-            } catch (e) {
-                console.error('加载数独失败:', e);
-                showMessage('加载分享数独失败', 'error');
+        setTimeout(() => {
+            if (messageDisplay.textContent === text) {
+                messageDisplay.textContent = '';
+                messageDisplay.className = 'message';
             }
-        }
-        return false;
-    }
-    
-    // 从本地题库加载数独
-    async function fetchNewGame(difficulty = 'easy') {
-        try {
-            showMessage('加载题目中，请稍候...', 'info');
-
-            let boardData, solutionData;
-            currentDifficulty = difficulty;
-
-            if (currentDatabase === 'recommended') {
-                try {
-                    const boardResponse = await fetchWithTimeout(
-                        `https://sugoku.onrender.com/board?difficulty=${difficulty}`,
-                        { timeout: 5000 }
-                    );
-
-                    if (!boardResponse.ok) {
-                        throw new Error('数独API请求失败');
-                    }
-
-                    boardData = await boardResponse.json();
-
-                    const solutionResponse = await fetchWithTimeout(
-                        'https://sugoku.onrender.com/solve',
-                        {
-                            method: 'POST',
-                            body: encodeParams({ board: boardData.board }),
-                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                            timeout: 5000
-                        }
-                    );
-
-                    if (!solutionResponse.ok) {
-                        throw new Error('题解API请求失败');
-                    }
-
-                    solutionData = await solutionResponse.json();
-                } catch (error) {
-                    console.error('加载推荐数独时出错:', error);
-                    throw new Error(`加载推荐数独失败: ${error.message}`);
-                }
-            } else if (currentDatabase === 'backup') {
-                // 修改后的收藏数独加载逻辑，与自用数独保持一致
-                try {
-                    console.log('开始加载收藏题库 SCduku.json');
-                    let data;
-                    
-                    try {
-                        // 首先尝试直接fetch
-                        const response = await fetchWithTimeout('./SCduku.json', { timeout: 5000 });
-                        console.log('收藏题库响应状态:', response.status);
-                        
-                        if (!response.ok) {
-                            throw new Error(`HTTP error! status: ${response.status}`);
-                        }
-                        
-                        data = await response.json();
-                    } catch (fetchError) {
-                        console.log('Fetch方式加载失败，尝试备选方案:', fetchError.message);
-                        
-                        // 如果fetch失败，尝试通过XMLHttpRequest加载
-                        data = await new Promise((resolve, reject) => {
-                            const xhr = new XMLHttpRequest();
-                            xhr.open('GET', './SCduku.json', true);
-                            xhr.timeout = 5000;
-                            
-                            xhr.onload = function() {
-                                if (xhr.status === 200) {
-                                    try {
-                                        const jsonData = JSON.parse(xhr.responseText);
-                                        resolve(jsonData);
-                                    } catch (parseError) {
-                                        reject(new Error('JSON解析失败: ' + parseError.message));
-                                    }
-                                } else {
-                                    reject(new Error('HTTP error! status: ' + xhr.status));
-                                }
-                            };
-                            
-                            xhr.onerror = function() {
-                                reject(new Error('网络错误'));
-                            };
-                            
-                            xhr.ontimeout = function() {
-                                reject(new Error('请求超时'));
-                            };
-                            
-                            xhr.send();
-                        });
-                    }
-                    
-                    console.log('收藏题库数据加载成功:', data);
-
-                    if (!Array.isArray(data.examplePuzzles)) {
-                        throw new Error('examplePuzzles is not an array');
-                    }
-
-                    const filteredPuzzles = data.examplePuzzles.filter(puzzle => puzzle.difficulty === difficulty);
-                    const puzzlesToUse = filteredPuzzles.length > 0 ? filteredPuzzles : data.examplePuzzles;
-                    
-                    if (puzzlesToUse.length === 0) {
-                        throw new Error(`没有找到难度为 ${difficulty} 的题目`);
-                    }
-                    
-                    const randomIndex = Math.floor(Math.random() * puzzlesToUse.length);
-                    boardData = puzzlesToUse[randomIndex];
-                    solutionData = { solution: boardData.solution };
-                    
-                    console.log('选中的题目:', boardData);
-                } catch (error) {
-                    console.error('加载收藏题库时出错:', error);
-                    // 直接报错，不回退到推荐数独
-                    throw new Error(`加载收藏数独失败: ${error.message}`);
-                }
-            } else if (currentDatabase === 'local') {
-                try {
-                    console.log('开始加载本地题库 BDsuduku.json');
-                    let data;
-                    
-                    try {
-                        // 首先尝试直接fetch
-                        const response = await fetchWithTimeout('./BDsuduku.json', { timeout: 5000 });
-                        console.log('本地题库响应状态:', response.status);
-                        
-                        if (!response.ok) {
-                            throw new Error(`HTTP error! status: ${response.status}`);
-                        }
-                        
-                        data = await response.json();
-                    } catch (fetchError) {
-                        console.log('Fetch方式加载失败，尝试备选方案:', fetchError.message);
-                        
-                        // 如果fetch失败，尝试通过XMLHttpRequest加载
-                        data = await new Promise((resolve, reject) => {
-                            const xhr = new XMLHttpRequest();
-                            xhr.open('GET', './BDsuduku.json', true);
-                            xhr.timeout = 5000;
-                            
-                            xhr.onload = function() {
-                                if (xhr.status === 200) {
-                                    try {
-                                        const jsonData = JSON.parse(xhr.responseText);
-                                        resolve(jsonData);
-                                    } catch (parseError) {
-                                        reject(new Error('JSON解析失败: ' + parseError.message));
-                                    }
-                                } else {
-                                    reject(new Error('HTTP error! status: ' + xhr.status));
-                                }
-                            };
-                            
-                            xhr.onerror = function() {
-                                reject(new Error('网络错误'));
-                            };
-                            
-                            xhr.ontimeout = function() {
-                                reject(new Error('请求超时'));
-                            };
-                            
-                            xhr.send();
-                        });
-                    }
-                    
-                    console.log('本地题库数据加载成功:', data);
-
-                    if (!Array.isArray(data.examplePuzzles)) {
-                        throw new Error('examplePuzzles is not an array');
-                    }
-
-                    const filteredPuzzles = data.examplePuzzles.filter(puzzle => puzzle.difficulty === difficulty);
-                    const puzzlesToUse = filteredPuzzles.length > 0 ? filteredPuzzles : data.examplePuzzles;
-                    
-                    if (puzzlesToUse.length === 0) {
-                        throw new Error(`没有找到难度为 ${difficulty} 的题目`);
-                    }
-                    
-                    const randomIndex = Math.floor(Math.random() * puzzlesToUse.length);
-                    boardData = puzzlesToUse[randomIndex];
-                    solutionData = { solution: boardData.solution };
-                    
-                    console.log('选中的题目:', boardData);
-                } catch (error) {
-                    console.error('加载本地题库时出错:', error);
-                    // 直接报错，不回退到推荐数独
-                    throw new Error(`加载自用数独失败: ${error.message}`);
-                }
-            }
-
-            if (currentDatabase === 'recommended') {
-                board = boardData.board;
-                solution = solutionData.solution;
-            } else if (currentDatabase === 'backup' || currentDatabase === 'local') {
-                board = boardData.puzzle;
-                solution = boardData.solution;
-            }
-
-            userBoard = Array(9).fill().map(() => Array(9).fill(0));
-            notes = Array(9).fill().map(() => Array(9).fill().map(() => Array(9).fill(false)));
-            moveHistory = [];
-            errorCount = 0;
-            updateUndoBadge();
-            selectedCell = { row: -1, col: -1 };
-            givenCells = board.map(row => row.map(cell => cell !== 0));
-            renderGame();
-            resetTimer();
-            clearAllHighlights();
-            clearSelection(); // 清除选择状态
-
-            const hintBtn = document.getElementById('hint-btn');
-            const hintBadge = hintBtn.querySelector('.hint-badge');
-            hintBadge.textContent = '10';
-            hintBtn.disabled = false;
-            hintBtn.style.opacity = '1';
-
-            let puzzleId = '未知ID';
-            if (currentDatabase === 'local' || currentDatabase === 'backup') {
-                puzzleId = boardData.id || '未知ID';
-            }
-
-            showMessage(`新数独已加载！难度: ${getDifficultyName(difficulty)}，题目ID: ${puzzleId}`, 'success');
-            setActiveNumber(1);
-        } catch (error) {
-            console.error('获取数独失败:', error);
-            showMessage(`加载失败: ${error.message}`, 'error');
-        }
-    }
-            
-    // 辅助函数：编码参数
-    function encodeParams(params) {
-        return Object.keys(params)
-            .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(JSON.stringify(params[key]))}`)
-            .join('&');
+        }, 3000);
     }
     
     // 更新撤回按钮角标
@@ -977,6 +1557,12 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // 显示烟花效果
     function showFireworks() {
+        // 检查烟花容器是否存在
+        if (!fireworksContainer) {
+            console.error('烟花容器不存在');
+            return;
+        }
+        
         fireworksContainer.style.display = 'block';
         fireworksContainer.innerHTML = '';
         
@@ -997,17 +1583,17 @@ document.addEventListener('DOMContentLoaded', () => {
             firework.style.width = `${size}px`;
             firework.style.height = `${size}px`;
             
-            firework.animate([
-                { transform: 'scale(0)', opacity: 1 },
-                { transform: 'scale(2)', opacity: 0 }
-            ], {
-                duration: Math.random() * 2000 + 1000,
-                easing: 'cubic-bezier(0, 0.9, 0.57, 1)'
+            // 添加动画结束后的清理
+            firework.addEventListener('animationend', function() {
+                if (firework.parentNode) {
+                    firework.parentNode.removeChild(firework);
+                }
             });
             
             fireworksContainer.appendChild(firework);
         }
         
+        // 使用CSS动画而不是Web Animations API以提高兼容性
         setTimeout(() => {
             fireworksContainer.style.display = 'none';
             fireworksContainer.innerHTML = '';
@@ -1172,6 +1758,260 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     
+    // 添加缺失的loadSudoku函数
+    function loadSudoku(puzzleId) {
+        // 如果提供了puzzleId，则尝试加载特定题目
+        if (puzzleId) {
+            // 这里可以实现加载特定题目的逻辑
+            showMessage(`正在加载题目 ID: ${puzzleId}`, 'info');
+            // 暂时直接调用fetchNewGame作为替代方案
+            fetchNewGame(currentDifficulty);
+        } else {
+            // 否则加载新游戏
+            fetchNewGame(currentDifficulty);
+        }
+    }
+
+    // 从本地题库加载数独
+    async function fetchNewGame(difficulty = 'easy') {
+        try {
+            showMessage('加载题目中，请稍候...', 'info');
+
+            let boardData, solutionData;
+            currentDifficulty = difficulty;
+
+            if (currentDatabase === 'recommended') {
+                try {
+                    const boardResponse = await fetchWithTimeout(
+                        `https://corsproxy.io/https://sugoku.onrender.com/board?difficulty=${difficulty}`,
+                        { timeout: 5000 }
+                    );
+
+                    if (!boardResponse.ok) {
+                        throw new Error('数独API请求失败');
+                    }
+
+                    boardData = await boardResponse.json();
+
+                    const solutionResponse = await fetchWithTimeout(
+                        'https://corsproxy.io/https://sugoku.onrender.com/solve',
+                        {
+                            method: 'POST',
+                            body: encodeParams({ board: boardData.board }),
+                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                            timeout: 5000
+                        }
+                    );
+
+                    if (!solutionResponse.ok) {
+                        throw new Error('题解API请求失败');
+                    }
+
+                    solutionData = await solutionResponse.json();
+                } catch (error) {
+                    console.error('加载推荐数独时出错:', error);
+                    throw new Error(`加载推荐数独失败: ${error.message}`);
+                }
+            } else if (currentDatabase === 'backup') {
+                // 加载收藏数独
+                try {
+                    console.log('开始加载收藏题库 SCduku.json');
+                    let data;
+                    
+                    try {
+                        // 首先尝试直接fetch
+                        const response = await fetchWithTimeout('./SCduku.json', { timeout: 5000 });
+                        console.log('收藏题库响应状态:', response.status);
+                        
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        
+                        data = await response.json();
+                    } catch (fetchError) {
+                        console.log('Fetch方式加载失败，尝试备选方案:', fetchError.message);
+                        
+                        // 如果fetch失败，尝试通过XMLHttpRequest加载
+                        data = await new Promise((resolve, reject) => {
+                            const xhr = new XMLHttpRequest();
+                            xhr.open('GET', './SCduku.json', true);
+                            xhr.timeout = 5000;
+                            
+                            xhr.onload = function() {
+                                if (xhr.status === 200) {
+                                    try {
+                                        const jsonData = JSON.parse(xhr.responseText);
+                                        resolve(jsonData);
+                                    } catch (parseError) {
+                                        reject(new Error('JSON解析失败: ' + parseError.message));
+                                    }
+                                } else {
+                                    reject(new Error('HTTP error! status: ' + xhr.status));
+                                }
+                            };
+                            
+                            xhr.onerror = function() {
+                                reject(new Error('网络错误'));
+                            };
+                            
+                            xhr.ontimeout = function() {
+                                reject(new Error('请求超时'));
+                            };
+                            
+                            xhr.send();
+                        });
+                    }
+                    
+                    console.log('收藏题库数据加载成功:', data);
+
+                    if (!Array.isArray(data.examplePuzzles)) {
+                        throw new Error('examplePuzzles is not an array');
+                    }
+
+                    const filteredPuzzles = data.examplePuzzles.filter(puzzle => puzzle.difficulty === difficulty);
+                    const puzzlesToUse = filteredPuzzles.length > 0 ? filteredPuzzles : data.examplePuzzles;
+                    
+                    if (puzzlesToUse.length === 0) {
+                        throw new Error(`没有找到难度为 ${difficulty} 的题目`);
+                    }
+                    
+                    const randomIndex = Math.floor(Math.random() * puzzlesToUse.length);
+                    boardData = puzzlesToUse[randomIndex];
+                    solutionData = { solution: boardData.solution };
+                    
+                    console.log('选中的题目:', boardData);
+                } catch (error) {
+                    console.error('加载收藏题库时出错:', error);
+                    // 直接报错，不回退到推荐数独
+                    throw new Error(`加载收藏数独失败: ${error.message}`);
+                }
+            } else if (currentDatabase === 'local') {
+                // 加载自用数独
+                try {
+                    console.log('开始加载本地题库 BDsuduku.json');
+                    let data;
+                    
+                    try {
+                        // 首先尝试直接fetch
+                        const response = await fetchWithTimeout('./BDsuduku.json', { timeout: 5000 });
+                        console.log('本地题库响应状态:', response.status);
+                        
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        
+                        data = await response.json();
+                    } catch (fetchError) {
+                        console.log('Fetch方式加载失败，尝试备选方案:', fetchError.message);
+                        
+                        // 如果fetch失败，尝试通过XMLHttpRequest加载
+                        data = await new Promise((resolve, reject) => {
+                            const xhr = new XMLHttpRequest();
+                            xhr.open('GET', './BDsuduku.json', true);
+                            xhr.timeout = 5000;
+                            
+                            xhr.onload = function() {
+                                if (xhr.status === 200) {
+                                    try {
+                                        const jsonData = JSON.parse(xhr.responseText);
+                                        resolve(jsonData);
+                                    } catch (parseError) {
+                                        reject(new Error('JSON解析失败: ' + parseError.message));
+                                    }
+                                } else {
+                                    reject(new Error('HTTP error! status: ' + xhr.status));
+                                }
+                            };
+                            
+                            xhr.onerror = function() {
+                                reject(new Error('网络错误'));
+                            };
+                            
+                            xhr.ontimeout = function() {
+                                reject(new Error('请求超时'));
+                            };
+                            
+                            xhr.send();
+                        });
+                    }
+                    
+                    console.log('本地题库数据加载成功:', data);
+
+                    if (!Array.isArray(data.examplePuzzles)) {
+                        throw new Error('examplePuzzles is not an array');
+                    }
+
+                    const filteredPuzzles = data.examplePuzzles.filter(puzzle => puzzle.difficulty === difficulty);
+                    const puzzlesToUse = filteredPuzzles.length > 0 ? filteredPuzzles : data.examplePuzzles;
+                    
+                    if (puzzlesToUse.length === 0) {
+                        throw new Error(`没有找到难度为 ${difficulty} 的题目`);
+                    }
+                    
+                    const randomIndex = Math.floor(Math.random() * puzzlesToUse.length);
+                    boardData = puzzlesToUse[randomIndex];
+                    solutionData = { solution: boardData.solution };
+                    
+                    console.log('选中的题目:', boardData);
+                } catch (error) {
+                    console.error('加载本地题库时出错:', error);
+                    // 直接报错，不回退到推荐数独
+                    throw new Error(`加载自用数独失败: ${error.message}`);
+                }
+            }
+
+            // 设置数独数据
+            if (currentDatabase === 'recommended') {
+                board = boardData.board;
+                solution = solutionData.solution;
+            } else if (currentDatabase === 'backup' || currentDatabase === 'local') {
+                board = boardData.puzzle;
+                solution = boardData.solution;
+            }
+
+            userBoard = Array(9).fill().map(() => Array(9).fill(0));
+            notes = Array(9).fill().map(() => Array(9).fill().map(() => Array(9).fill(false)));
+            moveHistory = [];
+            errorCount = 0;
+            updateUndoBadge();
+            selectedCell = { row: -1, col: -1 };
+            givenCells = board.map(row => row.map(cell => cell !== 0));
+            renderGame();
+            resetTimer();
+            clearAllHighlights();
+            clearSelection(); // 清除选择状态
+
+            // 清除解题技巧线条
+            if (typeof window.clearTechniqueLines === "function") {
+                window.clearTechniqueLines();
+            }
+
+            const hintBtn = document.getElementById('hint-btn');
+            const hintBadge = hintBtn.querySelector('.hint-badge');
+            hintBadge.textContent = '10';
+            hintBtn.disabled = false;
+            hintBtn.style.opacity = '1';
+
+            let puzzleId = '未知ID';
+            if (currentDatabase === 'local' || currentDatabase === 'backup') {
+                puzzleId = boardData.id || '未知ID';
+            }
+
+            showMessage(`新数独已加载！难度: ${getDifficultyName(difficulty)}，题目ID: ${puzzleId}`, 'success');
+            setActiveNumber(1);
+        } catch (error) {
+            console.error('获取数独失败:', error);
+            showMessage(`加载失败: ${error.message}`, 'error');
+        }
+    }
+            
+    // 辅助函数：编码参数
+    function encodeParams(params) {
+        return Object.keys(params)
+            .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(JSON.stringify(params[key]))}`)
+            .join('&');
+    }
+    
     // 渲染数独
     function renderGame() {
         for (let row = 0; row < 9; row++) {
@@ -1191,18 +2031,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     } else {
                         cell.classList.add('user-input', 'wrong');
                     }
-                    
-                    cell.classList.remove('given', 'notes');
-                } else if (notes[row][col].some(note => note)) {
-                    updateCellNotes(row, col);
                 } else {
-                    cell.textContent = '';
                     cell.classList.remove('given', 'user-input', 'correct', 'wrong', 'notes');
                 }
             }
         }
-        
-        updateNumberButtonsState();
     }
     
     // 获取难度名称
@@ -1282,6 +2115,12 @@ document.addEventListener('DOMContentLoaded', () => {
             cancelable: true
         });
         document.dispatchEvent(event);
+    }
+
+    // 添加缺失的loadGameFromURL函数
+    function loadGameFromURL() {
+        // 简单实现，始终返回false表示不从URL加载
+        return false;
     }
 
     // 初始时隐藏下拉框
