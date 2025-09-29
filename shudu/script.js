@@ -2108,7 +2108,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // 添加解题教程按钮事件监听器
     document.getElementById('tutorial-btn').addEventListener('click', function() {
-        window.open('https://sudokusolverstepbystep.com/techniques', '_blank');
+        window.open('https://corsproxy.io/https://sudokusolverstepbystep.com/techniques', '_blank');
     });
     
     // 添加一键笔记按钮事件监听器
