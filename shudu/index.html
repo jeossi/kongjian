@@ -7,11 +7,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>数独大师</title>
-	<link rel="icon" href="../Aje128.png" type="image/png" sizes="32x32">
+	<link rel="icon" href="./shudu.png" type="image/png" sizes="32x32">
     <!-- 引用外部图标库 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <!-- 引用外部 CSS 样式文件 -->
-    <link rel="stylesheet" href="style.css?v=9.13.1301">
+    <link rel="stylesheet" href="style.css?v=9.29.1310">
 </head>
 <body>
     <div class="header">
@@ -38,6 +38,7 @@
                     <button class="difficulty-btn" data-difficulty="medium">中等</button>
                     <button class="difficulty-btn" data-difficulty="hard">困难</button>
                     <button class="difficulty-btn" data-difficulty="random">随机</button>
+                    <button class="difficulty-btn" id="tutorial-btn">解题教程</button>
                 </div>
             </div>
             
@@ -70,6 +71,9 @@
                     <button class="control-btn notes-btn" id="notes-btn">
                         <i class="fas fa-pencil-alt"></i> 笔记
                         <span class="notes-badge">关</span>
+                    </button>
+                    <button class="control-btn" id="one-click-notes-btn">
+                        <i class="fas fa-magic"></i> 一键笔记
                     </button>
                     <button class="control-btn hint-btn" id="hint-btn">
                         <i class="fas fa-lightbulb"></i> 提示
@@ -107,7 +111,11 @@
     <script src="script.js?v=9.13.1301"></script>
     <!-- 引用解题技巧可视化JS文件 -->
     <script src="technique_visualization.js?v=9.13.1301"></script>
+    <!-- 引用提示模块JS文件 -->
+    <script src="hint_module.js?v=9.13.1301"></script>
+    <!-- 引用笔记模块JS文件 -->
+    <script src="notes_module.js?v=9.13.1301"></script>
     <!-- 引用缩放功能JS文件 -->
-    <script src="scale.js?v=9.13.1301"></script>
+    <script src="scale.js?v=9.29.1310"></script>
 </body>
 </html>
