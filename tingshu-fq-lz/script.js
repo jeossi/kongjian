@@ -153,7 +153,7 @@ async function performSearch(page = 1) {
     dom.searchLoader.style.display = 'block';
     dom.resultsGrid.innerHTML = '';
     try {
-        const res = await fetch(`https://api.cenguigui.cn/api/tingshu/?key=Dragon9430124081FEABFA626884BD28AF1BDF&name=${encodeURIComponent(query)}&page=${page}`);
+        const res = await fetch(`https://sdkapi.hhlqilongzhu.cn/api/fanqie_tingshu/?key=Dragon9430124081FEABFA626884BD28AF1BDF&name=${encodeURIComponent(query)}&page=${page}`);
         const data = await res.json();
         if (data.code === 200 && data.data) {
             state.searchResults = data.data;
